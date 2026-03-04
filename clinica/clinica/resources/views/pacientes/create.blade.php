@@ -1,15 +1,12 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Registrar Paciente</title>
-</head>
-<body>
+@extends('layouts.app')
 
-<h2>Registrar Paciente</h2>
+@section('content')
+
+<h2 class="mb-4">Registrar Paciente</h2>
 
 @if ($errors->any())
-    <div style="color:red;">
-        <ul>
+    <div class="alert alert-danger">
+        <ul class="mb-0">
             @foreach ($errors->all() as $error)
                 <li>{{ $error }}</li>
             @endforeach
@@ -20,41 +17,43 @@
 <form method="POST" action="{{ route('pacientes.store') }}">
     @csrf
 
-    <label>Nombre completo:</label><br>
-    <input type="text" name="nombre_completo"><br><br>
+    <div class="mb-3">
+        <label class="form-label">Nombre completo</label>
+        <input type="text" name="nombre_completo" class="form-control">
+    </div>
 
-    <label>DPI:</label><br>
-    <input type="text" name="dpi"><br><br>
+    <div class="mb-3">
+        <label class="form-label">DPI</label>
+        <input type="text" name="dpi" class="form-control">
+    </div>
 
-    <label>Fecha de nacimiento:</label><br>
-    <input type="date" name="fecha_nacimiento"><br><br>
+    <div class="mb-3">
+        <label class="form-label">Fecha de nacimiento</label>
+        <input type="date" name="fecha_nacimiento" class="form-control">
+    </div>
 
-    <label>Teléfono:</label><br>
-    <input type="text" name="telefono"><br><br>
+    <div class="mb-3">
+        <label class="form-label">Teléfono</label>
+        <input type="text" name="telefono" class="form-control">
+    </div>
 
-    <label>Correo:</label><br>
-    <input type="email" name="correo"><br><br>
+    <div class="mb-3">
+        <label class="form-label">Correo</label>
+        <input type="email" name="correo" class="form-control">
+    </div>
 
-    <label>Dirección:</label><br>
-    <input type="text" name="direccion"><br><br>
+    <div class="mb-3">
+        <label class="form-label">Dirección</label>
+        <input type="text" name="direccion" class="form-control">
+    </div>
 
-    <label>Sexo:</label><br>
-    <input type="text" name="sexo"><br><br>
+    <button type="submit" class="btn btn-primary">
+        Guardar
+    </button>
 
-    <label>Estado civil:</label><br>
-    <input type="text" name="estado_civil"><br><br>
-
-    <label>Ocupación:</label><br>
-    <input type="text" name="ocupacion"><br><br>
-
-    <button type="submit">Guardar</button>
+    <a href="{{ route('pacientes.index') }}" class="btn btn-secondary">
+        Volver
+    </a>
 </form>
 
-<br>
-
-<a href="{{ route('pacientes.index') }}">
-    <button>Volver</button>
-</a>
-
-</body>
-</html>
+@endsection

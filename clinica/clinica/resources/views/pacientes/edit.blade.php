@@ -1,8 +1,12 @@
-<h2>Editar Paciente</h2>
+@extends('layouts.app')
+
+@section('content')
+
+<h2 class="mb-4">Editar Paciente</h2>
 
 @if ($errors->any())
-    <div style="color:red;">
-        <ul>
+    <div class="alert alert-danger">
+        <ul class="mb-0">
             @foreach ($errors->all() as $error)
                 <li>{{ $error }}</li>
             @endforeach
@@ -14,19 +18,64 @@
     @csrf
     @method('PUT')
 
-    <input type="text" name="nombre_completo" value="{{ $paciente->nombre_completo }}"><br><br>
-    <input type="text" name="dpi" value="{{ $paciente->dpi }}"><br><br>
-    <input type="date" name="fecha_nacimiento" value="{{ $paciente->fecha_nacimiento }}"><br><br>
-    <input type="text" name="telefono" value="{{ $paciente->telefono }}"><br><br>
-    <input type="email" name="correo" value="{{ $paciente->correo }}"><br><br>
-    <input type="text" name="direccion" value="{{ $paciente->direccion }}"><br><br>
-    <input type="text" name="sexo" value="{{ $paciente->sexo }}"><br><br>
-    <input type="text" name="estado_civil" value="{{ $paciente->estado_civil }}"><br><br>
-    <input type="text" name="ocupacion" value="{{ $paciente->ocupacion }}"><br><br>
+    <div class="mb-3">
+        <label class="form-label">Nombre completo</label>
+        <input type="text" 
+               name="nombre_completo" 
+               class="form-control"
+               value="{{ old('nombre_completo', $paciente->nombre_completo) }}">
+    </div>
 
-    <button type="submit">Actualizar</button>
+    <div class="mb-3">
+        <label class="form-label">DPI</label>
+        <input type="text" 
+               name="dpi" 
+               class="form-control"
+               value="{{ old('dpi', $paciente->dpi) }}">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Fecha de nacimiento</label>
+        <input type="date" 
+               name="fecha_nacimiento" 
+               class="form-control"
+               value="{{ old('fecha_nacimiento', $paciente->fecha_nacimiento) }}">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Teléfono</label>
+        <input type="text" 
+               name="telefono" 
+               class="form-control"
+               value="{{ old('telefono', $paciente->telefono) }}">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Correo</label>
+        <input type="email" 
+               name="correo" 
+               class="form-control"
+               value="{{ old('correo', $paciente->correo) }}">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Dirección</label>
+        <input type="text" 
+               name="direccion" 
+               class="form-control"
+               value="{{ old('direccion', $paciente->direccion) }}">
+    </div>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">
+            Actualizar
+        </button>
+
+        <a href="{{ route('pacientes.index') }}" class="btn btn-secondary">
+            Volver
+        </a>
+    </div>
+
 </form>
 
-<a href="{{ route('pacientes.index') }}">
-    <button>Volver</button>
-</a>
+@endsection

@@ -1,68 +1,55 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <title>Pacientes</title>
-</head>
-<body>
+@extends('layouts.app')
 
-<h2>Lista de Pacientes</h2>
+@section('content')
 
-@if(session('success'))
-    <p style="color: green;">
-        {{ session('success') }}
-    </p>
-@endif
+<h2 class="mb-3">Lista de Pacientes</h2>
 
-<form method="GET" action="{{ route('pacientes.index') }}">
-    <input type="text" name="buscar" placeholder="Buscar por nombre o DPI">
-    <button type="submit">Buscar</button>
+<form method="GET" action="{{ route('pacientes.index') }}" class="mb-3 d-flex">
+    <input type="text" name="buscar" class="form-control me-2" placeholder="Buscar por nombre o DPI">
+    <button type="submit" class="btn btn-primary">Buscar</button>
 </form>
 
-<br>
-
-<a href="{{ route('pacientes.create') }}">
-    <button>Nuevo Paciente</button>
+<a href="{{ route('pacientes.create') }}" class="btn btn-success mb-3">
+    Nuevo Paciente
 </a>
 
-<br><br>
+<table class="table table-bordered table-striped">
+    <thead class="table-primary">
+        <tr>
+            <th>Nombre</th>
+            <th>DPI</th>
+            <th>Teléfono</th>
+            <th>Correo</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($pacientes as $paciente)
+        <tr>
+            <td>{{ $paciente->nombre_completo }}</td>
+            <td>{{ $paciente->dpi }}</td>
+            <td>{{ $paciente->telefono }}</td>
+            <td>{{ $paciente->correo }}</td>
+            <td>
+                <a href="{{ route('pacientes.edit', $paciente->id) }}" class="btn btn-warning btn-sm">
+                    Editar
+                </a>
 
-<table class="table table-bordered">
-    <tr>
-        <th>Nombre</th>
-        <th>DPI</th>
-        <th>Teléfono</th>
-        <th>Correo</th>
-    </tr>
-
-    @foreach($pacientes as $paciente)
-    <tr>
-        <td>{{ $paciente->nombre_completo }}</td>
-        <td>{{ $paciente->dpi }}</td>
-        <td>{{ $paciente->telefono }}</td>
-        <td>{{ $paciente->correo }}</td>
-        <td>
-            <a href="{{ route('pacientes.edit', $paciente->id) }}">
-                <button class="btn btn-warning btn-sm">Editar</button>
-            </a>
-
-            <form action="{{ route('pacientes.destroy', $paciente->id) }}" 
-                method="POST" 
-                style="display:inline;">
-            @csrf
-            @method('DELETE')
-            <button type="submit" 
-                class="btn btn-danger btn-sm"
-                onclick="return confirm('¿Eliminar paciente?')">
-                    Eliminar
-                </button>
-            </form>
-        </td>
-
-    </tr>
-    @endforeach
-
+                <form action="{{ route('pacientes.destroy', $paciente->id) }}"
+                      method="POST"
+                      style="display:inline;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit"
+                            class="btn btn-danger btn-sm"
+                            onclick="return confirm('¿Eliminar paciente?')">
+                        Eliminar
+                    </button>
+                </form>
+            </td>
+        </tr>
+        @endforeach
+    </tbody>
 </table>
 
-</body>
-</html>
+@endsection
