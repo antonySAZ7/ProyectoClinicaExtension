@@ -1,9 +1,10 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\Paciente;
-use Illuminate\Http\Request;
 
+use App\Http\Requests\StorePacienteRequest;
+use App\Http\Requests\UpdatePacienteRequest;
+use App\Models\Paciente;
 
 class PacienteController extends Controller
 {
@@ -16,7 +17,7 @@ class PacienteController extends Controller
 
         $pacientes = Paciente::when($buscar, function ($query, $buscar) {
             return $query->where('nombre_completo', 'like', "%$buscar%")
-                        ->orWhere('dpi', 'like', "%$buscar%");
+                ->orWhere('dpi', 'like', "%$buscar%");
         })->get();
 
         return view('pacientes.index', compact('pacientes'));
@@ -33,33 +34,13 @@ class PacienteController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-{
-    $request->validate([
-        'nombre_completo'   => 'required|max:255',
-        'dpi'               => 'required|unique:pacientes,dpi',
-        'fecha_nacimiento'  => 'required|date',
-        'telefono'          => 'required',
-        'correo'            => 'required|email|unique:pacientes,correo',
-        'direccion'         => 'required',
-    ], [
-        'nombre_completo.required'  => 'El nombre es obligatorio.',
-        'dpi.required'              => 'El DPI es obligatorio.',
-        'dpi.unique'                => 'El DPI ya está registrado.',
-        'fecha_nacimiento.required' => 'Debe ingresar la fecha de nacimiento.',
-        'fecha_nacimiento.date'     => 'La fecha ingresada no es válida.',
-        'telefono.required'         => 'El teléfono es obligatorio.',
-        'correo.required'           => 'El correo es obligatorio.',
-        'correo.email'              => 'Debe ingresar un correo válido.',
-        'correo.unique'             => 'El correo ya está registrado.',
-        'direccion.required'        => 'La dirección es obligatoria.',
-    ]);
+    public function store(StorePacienteRequest $request)
+    {
+        Paciente::create($request->validated());
 
-    Paciente::create($request->all());
-
-    return redirect()->route('pacientes.index')
-                    ->with('success', 'Paciente registrado correctamente.');
-}
+        return redirect()->route('pacientes.index')
+            ->with('success', 'Paciente registrado correctamente.');
+    }
 
     /**
      * Display the specified resource.
@@ -74,40 +55,19 @@ class PacienteController extends Controller
      */
     public function edit(Paciente $paciente)
     {
-        
         return view('pacientes.edit', compact('paciente'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Paciente $paciente)
-{
-    $request->validate([
-        'nombre_completo'   => 'required|max:255',
-        'dpi'               => 'required|unique:pacientes,dpi,' . $paciente->id,
-        'fecha_nacimiento'  => 'required|date',
-        'telefono'          => 'required',
-        'correo'            => 'required|email|unique:pacientes,correo,' . $paciente->id,
-        'direccion'         => 'required',
-    ], [
-        'nombre_completo.required'  => 'El nombre es obligatorio.',
-        'dpi.required'              => 'El DPI es obligatorio.',
-        'dpi.unique'                => 'El DPI ya está registrado.',
-        'fecha_nacimiento.required' => 'Debe ingresar la fecha de nacimiento.',
-        'fecha_nacimiento.date'     => 'La fecha ingresada no es válida.',
-        'telefono.required'         => 'El teléfono es obligatorio.',
-        'correo.required'           => 'El correo es obligatorio.',
-        'correo.email'              => 'Debe ingresar un correo válido.',
-        'correo.unique'             => 'El correo ya está registrado.',
-        'direccion.required'        => 'La dirección es obligatoria.',
-    ]);
+    public function update(UpdatePacienteRequest $request, Paciente $paciente)
+    {
+        $paciente->update($request->validated());
 
-    $paciente->update($request->all());
-
-    return redirect()->route('pacientes.index')
-                    ->with('success', 'Paciente actualizado correctamente.');
-}
+        return redirect()->route('pacientes.index')
+            ->with('success', 'Paciente actualizado correctamente.');
+    }
 
     /**
      * Remove the specified resource from storage.
@@ -117,6 +77,6 @@ class PacienteController extends Controller
         $paciente->delete();
 
         return redirect()->route('pacientes.index')
-                        ->with('success', 'Paciente eliminado correctamente.');
+            ->with('success', 'Paciente eliminado correctamente.');
     }
 }
