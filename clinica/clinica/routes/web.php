@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CitaController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PacienteController;
 use Illuminate\Support\Facades\Route;
@@ -14,6 +15,7 @@ Route::get('/dashboard', function () {
 
 Route::middleware('auth')->group(function () {
     Route::resource('pacientes', PacienteController::class);
+    Route::resource('citas', CitaController::class)->except(['show']);
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

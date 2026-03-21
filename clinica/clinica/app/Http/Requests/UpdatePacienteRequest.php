@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdatePacienteRequest extends FormRequest
 {
@@ -23,9 +24,24 @@ class UpdatePacienteRequest extends FormRequest
     {
         return [
             'nombre_completo' => 'required|string|max:255',
-            'dpi' => 'required|string|max:20',
+            'dpi' => [
+                'required',
+                'string',
+                'max:20',
+                Rule::unique('pacientes', 'dpi')->ignore($this->route('paciente')),
+            ],
+            'fecha_nacimiento' => 'required|date',
             'telefono' => 'required|string|max:20',
-            'correo' => 'nullable|email',
+            'correo' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('pacientes', 'correo')->ignore($this->route('paciente')),
+            ],
+            'direccion' => 'required|string|max:255',
+            'sexo' => 'nullable|string|max:50',
+            'estado_civil' => 'nullable|string|max:100',
+            'ocupacion' => 'nullable|string|max:255',
         ];
     }
 }

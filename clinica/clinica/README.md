@@ -21,6 +21,51 @@ Laravel is a web application framework with expressive, elegant syntax. We belie
 
 Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
+## Docker quick start
+
+This project can be started with Docker without installing PHP, Composer, Node, or MySQL locally.
+
+1. Easiest option on Windows:
+
+```bat
+docker-up.bat
+```
+
+2. Manual option: create a Docker env file from the example:
+
+```bash
+cp .env.docker.example .env.docker
+```
+
+3. Start the environment:
+
+```bash
+docker compose --env-file .env.docker up --build
+```
+
+4. Open the app at `http://localhost:8000`
+
+5. Optional:
+
+```bash
+docker compose --env-file .env.docker down
+```
+
+Available Windows helpers:
+
+- `docker-up.bat`: creates `.env.docker` if missing and starts the environment
+- `docker-down.bat`: stops the environment
+- `docker-rebuild.bat`: stops and rebuilds the environment
+- `docker-logs.bat`: shows live Docker logs
+
+Notes:
+
+- The Laravel app runs with PHP 8.2 inside Docker.
+- MySQL runs in a separate container and is exposed on host port `3307`.
+- Docker settings now live in `.env.docker`, so credentials and ports are not hardcoded in `docker-compose.yml`.
+- The startup script installs Composer and npm dependencies, creates `.env` only if missing, generates the app key, runs migrations, and starts the app automatically.
+- The current Docker setup forces `SESSION_DRIVER=file` to avoid failures caused by missing database session tables in this repository state.
+
 ## Learning Laravel
 
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.

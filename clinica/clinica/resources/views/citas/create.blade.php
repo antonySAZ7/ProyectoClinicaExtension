@@ -1,0 +1,144 @@
+@extends('layouts.app')
+
+@section('content')
+    <div class="py-8">
+        <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+            <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+                <div class="mb-6">
+                    <h1 class="text-2xl font-semibold text-gray-900">Registrar cita</h1>
+                    <p class="mt-1 text-sm text-gray-600">
+                        Completa los datos para programar una nueva cita.
+                    </p>
+                </div>
+
+                @if ($errors->any())
+                    <div class="mb-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                        <ul class="space-y-1">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                @if ($pacientes->isEmpty())
+                    <div class="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                        No hay pacientes registrados. Crea un paciente antes de programar una cita.
+                    </div>
+
+                    <div class="mt-6">
+                        <a
+                            href="{{ route('pacientes.create') }}"
+                            class="inline-flex items-center rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800"
+                        >
+                            Ir a pacientes
+                        </a>
+                    </div>
+                @else
+                    <form method="POST" action="{{ route('citas.store') }}" class="space-y-6">
+                        @csrf
+
+                        <div class="grid gap-6 md:grid-cols-2">
+                            <div>
+                                <label for="paciente_id" class="mb-2 block text-sm font-medium text-gray-700">Paciente</label>
+                                <select
+                                    id="paciente_id"
+                                    name="paciente_id"
+                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-900 focus:ring-gray-900"
+                                    required
+                                >
+                                    <option value="">Selecciona un paciente</option>
+                                    @foreach ($pacientes as $paciente)
+                                        <option value="{{ $paciente->id }}" @selected(old('paciente_id') == $paciente->id)>
+                                            {{ $paciente->nombre_completo }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="estado" class="mb-2 block text-sm font-medium text-gray-700">Estado</label>
+                                <select
+                                    id="estado"
+                                    name="estado"
+                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-900 focus:ring-gray-900"
+                                >
+                                    @foreach ($estados as $estado)
+                                        <option value="{{ $estado }}" @selected(old('estado', 'pendiente') === $estado)>
+                                            {{ ucfirst($estado) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="fecha" class="mb-2 block text-sm font-medium text-gray-700">Fecha</label>
+                                <input
+                                    id="fecha"
+                                    type="date"
+                                    name="fecha"
+                                    value="{{ old('fecha') }}"
+                                    min="{{ now()->toDateString() }}"
+                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-900 focus:ring-gray-900"
+                                    required
+                                >
+                            </div>
+
+                            <div>
+                                <label for="hora" class="mb-2 block text-sm font-medium text-gray-700">Hora</label>
+                                <input
+                                    id="hora"
+                                    type="time"
+                                    name="hora"
+                                    value="{{ old('hora') }}"
+                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-900 focus:ring-gray-900"
+                                    required
+                                >
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="motivo" class="mb-2 block text-sm font-medium text-gray-700">Motivo</label>
+                            <input
+                                id="motivo"
+                                type="text"
+                                name="motivo"
+                                value="{{ old('motivo') }}"
+                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-900 focus:ring-gray-900"
+                                placeholder="Ej. revision general, limpieza, control"
+                                required
+                            >
+                        </div>
+
+                        <div>
+                            <label for="observaciones" class="mb-2 block text-sm font-medium text-gray-700">Observaciones</label>
+                            <textarea
+                                id="observaciones"
+                                name="observaciones"
+                                rows="4"
+                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-900 focus:ring-gray-900"
+                                placeholder="Notas adicionales sobre la cita"
+                            >{{ old('observaciones') }}</textarea>
+                        </div>
+
+                        <div class="flex flex-col gap-3 sm:flex-row">
+                            <button
+                                type="submit"
+                                class="inline-flex items-center justify-center rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800"
+                            >
+                                Guardar cita
+                            </button>
+
+                            <a
+                                href="{{ route('citas.index') }}"
+                                class="inline-flex items-center justify-center rounded-md border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+                            >
+                                Volver
+                            </a>
+                        </div>
+                    </form>
+                @endif
+            </div>
+        </div>
+    </div>
+@endsection

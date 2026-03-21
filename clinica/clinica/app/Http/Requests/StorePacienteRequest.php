@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StorePacienteRequest extends FormRequest
 {
@@ -23,9 +24,14 @@ class StorePacienteRequest extends FormRequest
     {
         return [
             'nombre_completo' => 'required|string|max:255',
-            'dpi' => 'required|string|max:20|unique:pacientes,dpi',
+            'dpi' => ['required', 'string', 'max:20', Rule::unique('pacientes', 'dpi')],
+            'fecha_nacimiento' => 'required|date',
             'telefono' => 'required|string|max:20',
-            'correo' => 'nullable|email',
+            'correo' => ['required', 'email', 'max:255', Rule::unique('pacientes', 'correo')],
+            'direccion' => 'required|string|max:255',
+            'sexo' => 'nullable|string|max:50',
+            'estado_civil' => 'nullable|string|max:100',
+            'ocupacion' => 'nullable|string|max:255',
         ];
     }
 }

@@ -1,0 +1,54 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      APP_NAME: ${APP_NAME:-ClinicaExtension}
+      APP_ENV: ${APP_ENV:-local}
+      APP_DEBUG: ${APP_DEBUG:-true}
+      APP_URL: ${APP_URL:-http://localhost:8000}
+      DB_CONNECTION: ${DB_CONNECTION:-mysql}
+      DB_HOST: ${DB_HOST:-mysql}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_DATABASE: ${DB_DATABASE:-clinica_db}
+      DB_USERNAME: ${DB_USERNAME:-clinica_user}
+      DB_PASSWORD: ${DB_PASSWORD:-clinica_pass}
+      SESSION_DRIVER: ${SESSION_DRIVER:-file}
+      CACHE_STORE: ${CACHE_STORE:-file}
+      QUEUE_CONNECTION: ${QUEUE_CONNECTION:-sync}
+      FORCE_VITE_BUILD: ${FORCE_VITE_BUILD:-false}
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    volumes:
+      - ./:/var/www/html
+      - vendor_data:/var/www/html/vendor
+      - node_modules_data:/var/www/html/node_modules
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:${MYSQL_IMAGE_TAG:-8.0}
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-clinica_db}
+      MYSQL_USER: ${DB_USERNAME:-clinica_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-clinica_pass}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+    ports:
+      - "${MYSQL_HOST_PORT:-3307}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p${MYSQL_ROOT_PASSWORD:-root}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  node_modules_data:
+  vendor_data:
