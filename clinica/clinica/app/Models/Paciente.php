@@ -17,4 +17,14 @@ class Paciente extends Model
         'estado_civil',
         'ocupacion',
     ];
+
+    public function citas()
+    {
+        return $this->hasMany(Cita::class);
+    }
+
+    public function pagos()
+    {
+        return $this->hasMany(Pago::class);
+    }
 }
