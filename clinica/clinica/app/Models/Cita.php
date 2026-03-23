@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Cita extends Model
 {
+    protected $casts = [
+        'fecha' => 'date',
+    ];
+
     protected $fillable = [
         'paciente_id',
         'fecha',
