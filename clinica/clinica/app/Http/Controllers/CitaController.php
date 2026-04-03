@@ -35,6 +35,37 @@ class CitaController extends Controller
     }
 
     /**
+     * Display appointments in calendar format.
+     */
+    public function calendario()
+    {
+        $eventos = Cita::with('paciente')
+            ->orderBy('fecha')
+            ->orderBy('hora')
+            ->get()
+            ->map(function (Cita $cita) {
+                $hora = substr((string) $cita->hora, 0, 5);
+
+                return [
+                    'title' => $cita->paciente?->nombre_completo ?? 'Paciente no disponible',
+                    'start' => $cita->fecha?->format('Y-m-d') . 'T' . substr((string) $cita->hora, 0, 8),
+                    'extendedProps' => [
+                        'fecha' => $cita->fecha?->format('d/m/Y'),
+                        'hora' => $hora,
+                        'estado' => ucfirst($cita->estado ?? 'pendiente'),
+                        'motivo' => $cita->motivo,
+                        'observaciones' => $cita->observaciones ?: 'Sin observaciones',
+                    ],
+                ];
+            })
+            ->values();
+
+        return view('citas.calendario', [
+            'eventos' => $eventos,
+        ]);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)

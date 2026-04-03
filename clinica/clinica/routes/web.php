@@ -15,6 +15,7 @@ Route::get('/dashboard', function () {
 
 Route::middleware('auth')->group(function () {
     Route::resource('pacientes', PacienteController::class);
+    Route::get('/citas/calendario', [CitaController::class, 'calendario'])->name('citas.calendario');
     Route::resource('citas', CitaController::class)->except(['show']);
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
