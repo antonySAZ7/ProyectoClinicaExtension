@@ -3,9 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Pago extends Model
 {
+    protected $casts = [
+        'monto' => 'decimal:2',
+        'fecha_pago' => 'date',
+    ];
+
     protected $fillable = [
         'paciente_id',
         'cita_id',
@@ -15,12 +21,12 @@ class Pago extends Model
         'fecha_pago',
     ];
 
-    public function paciente()
+    public function paciente(): BelongsTo
     {
         return $this->belongsTo(Paciente::class);
     }
 
-    public function cita()
+    public function cita(): BelongsTo
     {
         return $this->belongsTo(Cita::class);
     }

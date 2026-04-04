@@ -23,6 +23,11 @@ class UpdatePacienteRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'user_id' => [
+                'nullable',
+                Rule::exists('users', 'id')->where(fn ($query) => $query->where('role', 'paciente')),
+                Rule::unique('pacientes', 'user_id')->ignore($this->route('paciente')),
+            ],
             'nombre_completo' => 'required|string|max:255',
             'dpi' => [
                 'required',

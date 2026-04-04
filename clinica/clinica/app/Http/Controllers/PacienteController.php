@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePacienteRequest;
 use App\Http\Requests\UpdatePacienteRequest;
 use App\Models\Paciente;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 
 class PacienteController extends Controller
 {
@@ -15,7 +17,7 @@ class PacienteController extends Controller
     {
         $buscar = request('buscar');
 
-        $pacientes = Paciente::when($buscar, function ($query, $buscar) {
+        $pacientes = Paciente::with('user')->when($buscar, function (Builder $query, string $buscar) {
             return $query->where('nombre_completo', 'like', "%$buscar%")
                 ->orWhere('dpi', 'like', "%$buscar%");
         })->get();
@@ -28,7 +30,9 @@ class PacienteController extends Controller
      */
     public function create()
     {
-        return view('pacientes.create');
+        return view('pacientes.create', [
+            'usuariosPaciente' => $this->usuariosPacienteDisponibles(),
+        ]);
     }
 
     /**
@@ -55,7 +59,10 @@ class PacienteController extends Controller
      */
     public function edit(Paciente $paciente)
     {
-        return view('pacientes.edit', compact('paciente'));
+        return view('pacientes.edit', [
+            'paciente' => $paciente,
+            'usuariosPaciente' => $this->usuariosPacienteDisponibles($paciente),
+        ]);
     }
 
     /**
@@ -78,5 +85,20 @@ class PacienteController extends Controller
 
         return redirect()->route('pacientes.index')
             ->with('success', 'Paciente eliminado correctamente.');
+    }
+
+    protected function usuariosPacienteDisponibles(?Paciente $paciente = null)
+    {
+        return User::query()
+            ->where('role', User::ROLE_PACIENTE)
+            ->where(function (Builder $query) use ($paciente) {
+                $query->whereDoesntHave('paciente');
+
+                if ($paciente?->user_id) {
+                    $query->orWhereKey($paciente->user_id);
+                }
+            })
+            ->orderBy('name')
+            ->get();
     }
 }

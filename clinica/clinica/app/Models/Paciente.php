@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Paciente extends Model
 {
     protected $fillable = [
+        'user_id',
         'nombre_completo',
         'dpi',
         'fecha_nacimiento',
@@ -18,12 +21,17 @@ class Paciente extends Model
         'ocupacion',
     ];
 
-    public function citas()
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function citas(): HasMany
     {
         return $this->hasMany(Cita::class);
     }
 
-    public function pagos()
+    public function pagos(): HasMany
     {
         return $this->hasMany(Pago::class);
     }

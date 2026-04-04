@@ -15,7 +15,7 @@ class CitaController extends Controller
     public function index()
     {
         $citas = Cita::with('paciente')
-            ->whereDate('fecha', '>=', today())
+            ->upcoming()
             ->orderBy('fecha')
             ->orderBy('hora')
             ->get();

@@ -23,6 +23,11 @@ class StorePacienteRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'user_id' => [
+                'nullable',
+                Rule::exists('users', 'id')->where(fn ($query) => $query->where('role', 'paciente')),
+                Rule::unique('pacientes', 'user_id'),
+            ],
             'nombre_completo' => 'required|string|max:255',
             'dpi' => ['required', 'string', 'max:20', Rule::unique('pacientes', 'dpi')],
             'fecha_nacimiento' => 'required|date',
