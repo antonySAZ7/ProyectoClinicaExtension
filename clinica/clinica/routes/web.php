@@ -28,6 +28,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
 Route::middleware(['auth', 'role:paciente'])->group(function () {
     Route::get('/portal', [PacientePortalController::class, 'index'])->name('portal');
+    Route::patch('/portal/citas/{cita}/cancelar', [PacientePortalController::class, 'cancel'])
+        ->name('portal.citas.cancelar');
 });
 
 require __DIR__ . '/auth.php';

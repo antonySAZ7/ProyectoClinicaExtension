@@ -2,23 +2,64 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cita;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class PacientePortalController extends Controller
 {
     public function index(Request $request): View
     {
-        $user = $request->user()->load([
-            'paciente.citas' => fn ($query) => $query
+        /** @var User $user */
+        $user = $request->user();
+
+        $user->load('paciente');
+
+        $paciente = $user->paciente;
+        $citas = collect();
+
+        if ($paciente) {
+            $citas = $paciente->citas()
                 ->upcoming()
                 ->orderBy('fecha')
-                ->orderBy('hora'),
+                ->orderBy('hora')
+                ->get();
+        }
+
+        return view('paciente.portal', [
+            'user' => $user,
+            'paciente' => $paciente,
+            'citas' => $citas,
+        ]);
+    }
+
+    public function cancel(Request $request, Cita $cita): RedirectResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $paciente = $user->paciente;
+
+        if (! $paciente) {
+            return redirect()->route('portal')
+                ->with('error', 'Tu usuario todavia no tiene un expediente de paciente asociado.');
+        }
+
+        $cita = $paciente->citas()
+            ->upcoming()
+            ->findOrFail($cita->getKey());
+
+        if ($cita->estado === 'cancelada') {
+            return redirect()->route('portal')
+                ->with('error', 'La cita seleccionada ya estaba cancelada.');
+        }
+
+        $cita->update([
+            'estado' => 'cancelada',
         ]);
 
-        return view('portal.index', [
-            'user' => $user,
-            'paciente' => $user->paciente,
-        ]);
+        return redirect()->route('portal')
+            ->with('success', 'La cita fue cancelada correctamente.');
     }
 }
