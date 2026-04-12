@@ -93,13 +93,9 @@
                                             <form method="POST" action="{{ route('portal.citas.cancelar', $cita) }}">
                                                 @csrf
                                                 @method('PATCH')
-                                                <button
-                                                    type="submit"
-                                                    class="inline-flex items-center rounded-md bg-rose-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2"
-                                                    onclick="return confirm('¿Deseas cancelar esta cita?');"
-                                                >
-                                                    Cancelar
-                                                </button>
+                                                <x-danger-button onclick="return confirm('Deseas cancelar esta cita?');">
+                                                    Cancelar mi cita
+                                                </x-danger-button>
                                             </form>
                                         @else
                                             <span class="text-xs font-medium text-gray-400">Sin accion</span>
