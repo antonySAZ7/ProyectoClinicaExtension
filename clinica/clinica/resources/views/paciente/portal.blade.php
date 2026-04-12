@@ -113,6 +113,43 @@
                     </table>
                 </div>
             </div>
+
+            <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                <div class="border-b border-gray-100 px-6 py-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Historial clinico</h3>
+                    <p class="mt-1 text-sm text-gray-600">Registros de tu historial clinico ordenados por fecha.</p>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Fecha</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Descripcion</th>
+                            </tr>
+                        </thead>
+
+                        <tbody class="divide-y divide-gray-200 bg-white">
+                            @forelse ($historiales as $historial)
+                                <tr>
+                                    <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
+                                        {{ $historial->fecha->format('d/m/Y') }}
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-700">
+                                        {{ $historial->descripcion }}
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="2" class="px-6 py-10 text-center text-sm text-gray-500">
+                                        No tienes registros en tu historial clinico por el momento.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </x-app-layout>

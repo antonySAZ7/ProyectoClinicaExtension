@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Historial;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -34,5 +35,10 @@ class Paciente extends Model
     public function pagos(): HasMany
     {
         return $this->hasMany(Pago::class);
+    }
+
+    public function historiales(): HasMany
+    {
+        return $this->hasMany(Historial::class);
     }
 }

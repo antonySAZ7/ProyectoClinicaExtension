@@ -27,7 +27,7 @@ services:
       - ./:/var/www/html
       - vendor_data:/var/www/html/vendor
       - node_modules_data:/var/www/html/node_modules
-    restart: unless-stopped
+    restart: "no"
 
   mysql:
     image: mysql:${MYSQL_IMAGE_TAG:-8.0}
@@ -46,7 +46,7 @@ services:
       timeout: 5s
       retries: 20
       start_period: 15s
-    restart: unless-stopped
+    restart: "no"
 
 volumes:
   mysql_data:

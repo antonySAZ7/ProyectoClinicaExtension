@@ -1,0 +1,303 @@
+# Guia Persona 1 - Sprint 4
+
+## Objetivo
+
+Tu trabajo en Sprint 4 es dejar lista la parte backend y de base de datos para que el modulo de citas funcione correctamente con lo que ya esta en `main`.
+
+Importante:
+
+- Persona 2 ya dejo hechas las vistas y el `CitaController`.
+- Tu parte ahora es crear el soporte backend real para que eso funcione.
+- No necesitas hacer vistas.
+
+---
+
+## Lo que ya existe en `main`
+
+Ya esta hecho:
+
+- Autenticacion con Laravel Breeze
+- CRUD de pacientes
+- Rutas de `citas`
+- `CitaController`
+- Vistas:
+  - `resources/views/citas/index.blade.php`
+  - `resources/views/citas/create.blade.php`
+  - `resources/views/citas/edit.blade.php`
+
+Eso significa que tu backend debe respetar esos nombres y estos campos:
+
+- `paciente_id`
+- `fecha`
+- `hora`
+- `motivo`
+- `estado`
+- `observaciones`
+
+Si cambias esos nombres, vas a romper lo que ya esta conectado.
+
+---
+
+## Paso 1. Levantar el entorno
+
+Desde la carpeta del proyecto Laravel:
+
+`C:\Users\carlo\Documents\Quinto Semestre\Extension\ProyectoClinicaExtension\clinica\clinica`
+
+puedes usar:
+
+- `docker-up.bat`
+
+Cuando termine, la app deberia quedar en:
+
+- `http://localhost:8000`
+
+Si necesitas apagar:
+
+- `docker-down.bat`
+
+Si necesitas reconstruir:
+
+- `docker-rebuild.bat`
+
+Para ver logs:
+
+- `docker-logs.bat`
+
+---
+
+## Paso 2. Crear el modelo y migracion de `Cita`
+
+Debes crear:
+
+- `app/Models/Cita.php`
+- una migracion para la tabla `citas`
+
+La tabla `citas` debe tener:
+
+1. `id`
+2. `paciente_id`
+3. `fecha`
+4. `hora`
+5. `motivo`
+6. `estado`
+7. `observaciones`
+8. `created_at`
+9. `updated_at`
+
+### Reglas importantes
+
+- `paciente_id` debe ser foreign key hacia `pacientes.id`
+- debe usar `onDelete cascade`
+- `fecha` debe ser `date`
+- `hora` debe ser `time`
+- `motivo` puede ser `string`
+- `estado` debe tener default `pendiente`
+- `observaciones` debe ser nullable
+
+### Recomendacion
+
+En el modelo `Cita`, deja `fillable` con:
+
+- `paciente_id`
+- `fecha`
+- `hora`
+- `motivo`
+- `estado`
+- `observaciones`
+
+Y agrega la relacion:
+
+- `belongsTo(Paciente::class)`
+
+---
+
+## Paso 3. Agregar la relacion en `Paciente`
+
+En:
+
+- `app/Models/Paciente.php`
+
+agrega la relacion:
+
+- `hasMany(Cita::class)`
+
+No borres lo que ya existe en `fillable`.
+
+---
+
+## Paso 4. Crear backend de `Pago`
+
+Aunque Persona 2 no depende directamente de esto para las vistas de `citas`, el documento del sprint si lo pide.
+
+Debes crear:
+
+- `app/Models/Pago.php`
+- migracion para la tabla `pagos`
+
+Campos de `pagos`:
+
+1. `id`
+2. `paciente_id`
+3. `cita_id`
+4. `monto`
+5. `metodo_pago`
+6. `estado`
+7. `fecha_pago`
+8. `created_at`
+9. `updated_at`
+
+### Reglas importantes
+
+- `paciente_id` debe ser FK a `pacientes`
+- `cita_id` debe ser FK a `citas`
+- `monto` debe ser `decimal(8,2)`
+- `estado` puede manejar valores como `pendiente` y `pagado`
+- `fecha_pago` puede ser nullable
+
+### Relaciones esperadas
+
+En `Paciente`:
+
+- `hasMany(Cita::class)`
+- `hasMany(Pago::class)`
+
+En `Cita`:
+
+- `belongsTo(Paciente::class)`
+- `hasOne(Pago::class)`
+
+En `Pago`:
+
+- `belongsTo(Paciente::class)`
+- `belongsTo(Cita::class)`
+
+---
+
+## Paso 5. Verificar compatibilidad con el `CitaController`
+
+El `CitaController` ya esta hecho y espera:
+
+- modelo `App\Models\Cita`
+- relacion `paciente`
+- tabla `citas`
+
+Tambien ya esta programado para:
+
+- listar solo citas con `fecha >= hoy`
+- ordenar por `fecha` y `hora`
+- crear
+- editar
+- cancelar una cita cambiando estado a `cancelada`
+
+Tu backend debe hacer que eso funcione, no cambiar esa interfaz sin necesidad.
+
+---
+
+## Paso 6. Validaciones backend minimas
+
+Esto ya esta contemplado parcialmente en el controlador, pero debes revisar que la estructura soporte lo siguiente:
+
+- no permitir `paciente_id` inexistente
+- no permitir `fecha` pasada
+- `hora` obligatoria
+- `motivo` obligatorio
+- `estado` con default `pendiente`
+
+Si quieres hacerlo mejor, puedes mover esto a `FormRequest`, pero no es obligatorio si el controlador actual ya queda funcional.
+
+---
+
+## Paso 7. Probar migraciones
+
+Cuando termines, debes comprobar que esto funcione:
+
+```bash
+docker compose --env-file .env.docker exec app php artisan migrate
+```
+
+Y si quieres probar desde cero:
+
+```bash
+docker compose --env-file .env.docker exec app php artisan migrate:fresh
+```
+
+O mas facil, levantar de nuevo el entorno limpio si hace falta.
+
+Tu meta es que no haya errores de migraciones.
+
+---
+
+## Paso 8. Probar que no rompa pacientes
+
+Muy importante:
+
+- crear paciente
+- editar paciente
+- listar pacientes
+
+El modulo `pacientes` no debe romperse por agregar relaciones nuevas.
+
+---
+
+## Paso 9. Probar flujo minimo de citas
+
+Cuando ya exista tu backend, se debe poder:
+
+1. Crear un paciente
+2. Entrar a `/citas/create`
+3. Crear una cita
+4. Verla en `/citas`
+5. Editarla
+6. Cancelarla
+
+Si eso funciona, la integracion con Persona 2 ya quedo bien.
+
+---
+
+## Archivos que probablemente tocaras
+
+- `app/Models/Paciente.php`
+- `app/Models/Cita.php`
+- `app/Models/Pago.php`
+- `database/migrations/...create_citas_table.php`
+- `database/migrations/...create_pagos_table.php`
+
+Opcionalmente:
+
+- `app/Http/Requests/...`
+
+No deberias tocar:
+
+- vistas de `citas`
+- rutas de `citas`
+- nombres de campos del formulario
+
+salvo que de verdad haya un bug claro.
+
+---
+
+## Checklist final
+
+Antes de hacer push, revisa esto:
+
+- modelo `Cita` creado
+- migracion `citas` creada
+- modelo `Pago` creado
+- migracion `pagos` creada
+- relaciones en `Paciente`, `Cita` y `Pago`
+- `php artisan migrate` sin errores
+- modulo `pacientes` sigue funcionando
+- modulo `citas` ya deja crear, editar y cancelar
+
+---
+
+## Resumen corto
+
+Tu trabajo es construir la base de datos y relaciones reales para que lo que ya esta hecho en `citas` pueda funcionar.
+
+En otras palabras:
+
+- Persona 2 ya dejo la cara del modulo
+- tu dejas el cerebro de datos
+

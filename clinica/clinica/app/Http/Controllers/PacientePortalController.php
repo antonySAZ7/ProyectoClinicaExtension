@@ -19,6 +19,7 @@ class PacientePortalController extends Controller
 
         $paciente = $user->paciente;
         $citas = collect();
+        $historiales = collect();
 
         if ($paciente) {
             $citas = $paciente->citas()
@@ -26,12 +27,17 @@ class PacientePortalController extends Controller
                 ->orderBy('fecha')
                 ->orderBy('hora')
                 ->get();
+
+            $historiales = $paciente->historiales()
+                ->orderByDesc('fecha')
+                ->get();
         }
 
         return view('paciente.portal', [
             'user' => $user,
             'paciente' => $paciente,
             'citas' => $citas,
+            'historiales' => $historiales,
         ]);
     }
 
