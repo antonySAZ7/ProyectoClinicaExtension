@@ -116,8 +116,21 @@
 
             <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
                 <div class="border-b border-gray-100 px-6 py-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Historial clinico</h3>
-                    <p class="mt-1 text-sm text-gray-600">Registros de tu historial clinico ordenados por fecha.</p>
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">Historial clinico reciente</h3>
+                            <p class="mt-1 text-sm text-gray-600">Ultimas consultas registradas en tu expediente.</p>
+                        </div>
+
+                        @if ($paciente)
+                            <a
+                                href="{{ route('portal.consultas.index') }}"
+                                class="inline-flex items-center justify-center rounded-md border border-sky-300 px-4 py-2 text-sm font-semibold text-sky-700 transition hover:bg-sky-50"
+                            >
+                                Ver historial completo
+                            </a>
+                        @endif
+                    </div>
                 </div>
 
                 <div class="overflow-x-auto">
@@ -125,24 +138,37 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Fecha</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Descripcion</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Motivo</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Registrado por</th>
+                                <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500">Accion</th>
                             </tr>
                         </thead>
 
                         <tbody class="divide-y divide-gray-200 bg-white">
-                            @forelse ($historiales as $historial)
+                            @forelse ($consultasRecientes as $consulta)
                                 <tr>
                                     <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
-                                        {{ $historial->fecha->format('d/m/Y') }}
+                                        {{ $consulta->fecha->format('d/m/Y') }}
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-700">
-                                        {{ $historial->descripcion }}
+                                        {{ $consulta->motivo }}
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-700">
+                                        {{ $consulta->user?->name ?? 'Personal clinico' }}
+                                    </td>
+                                    <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
+                                        <a
+                                            href="{{ route('portal.consultas.show', $consulta) }}"
+                                            class="inline-flex items-center justify-center rounded-md border border-gray-300 px-3 py-2 font-medium text-gray-700 transition hover:bg-gray-50"
+                                        >
+                                            Ver detalle
+                                        </a>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="2" class="px-6 py-10 text-center text-sm text-gray-500">
-                                        No tienes registros en tu historial clinico por el momento.
+                                    <td colspan="4" class="px-6 py-10 text-center text-sm text-gray-500">
+                                        No tienes consultas registradas en tu historial clinico por el momento.
                                     </td>
                                 </tr>
                             @endforelse

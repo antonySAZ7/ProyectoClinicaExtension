@@ -1,104 +1,330 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Clinica
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistema web para administracion de pacientes, citas e historial clinico, desarrollado con Laravel 12.
 
-## About Laravel
+## Stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- PHP 8.2
+- Laravel 12
+- MySQL 8
+- Vite
+- Tailwind CSS
+- Docker / Docker Desktop
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Modulos actuales
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- Autenticacion con Laravel Breeze
+- Roles de usuario:
+  - `admin`
+  - `doctor`
+  - `paciente`
+- Gestion de pacientes
+- Gestion de citas
+- Portal del paciente
+- Historial clinico:
+  - consultas
+  - observaciones
+  - archivos adjuntos simples
 
-## Docker quick start
+## Estado funcional
 
-This project can be started with Docker without installing PHP, Composer, Node, or MySQL locally.
+Actualmente el proyecto contempla:
 
-1. Easiest option on Windows:
+- CRUD de pacientes
+- CRUD operativo de citas
+- Portal para paciente autenticado
+- Registro y consulta de historial clinico por paciente
+
+Fuera de alcance actual:
+
+- metodo de pago en produccion
+
+Existe una tabla/modelo de `pagos` por trabajo previo, pero no forma parte del alcance activo del proyecto.
+
+## Estructura principal
+
+```text
+app/
+  Http/Controllers/
+  Http/Requests/
+  Models/
+database/
+  migrations/
+resources/
+  views/
+routes/
+  web.php
+docker/
+  app-entrypoint.sh
+```
+
+## Como levantar el proyecto con Docker
+
+### Opcion rapida en Windows
 
 ```bat
 docker-up.bat
 ```
 
-2. Manual option: create a Docker env file from the example:
+### Opcion manual
 
-```bash
-cp .env.docker.example .env.docker
+1. Crear `.env.docker` si no existe:
+
+```powershell
+Copy-Item .env.docker.example .env.docker
 ```
 
-3. Start the environment:
+2. Levantar contenedores:
 
-```bash
-docker compose --env-file .env.docker up --build
+```powershell
+docker compose --env-file .env.docker up --build -d
 ```
 
-4. Open the app at `http://localhost:8000`
+3. Abrir la app:
 
-5. Optional:
+```text
+http://localhost:8000
+```
 
-```bash
+4. Ver logs si hace falta:
+
+```powershell
+docker compose --env-file .env.docker logs -f
+```
+
+5. Detener el entorno:
+
+```powershell
 docker compose --env-file .env.docker down
 ```
 
-Available Windows helpers:
+## Muy importante sobre Docker Desktop
 
-- `docker-up.bat`: creates `.env.docker` if missing and starts the environment
-- `docker-down.bat`: stops the environment
-- `docker-rebuild.bat`: stops and rebuilds the environment
-- `docker-logs.bat`: shows live Docker logs
+Este proyecto usa un bind mount con la carpeta actual del repositorio.
 
-Notes:
+La ruta correcta de este entorno es:
 
-- The Laravel app runs with PHP 8.2 inside Docker.
-- MySQL runs in a separate container and is exposed on host port `3307`.
-- Docker settings now live in `.env.docker`, so credentials and ports are not hardcoded in `docker-compose.yml`.
-- The startup script installs Composer and npm dependencies, creates `.env` only if missing, generates the app key, runs migrations, and starts the app automatically.
-- The current Docker setup forces `SESSION_DRIVER=file` to avoid failures caused by missing database session tables in this repository state.
+```text
+C:\Users\tempo\OneDrive - UVG\Escritorio\UVG\ciclo 5\clinica\clinica\clinica
+```
 
-## Learning Laravel
+Si Docker Desktop intenta arrancar un proyecto viejo desde una ruta distinta, por ejemplo una carpeta en `OneDrive\Desktop`, el contenedor `app` puede fallar con errores como:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+```text
+cp: cannot stat '.env.example': No such file or directory
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Eso significa que Docker monto una carpeta equivocada o incompleta.
 
-## Laravel Sponsors
+### Si pasa ese error
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+1. Abre una terminal en la carpeta real del proyecto.
+2. Ejecuta:
 
-### Premium Partners
+```powershell
+docker compose --env-file .env.docker down --remove-orphans
+docker compose --env-file .env.docker up --build -d
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+3. Verifica que la app responda:
 
-## Contributing
+```powershell
+Invoke-WebRequest -UseBasicParsing http://localhost:8000/up
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Si responde `200`, Laravel quedo arriba correctamente.
 
-## Code of Conduct
+## Que hace el arranque de Docker
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+El `entrypoint` del contenedor `app`:
 
-## Security Vulnerabilities
+- valida que los archivos del proyecto esten montados
+- crea `.env` si no existe
+- instala dependencias de Composer si faltan
+- instala dependencias de Node si faltan
+- genera `APP_KEY` si falta
+- espera a MySQL
+- corre migraciones
+- compila assets si hace falta
+- levanta `php artisan serve`
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Archivo involucrado:
 
-## License
+- [docker/app-entrypoint.sh](docker/app-entrypoint.sh)
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Variables importantes
+
+El entorno Docker usa `.env.docker`.
+
+Valores relevantes por defecto:
+
+```env
+APP_URL=http://localhost:8000
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=clinica_db
+DB_USERNAME=clinica_user
+DB_PASSWORD=clinica_pass
+MYSQL_HOST_PORT=3307
+```
+
+## Base de datos
+
+Migraciones principales del proyecto:
+
+- `users`
+- `pacientes`
+- `citas`
+- `historiales`
+- `consultas`
+- `observaciones`
+- `archivos`
+
+Las migraciones se ejecutan automaticamente al levantar Docker.
+
+Si necesitas correrlas manualmente dentro del contenedor:
+
+```powershell
+docker compose --env-file .env.docker exec app php artisan migrate
+```
+
+## Credenciales de prueba
+
+El seeder actual crea un usuario administrador:
+
+- correo: `test@example.com`
+- password: `password`
+- rol: `admin`
+
+Para sembrar la base:
+
+```powershell
+docker compose --env-file .env.docker exec app php artisan db:seed
+```
+
+## Historial clinico
+
+El backend del historial clinico incluye:
+
+- `Consulta`
+  - pertenece a `Paciente`
+  - pertenece a `User`
+  - tiene muchas `Observacion`
+  - tiene muchos `Archivo`
+- `Observacion`
+  - pertenece a `Consulta`
+- `Archivo`
+  - pertenece a `Consulta`
+
+Flujo actual:
+
+- `admin` y `doctor` pueden crear consultas para un paciente
+- `paciente` solo puede ver su propio historial
+
+Rutas principales:
+
+- `GET /pacientes/{paciente}/consultas`
+- `GET /pacientes/{paciente}/consultas/create`
+- `POST /pacientes/{paciente}/consultas`
+- `GET /consultas/{consulta}`
+- `GET /portal/historial-clinico`
+- `GET /portal/historial-clinico/{consulta}`
+
+## Archivos adjuntos
+
+Se permiten archivos simples:
+
+- PDF
+- JPG
+- JPEG
+- PNG
+- WEBP
+
+Para exponerlos correctamente en un entorno local sin Docker, crea el symlink de storage:
+
+```powershell
+php artisan storage:link
+```
+
+Con Docker:
+
+```powershell
+docker compose --env-file .env.docker exec app php artisan storage:link
+```
+
+## Pruebas
+
+Ejecutar pruebas:
+
+```powershell
+php artisan test
+```
+
+Con Docker:
+
+```powershell
+docker compose --env-file .env.docker exec app php artisan test
+```
+
+La suite actual cubre:
+
+- autenticacion
+- acceso por roles
+- visibilidad de citas
+- integridad de pagos existente
+- historial clinico
+
+## Desarrollo sin Docker
+
+Si quieres correrlo localmente:
+
+1. Instala dependencias:
+
+```powershell
+composer install
+npm install
+```
+
+2. Crea `.env`:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+3. Genera la key:
+
+```powershell
+php artisan key:generate
+```
+
+4. Configura tu base de datos en `.env`
+
+5. Corre migraciones:
+
+```powershell
+php artisan migrate
+```
+
+6. Levanta backend y frontend:
+
+```powershell
+php artisan serve
+npm run dev
+```
+
+## Scripts utiles
+
+- `docker-up.bat`: levanta Docker
+- `docker-down.bat`: baja Docker
+- `docker-rebuild.bat`: reconstruye contenedores
+- `docker-logs.bat`: muestra logs
+
+## Notas para el equipo
+
+- El proyecto ya no debe preocuparse por implementar metodo de pago como parte del alcance actual.
+- Si Docker vuelve a tomar una ruta vieja, siempre levantar desde la carpeta real del repositorio.
+- Antes de reportar un problema de arranque, revisar:
+  - `docker compose --env-file .env.docker ps`
+  - `docker compose --env-file .env.docker logs --tail=100 app`
+  - `docker compose --env-file .env.docker logs --tail=100 mysql`

@@ -1,7 +1,7 @@
 @php
     $user = Auth::user();
     $homeRoute = route($user->homeRoute(), absolute: false);
-    $isAdmin = $user->isAdmin();
+    $canAccessBackoffice = $user->canAccessBackoffice();
 @endphp
 
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
@@ -15,7 +15,7 @@
                 </div>
 
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    @if ($isAdmin)
+                    @if ($canAccessBackoffice)
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                             {{ __('Dashboard') }}
                         </x-nav-link>
@@ -28,6 +28,9 @@
                     @else
                         <x-nav-link :href="route('portal')" :active="request()->routeIs('portal')">
                             {{ __('Portal') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('portal.consultas.index')" :active="request()->routeIs('portal.consultas.*')">
+                            {{ __('Historial clinico') }}
                         </x-nav-link>
                     @endif
                 </div>
@@ -78,7 +81,7 @@
 
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            @if ($isAdmin)
+            @if ($canAccessBackoffice)
                 <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                     {{ __('Dashboard') }}
                 </x-responsive-nav-link>
@@ -91,6 +94,9 @@
             @else
                 <x-responsive-nav-link :href="route('portal')" :active="request()->routeIs('portal')">
                     {{ __('Portal') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('portal.consultas.index')" :active="request()->routeIs('portal.consultas.*')">
+                    {{ __('Historial clinico') }}
                 </x-responsive-nav-link>
             @endif
         </div>

@@ -49,4 +49,11 @@ class UserFactory extends Factory
             'role' => 'paciente',
         ]);
     }
+
+    public function doctor(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'doctor',
+        ]);
+    }
 }

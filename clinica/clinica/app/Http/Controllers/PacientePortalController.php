@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Cita;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class PacientePortalController extends Controller
@@ -19,7 +19,7 @@ class PacientePortalController extends Controller
 
         $paciente = $user->paciente;
         $citas = collect();
-        $historiales = collect();
+        $consultasRecientes = collect();
 
         if ($paciente) {
             $citas = $paciente->citas()
@@ -28,8 +28,11 @@ class PacientePortalController extends Controller
                 ->orderBy('hora')
                 ->get();
 
-            $historiales = $paciente->historiales()
+            $consultasRecientes = $paciente->consultas()
+                ->with('user')
                 ->orderByDesc('fecha')
+                ->orderByDesc('created_at')
+                ->limit(5)
                 ->get();
         }
 
@@ -37,7 +40,7 @@ class PacientePortalController extends Controller
             'user' => $user,
             'paciente' => $paciente,
             'citas' => $citas,
-            'historiales' => $historiales,
+            'consultasRecientes' => $consultasRecientes,
         ]);
     }
 

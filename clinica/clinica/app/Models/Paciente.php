@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Historial;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -30,6 +29,11 @@ class Paciente extends Model
     public function citas(): HasMany
     {
         return $this->hasMany(Cita::class);
+    }
+
+    public function consultas(): HasMany
+    {
+        return $this->hasMany(Consulta::class);
     }
 
     public function pagos(): HasMany

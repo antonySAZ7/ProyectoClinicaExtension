@@ -18,8 +18,22 @@ CACHE_STORE="${CACHE_STORE:-file}"
 QUEUE_CONNECTION="${QUEUE_CONNECTION:-sync}"
 FORCE_VITE_BUILD="${FORCE_VITE_BUILD:-false}"
 
+if [ ! -f artisan ]; then
+    echo "Error: Laravel project files are not available in /var/www/html."
+    echo "Check the Docker bind mount source path for this project."
+    ls -la
+    exit 1
+fi
+
 if [ ! -f .env ]; then
-    cp .env.example .env
+    if [ -f .env.example ]; then
+        cp .env.example .env
+    elif [ -f .env.docker.example ]; then
+        cp .env.docker.example .env
+    else
+        echo "Error: no .env template was found (.env.example or .env.docker.example)."
+        exit 1
+    fi
 fi
 
 mkdir -p \

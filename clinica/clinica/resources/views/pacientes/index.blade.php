@@ -65,6 +65,13 @@
                                     <td class="px-4 py-4 text-sm">
                                         <div class="flex flex-col gap-2 sm:flex-row">
                                             <a
+                                                href="{{ route('pacientes.consultas.index', $paciente) }}"
+                                                class="inline-flex items-center justify-center rounded-md border border-sky-300 px-3 py-2 font-medium text-sky-700 transition hover:bg-sky-50"
+                                            >
+                                                Historial
+                                            </a>
+
+                                            <a
                                                 href="{{ route('pacientes.edit', $paciente) }}"
                                                 class="inline-flex items-center justify-center rounded-md border border-amber-300 px-3 py-2 font-medium text-amber-700 transition hover:bg-amber-50"
                                             >

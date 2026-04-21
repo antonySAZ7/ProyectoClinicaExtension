@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CitaController;
+use App\Http\Controllers\ConsultaController;
 use App\Http\Controllers\PacienteController;
 use App\Http\Controllers\PacientePortalController;
 use App\Http\Controllers\ProfileController;
@@ -16,10 +17,19 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['auth', 'role:admin'])->group(function () {
+Route::middleware(['auth', 'role:admin,doctor'])->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+
+    Route::get('/pacientes/{paciente}/consultas', [ConsultaController::class, 'index'])
+        ->name('pacientes.consultas.index');
+    Route::get('/pacientes/{paciente}/consultas/create', [ConsultaController::class, 'create'])
+        ->name('pacientes.consultas.create');
+    Route::post('/pacientes/{paciente}/consultas', [ConsultaController::class, 'store'])
+        ->name('pacientes.consultas.store');
+    Route::get('/consultas/{consulta}', [ConsultaController::class, 'show'])
+        ->name('consultas.show');
 
     Route::resource('pacientes', PacienteController::class)->except(['show']);
     Route::get('/citas/calendario', [CitaController::class, 'calendario'])->name('citas.calendario');
@@ -28,8 +38,12 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
 Route::middleware(['auth', 'role:paciente'])->group(function () {
     Route::get('/portal', [PacientePortalController::class, 'index'])->name('portal');
+    Route::get('/portal/historial-clinico', [ConsultaController::class, 'portalIndex'])
+        ->name('portal.consultas.index');
+    Route::get('/portal/historial-clinico/{consulta}', [ConsultaController::class, 'show'])
+        ->name('portal.consultas.show');
     Route::patch('/portal/citas/{cita}/cancelar', [PacientePortalController::class, 'cancel'])
         ->name('portal.citas.cancelar');
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
