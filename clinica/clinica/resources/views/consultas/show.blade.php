@@ -2,124 +2,123 @@
     <x-slot name="header">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight">Detalle de consulta</h2>
-                <p class="mt-1 text-sm text-gray-500">
+                <h2 class="font-semibold text-2xl text-brand-primary leading-tight">Detalle de consulta</h2>
+                <p class="mt-1 text-base text-brand-muted">
                     {{ $consulta->paciente->nombre_completo }} - {{ $consulta->fecha->format('d/m/Y') }}
                 </p>
             </div>
 
-            <a
-                href="{{ $isPortal ? route('portal.consultas.index') : route('pacientes.consultas.index', $consulta->paciente) }}"
-                class="inline-flex items-center justify-center rounded-md border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
-            >
+            <x-link-button href="{{ $isPortal ? route('portal.consultas.index') : route('pacientes.consultas.index', $consulta->paciente) }}">
                 Volver
-            </a>
+            </x-link-button>
         </div>
     </x-slot>
 
     <div class="py-8">
         <div class="mx-auto max-w-5xl space-y-6 px-4 sm:px-6 lg:px-8">
             @if (session('success'))
-                <div class="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+                <x-alert type="success">
                     {{ session('success') }}
-                </div>
+                </x-alert>
             @endif
 
             <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
                 <div class="space-y-6">
-                    <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-                        <h3 class="text-lg font-semibold text-gray-900">Resumen</h3>
+                    <x-card class="p-6">
+                        <h3 class="text-lg font-semibold text-brand-primary">Resumen</h3>
                         <dl class="mt-4 grid gap-4 sm:grid-cols-2">
                             <div>
-                                <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">Fecha</dt>
-                                <dd class="mt-1 text-sm text-gray-900">{{ $consulta->fecha->format('d/m/Y') }}</dd>
+                                <dt class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Fecha</dt>
+                                <dd class="mt-1 text-base text-brand-primary">{{ $consulta->fecha->format('d/m/Y') }}</dd>
                             </div>
 
                             <div>
-                                <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">Registrado por</dt>
-                                <dd class="mt-1 text-sm text-gray-900">{{ $consulta->user?->name ?? 'Personal clinico' }}</dd>
+                                <dt class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Registrado por</dt>
+                                <dd class="mt-1 text-base text-brand-primary">{{ $consulta->user?->name ?? 'Personal clinico' }}</dd>
                             </div>
 
                             <div class="sm:col-span-2">
-                                <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">Motivo</dt>
-                                <dd class="mt-1 text-sm text-gray-900">{{ $consulta->motivo }}</dd>
+                                <dt class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Motivo</dt>
+                                <dd class="mt-1 text-base text-brand-primary">{{ $consulta->motivo }}</dd>
                             </div>
 
                             <div class="sm:col-span-2">
-                                <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">Diagnostico</dt>
-                                <dd class="mt-1 whitespace-pre-line text-sm text-gray-900">{{ $consulta->diagnostico }}</dd>
+                                <dt class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Diagnostico</dt>
+                                <dd class="mt-1 whitespace-pre-line text-base text-brand-primary">{{ $consulta->diagnostico }}</dd>
                             </div>
                         </dl>
-                    </div>
+                    </x-card>
 
-                    <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-                        <h3 class="text-lg font-semibold text-gray-900">Paciente</h3>
+                    <x-card class="p-6">
+                        <h3 class="text-lg font-semibold text-brand-primary">Paciente</h3>
                         <dl class="mt-4 grid gap-4 sm:grid-cols-2">
                             <div>
-                                <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">Nombre</dt>
-                                <dd class="mt-1 text-sm text-gray-900">{{ $consulta->paciente->nombre_completo }}</dd>
+                                <dt class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Nombre</dt>
+                                <dd class="mt-1 text-base text-brand-primary">{{ $consulta->paciente->nombre_completo }}</dd>
                             </div>
 
                             <div>
-                                <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">DPI</dt>
-                                <dd class="mt-1 text-sm text-gray-900">{{ $consulta->paciente->dpi }}</dd>
+                                <dt class="text-xs font-semibold uppercase tracking-wide text-brand-muted">DPI</dt>
+                                <dd class="mt-1 text-base text-brand-primary">{{ $consulta->paciente->dpi }}</dd>
                             </div>
 
                             <div>
-                                <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">Telefono</dt>
-                                <dd class="mt-1 text-sm text-gray-900">{{ $consulta->paciente->telefono }}</dd>
+                                <dt class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Telefono</dt>
+                                <dd class="mt-1 text-base text-brand-primary">{{ $consulta->paciente->telefono }}</dd>
                             </div>
 
                             <div>
-                                <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">Correo</dt>
-                                <dd class="mt-1 text-sm text-gray-900">{{ $consulta->paciente->correo }}</dd>
+                                <dt class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Correo</dt>
+                                <dd class="mt-1 text-base text-brand-primary">{{ $consulta->paciente->correo }}</dd>
                             </div>
                         </dl>
-                    </div>
+                    </x-card>
                 </div>
 
                 <div class="space-y-6">
-                    <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-                        <h3 class="text-lg font-semibold text-gray-900">Observaciones</h3>
+                    <x-card class="p-6">
+                        <h3 class="text-lg font-semibold text-brand-primary">Observaciones</h3>
 
                         <div class="mt-4 space-y-3">
                             @forelse ($consulta->observaciones as $observacion)
-                                <div class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                                <div class="rounded-lg border border-brand-border bg-brand-soft px-4 py-3 text-base text-brand-primary">
                                     {{ $observacion->descripcion }}
                                 </div>
                             @empty
-                                <p class="text-sm text-gray-500">No se registraron observaciones adicionales para esta consulta.</p>
+                                <p class="text-base text-brand-muted">No se registraron observaciones adicionales para esta consulta.</p>
                             @endforelse
                         </div>
-                    </div>
+                    </x-card>
 
-                    <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-                        <h3 class="text-lg font-semibold text-gray-900">Archivos adjuntos</h3>
+                    <x-card class="p-6">
+                    <h3 class="text-lg font-semibold text-brand-primary">Archivos adjuntos</h3>
 
-                        <div class="mt-4 space-y-3">
-                            @forelse ($consulta->archivos as $archivo)
-                                <div class="flex flex-col gap-3 rounded-lg border border-gray-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-900">
-                                            {{ $archivo->nombre_original ?? basename($archivo->ruta) }}
-                                        </p>
-                                        <p class="mt-1 text-xs uppercase tracking-wide text-gray-500">{{ $archivo->tipo }}</p>
-                                    </div>
-
-                                    <a
-                                        href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($archivo->ruta) }}"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        class="inline-flex items-center justify-center rounded-md border border-sky-300 px-3 py-2 text-sm font-semibold text-sky-700 transition hover:bg-sky-50"
-                                    >
-                                        Abrir archivo
-                                    </a>
+                    <div class="mt-4 space-y-3">
+                        @forelse ($consulta->archivos as $archivo)
+                            <div class="flex flex-col gap-3 rounded-lg border border-brand-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                    <p class="text-base font-medium text-brand-primary">
+                                        {{ $archivo->nombre_original ?? basename($archivo->ruta) }}
+                                    </p>
+                                    <p class="mt-1 text-xs uppercase tracking-wide text-brand-muted">
+                                        {{ $archivo->tipo }}
+                                    </p>
                                 </div>
-                            @empty
-                                <p class="text-sm text-gray-500">No hay archivos adjuntos en esta consulta.</p>
-                            @endforelse
-                        </div>
+
+                                <x-link-button 
+                                    href="{{ Storage::disk('public')->url($archivo->ruta) }}" 
+                                    target="_blank"
+                                >
+                                    Abrir archivo
+                                </x-link-button>
+                            </div>
+                        @empty
+                            <p class="text-base text-brand-muted">
+                                No hay archivos adjuntos en esta consulta.
+                            </p>
+                        @endforelse
                     </div>
+                </x-card>
                 </div>
             </div>
         </div>

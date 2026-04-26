@@ -29,7 +29,7 @@ class CitaController extends Controller
     public function create()
     {
         $pacientes = Paciente::orderBy('nombre_completo')->get();
-        $estados = ['pendiente', 'confirmada', 'cancelada'];
+        $estados = ['pendiente', 'confirmada'];
 
         return view('citas.create', compact('pacientes', 'estados'));
     }

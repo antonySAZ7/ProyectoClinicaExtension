@@ -94,8 +94,8 @@ class PacienteController extends Controller
             ->where(function (Builder $query) use ($paciente) {
                 $query->whereDoesntHave('paciente');
 
-                if ($paciente?->user_id) {
-                    $query->orWhereKey($paciente->user_id);
+                if ($paciente && $paciente->user_id) {
+                    $query->orWhere('id', $paciente->user_id);
                 }
             })
             ->orderBy('name')

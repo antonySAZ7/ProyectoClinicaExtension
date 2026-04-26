@@ -2,21 +2,18 @@
     <x-slot name="header">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                <h2 class="font-semibold text-2xl text-brand-primary leading-tight">
                     {{ $isPortal ? 'Mi historial clinico' : 'Historial clinico del paciente' }}
                 </h2>
-                <p class="mt-1 text-sm text-gray-500">
+                <p class="mt-1 text-base text-brand-muted">
                     {{ $paciente->nombre_completo }}{{ $paciente->user?->email ? ' - '.$paciente->user->email : '' }}
                 </p>
             </div>
 
             @if (! $isPortal)
-                <a
-                    href="{{ route('pacientes.consultas.create', $paciente) }}"
-                    class="inline-flex items-center justify-center rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800"
-                >
+                <x-link-button href="{{ route('pacientes.consultas.create', $paciente) }}" variant="primary">
                     Nueva consulta
-                </a>
+                </x-link-button>
             @endif
         </div>
     </x-slot>
@@ -24,82 +21,79 @@
     <div class="py-8">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
             @if (session('success'))
-                <div class="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+                <x-alert type="success">
                     {{ session('success') }}
-                </div>
+                </x-alert>
             @endif
 
             @if (session('error'))
-                <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                <x-alert type="error">
                     {{ session('error') }}
-                </div>
+                </x-alert>
             @endif
 
             <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Paciente</p>
-                    <p class="mt-2 text-sm font-semibold text-gray-900">{{ $paciente->nombre_completo }}</p>
-                </div>
+<x-card class="p-5">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Paciente</p>
+                        <p class="mt-2 text-base font-semibold text-brand-primary">{{ $paciente->nombre_completo }}</p>
+                    </x-card>
 
-                <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">DPI</p>
-                    <p class="mt-2 text-sm text-gray-900">{{ $paciente->dpi }}</p>
-                </div>
+<x-card class="p-5">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-brand-muted">DPI</p>
+                        <p class="mt-2 text-base text-brand-primary">{{ $paciente->dpi }}</p>
+                    </x-card>
 
-                <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Telefono</p>
-                    <p class="mt-2 text-sm text-gray-900">{{ $paciente->telefono }}</p>
-                </div>
+<x-card class="p-5">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Telefono</p>
+                        <p class="mt-2 text-base text-brand-primary">{{ $paciente->telefono }}</p>
+                    </x-card>
 
-                <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Consultas registradas</p>
-                    <p class="mt-2 text-sm text-gray-900">{{ $consultas->count() }}</p>
-                </div>
+<x-card class="p-5">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Consultas registradas</p>
+                        <p class="mt-2 text-base text-brand-primary">{{ $consultas->count() }}</p>
+                    </x-card>
             </div>
 
-            <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+            <x-card class="overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                    <table class="min-w-full divide-y divide-brand-border">
+                        <thead class="bg-brand-soft">
                             <tr>
-                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Fecha</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Motivo</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Diagnostico</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Registrado por</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Adjuntos</th>
-                                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500">Acciones</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-muted">Fecha</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-muted">Motivo</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-muted">Diagnostico</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-muted">Registrado por</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-muted">Adjuntos</th>
+                                <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-brand-muted">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200 bg-white">
+                        <tbody class="divide-y divide-brand-border bg-brand-contrast">
                             @forelse ($consultas as $consulta)
                                 <tr class="align-top">
-                                    <td class="whitespace-nowrap px-4 py-4 text-sm text-gray-700">
+                                    <td class="px-6 py-4 text-sm text-brand-primary">
                                         {{ $consulta->fecha->format('d/m/Y') }}
                                     </td>
-                                    <td class="px-4 py-4 text-sm font-medium text-gray-900">
+                                    <td class="px-6 py-4 text-sm font-medium text-brand-primary">
                                         {{ $consulta->motivo }}
                                     </td>
-                                    <td class="px-4 py-4 text-sm text-gray-700">
+                                    <td class="px-6 py-4 text-sm text-brand-primary">
                                         {{ \Illuminate\Support\Str::limit($consulta->diagnostico, 100) }}
                                     </td>
-                                    <td class="px-4 py-4 text-sm text-gray-700">
+                                    <td class="px-6 py-4 text-sm text-brand-primary">
                                         {{ $consulta->user?->name ?? 'Personal clinico' }}
                                     </td>
-                                    <td class="px-4 py-4 text-sm text-gray-700">
+                                    <td class="px-6 py-4 text-sm text-brand-primary">
                                         {{ $consulta->archivos->count() }}
                                     </td>
                                     <td class="whitespace-nowrap px-4 py-4 text-right text-sm">
-                                        <a
-                                            href="{{ route($isPortal ? 'portal.consultas.show' : 'consultas.show', $consulta) }}"
-                                            class="inline-flex items-center justify-center rounded-md border border-gray-300 px-3 py-2 font-medium text-gray-700 transition hover:bg-gray-50"
-                                        >
+                                        <x-link-button href="{{ route($isPortal ? 'portal.consultas.show' : 'consultas.show', $consulta) }}">
                                             Ver detalle
-                                        </a>
+                                        </x-link-button>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-4 py-10 text-center text-sm text-gray-500">
+                                    <td colspan="6" class="px-4 py-10 text-center text-sm text-brand-muted">
                                         No hay consultas registradas para este paciente.
                                     </td>
                                 </tr>
@@ -107,7 +101,7 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </x-card>
         </div>
     </div>
 </x-app-layout>
