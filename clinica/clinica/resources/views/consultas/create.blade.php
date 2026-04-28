@@ -24,7 +24,7 @@
                     </x-alert>
                 @endif
 
-                <form method="POST" action="{{ route('pacientes.consultas.store', $paciente) }}" enctype="multipart/form-data" class="space-y-6">
+                <form id="form-consulta" method="POST" action="{{ route('pacientes.consultas.store', $paciente) }}" enctype="multipart/form-data" class="space-y-6">
                     @csrf
 
                     <div class="grid gap-6 md:grid-cols-2">
@@ -49,57 +49,63 @@
                     </div>
 
                     <div>
-                        <label for="diagnostico" class="mb-2 block text-sm font-medium text-brand-muted">Diagnostico</label>
-                        <x-textarea 
+                        <div class="mb-2 flex items-center justify-between">
+                            <label for="diagnostico" class="block text-sm font-medium text-brand-muted">Diagnostico</label>
+                            <span id="contador-diagnostico" class="text-xs text-brand-muted">0/4000</span>
+                        </div>
+                        <x-textarea
                             id="diagnostico"
-                            name="diagnostico" 
-                            rows="5" 
-                            placeholder="Describe el diagnostico principal de la consulta" 
+                            name="diagnostico"
+                            rows="5"
+                            maxlength="4000"
+                            placeholder="Describe el diagnostico principal de la consulta"
                             required>{{ old('diagnostico') }}</x-textarea>
                     </div>
 
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <h3 class="text-base font-semibold uppercase tracking-wide text-brand-muted">Observaciones</h3>
-                                <p class="mt-1 text-base text-brand-muted">Puedes agregar varias observaciones para la misma consulta.</p>
-                            </div>
-
-<button
-                                type="button"
-                                id="agregar-observacion"
-                                class="btn btn-outline"
-                            >
-                                Agregar observacion
-                            </button>
+                    <div>
+                        <div class="mb-2 flex items-center justify-between">
+                            <label for="observaciones" class="block text-sm font-medium text-brand-muted">Observaciones</label>
+                            <span id="contador-observaciones" class="text-xs text-brand-muted">0/4000</span>
                         </div>
-
-                        <div id="lista-observaciones" class="space-y-3">
-                            @foreach ($observaciones as $observacion)
-                                <x-textarea
-                                    name="observaciones[]"
-                                    rows="3"
-                                    placeholder="Escribe una observacion relevante de la consulta"
-                                >{{ $observacion }}</x-textarea>
-                            @endforeach
-                        </div>
+                        <x-textarea
+                            id="observaciones"
+                            name="observaciones"
+                            rows="5"
+                            maxlength="4000"
+                            placeholder="Escribe las observaciones relevantes de la consulta"
+                        >{{ $observaciones }}</x-textarea>
                     </div>
 
                     <div>
-                        <label for="archivos" class="mb-2 block text-sm font-medium text-brand-muted">Archivos adjuntos</label>
+                        <span class="mb-2 block text-sm font-medium text-brand-muted">Archivos adjuntos</span>
+
                         <input
                             id="archivos"
                             type="file"
                             name="archivos[]"
                             multiple
                             accept=".pdf,image/png,image/jpeg,image/jpg,image/webp"
-                            class="block w-full rounded-md border-brand-border text-sm shadow-sm focus:border-brand-primary focus:ring-brand-primary"
+                            class="sr-only"
                         >
+
+                        <div class="flex flex-wrap items-center gap-3">
+                            <label
+                                for="archivos"
+                                class="inline-flex cursor-pointer items-center rounded-md border border-brand-border px-4 py-2 text-brand-primary hover:bg-brand-soft"
+                            >
+                                Elegir archivos
+                            </label>
+
+                            <span id="resumen-archivos" class="text-sm text-brand-muted">
+                                Ningun archivo seleccionado.
+                            </span>
+                        </div>
+
                         <p class="mt-2 text-xs text-brand-muted">Formatos permitidos: PDF, JPG, JPEG, PNG y WEBP. Maximo 5 MB por archivo.</p>
                     </div>
 
                     <div class="flex flex-col gap-3 sm:flex-row">
-                        <x-button type="submit" class="btn btn-primary">
+                        <x-button id="submit-consulta" type="submit" class="btn btn-primary">
                             Guardar consulta
                         </x-button>
 
@@ -114,19 +120,58 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const lista = document.getElementById('lista-observaciones');
-            const boton = document.getElementById('agregar-observacion');
+            const inputArchivos = document.getElementById('archivos');
+            const resumenArchivos = document.getElementById('resumen-archivos');
+            const formConsulta = document.getElementById('form-consulta');
+            const submitBtn = document.getElementById('submit-consulta');
 
-            boton.addEventListener('click', function () {
-                const existing = lista.querySelector('textarea');
-                const clone = existing.cloneNode(true);
-                clone.value = '';
-                lista.appendChild(clone);
-                clone.focus();
+            function bindContador(textareaId, contadorId, max) {
+                const textarea = document.getElementById(textareaId);
+                const contador = document.getElementById(contadorId);
+                if (!textarea || !contador) return;
 
-                lista.appendChild(textarea);
-                textarea.focus();
-            });
+                const actualizar = function () {
+                    const len = textarea.value.length;
+                    contador.textContent = len + '/' + max;
+                    contador.className = len >= max
+                        ? 'text-xs text-brand-error'
+                        : 'text-xs text-brand-muted';
+                };
+
+                textarea.addEventListener('input', actualizar);
+                actualizar();
+            }
+
+            bindContador('diagnostico', 'contador-diagnostico', 4000);
+            bindContador('observaciones', 'contador-observaciones', 4000);
+
+            if (inputArchivos && resumenArchivos) {
+                const textoVacio = 'Ningun archivo seleccionado.';
+                const claseMuted = 'text-sm text-brand-muted';
+                const claseActiva = 'text-sm text-brand-primary';
+
+                inputArchivos.addEventListener('change', function () {
+                    if (!inputArchivos.files || inputArchivos.files.length === 0) {
+                        resumenArchivos.textContent = textoVacio;
+                        resumenArchivos.className = claseMuted;
+                        return;
+                    }
+
+                    const lineas = Array.from(inputArchivos.files).map(function (f) {
+                        const kb = (f.size / 1024).toFixed(0);
+                        return f.name + ' (' + kb + ' KB)';
+                    });
+                    resumenArchivos.textContent = lineas.join(', ');
+                    resumenArchivos.className = claseActiva;
+                });
+            }
+
+            if (formConsulta && submitBtn) {
+                formConsulta.addEventListener('submit', function () {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Guardando...';
+                });
+            }
         });
     </script>
 </x-app-layout>

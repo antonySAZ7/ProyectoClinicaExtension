@@ -176,6 +176,9 @@
                 eventDurationEditable: false,
                 displayEventTime: true,
                 dayMaxEvents: true,
+                nextDayThreshold: '23:59:59',
+                forceEventDuration: true,
+                defaultTimedEventDuration: '00:30:00',
                 buttonText: {
                     today: 'Hoy',
                     month: 'Mes',

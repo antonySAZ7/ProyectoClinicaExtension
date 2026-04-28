@@ -3,7 +3,7 @@
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h2 class="font-semibold text-2xl text-brand-primary leading-tight">Detalle de consulta</h2>
-                <p class="mt-1 text-base text-brand-muted">
+                <p class="mt-1 break-words text-base text-brand-muted">
                     {{ $consulta->paciente->nombre_completo }} - {{ $consulta->fecha->format('d/m/Y') }}
                 </p>
             </div>
@@ -37,14 +37,14 @@
                                 <dd class="mt-1 text-base text-brand-primary">{{ $consulta->user?->name ?? 'Personal clinico' }}</dd>
                             </div>
 
-                            <div class="sm:col-span-2">
+                            <div class="min-w-0 sm:col-span-2">
                                 <dt class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Motivo</dt>
-                                <dd class="mt-1 text-base text-brand-primary">{{ $consulta->motivo }}</dd>
+                                <dd class="mt-1 text-base text-brand-primary [overflow-wrap:anywhere]">{{ $consulta->motivo }}</dd>
                             </div>
 
-                            <div class="sm:col-span-2">
+                            <div class="min-w-0 sm:col-span-2">
                                 <dt class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Diagnostico</dt>
-                                <dd class="mt-1 whitespace-pre-line text-base text-brand-primary">{{ $consulta->diagnostico }}</dd>
+                                <dd class="mt-1 whitespace-pre-line text-base text-brand-primary [overflow-wrap:anywhere]">{{ $consulta->diagnostico }}</dd>
                             </div>
                         </dl>
                     </x-card>
@@ -52,24 +52,24 @@
                     <x-card class="p-6">
                         <h3 class="text-lg font-semibold text-brand-primary">Paciente</h3>
                         <dl class="mt-4 grid gap-4 sm:grid-cols-2">
-                            <div>
+                            <div class="min-w-0">
                                 <dt class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Nombre</dt>
-                                <dd class="mt-1 text-base text-brand-primary">{{ $consulta->paciente->nombre_completo }}</dd>
+                                <dd class="mt-1 text-base text-brand-primary [overflow-wrap:anywhere]">{{ $consulta->paciente->nombre_completo }}</dd>
                             </div>
 
-                            <div>
+                            <div class="min-w-0">
                                 <dt class="text-xs font-semibold uppercase tracking-wide text-brand-muted">DPI</dt>
-                                <dd class="mt-1 text-base text-brand-primary">{{ $consulta->paciente->dpi }}</dd>
+                                <dd class="mt-1 text-base text-brand-primary [overflow-wrap:anywhere]">{{ $consulta->paciente->dpi }}</dd>
                             </div>
 
-                            <div>
+                            <div class="min-w-0">
                                 <dt class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Telefono</dt>
-                                <dd class="mt-1 text-base text-brand-primary">{{ $consulta->paciente->telefono }}</dd>
+                                <dd class="mt-1 text-base text-brand-primary [overflow-wrap:anywhere]">{{ $consulta->paciente->telefono }}</dd>
                             </div>
 
-                            <div>
+                            <div class="min-w-0">
                                 <dt class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Correo</dt>
-                                <dd class="mt-1 text-base text-brand-primary">{{ $consulta->paciente->correo }}</dd>
+                                <dd class="mt-1 text-base text-brand-primary [overflow-wrap:anywhere]">{{ $consulta->paciente->correo }}</dd>
                             </div>
                         </dl>
                     </x-card>
@@ -81,7 +81,7 @@
 
                         <div class="mt-4 space-y-3">
                             @forelse ($consulta->observaciones as $observacion)
-                                <div class="rounded-lg border border-brand-border bg-brand-soft px-4 py-3 text-base text-brand-primary">
+                                <div class="whitespace-pre-line rounded-lg border border-brand-border bg-brand-soft px-4 py-3 text-base text-brand-primary [overflow-wrap:anywhere]">
                                     {{ $observacion->descripcion }}
                                 </div>
                             @empty
@@ -96,21 +96,31 @@
                     <div class="mt-4 space-y-3">
                         @forelse ($consulta->archivos as $archivo)
                             <div class="flex flex-col gap-3 rounded-lg border border-brand-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                                <div>
-                                    <p class="text-base font-medium text-brand-primary">
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-base font-medium text-brand-primary [overflow-wrap:anywhere]">
                                         {{ $archivo->nombre_original ?? basename($archivo->ruta) }}
                                     </p>
-                                    <p class="mt-1 text-xs uppercase tracking-wide text-brand-muted">
+                                    <p class="mt-1 text-xs uppercase tracking-wide text-brand-muted [overflow-wrap:anywhere]">
                                         {{ $archivo->tipo }}
                                     </p>
                                 </div>
 
-                                <x-link-button 
-                                    href="{{ Storage::disk('public')->url($archivo->ruta) }}" 
-                                    target="_blank"
-                                >
-                                    Abrir archivo
-                                </x-link-button>
+                                <div class="flex flex-shrink-0 flex-wrap gap-2 sm:flex-nowrap">
+                                    <x-link-button
+                                        href="{{ route('archivos.ver', $archivo) }}"
+                                        target="_blank"
+                                        rel="noopener"
+                                    >
+                                        Ver
+                                    </x-link-button>
+
+                                    <x-link-button
+                                        variant="primary"
+                                        href="{{ route('archivos.descargar', $archivo) }}"
+                                    >
+                                        Descargar
+                                    </x-link-button>
+                                </div>
                             </div>
                         @empty
                             <p class="text-base text-brand-muted">

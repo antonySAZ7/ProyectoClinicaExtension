@@ -64,6 +64,7 @@ done
 
 php artisan config:clear
 php artisan migrate --force
+php artisan db:seed --force
 
 if [ ! -f public/build/manifest.json ] || [ "$FORCE_VITE_BUILD" = "true" ]; then
     npm run build

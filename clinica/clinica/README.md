@@ -231,6 +231,40 @@ Rutas principales:
 - `GET /portal/historial-clinico`
 - `GET /portal/historial-clinico/{consulta}`
 
+## Flujo de atencion
+
+El flujo para registrar una consulta clinica completa, end to end, es:
+
+1. **Seleccionar paciente** desde el listado de pacientes (`/pacientes`).
+2. **Iniciar nueva consulta** con el boton "Nueva consulta" en el historial del paciente
+   (`/pacientes/{paciente}/consultas`).
+3. **Llenar la consulta** en el formulario (`/pacientes/{paciente}/consultas/create`):
+   - fecha
+   - motivo
+   - diagnostico
+4. **Agregar observaciones** (opcional, se pueden agregar varias con el boton
+   "Agregar observacion" en el mismo formulario).
+5. **Adjuntar archivos** (opcional). Se permiten PDF, JPG, JPEG, PNG y WEBP.
+6. **Guardar** con el boton "Guardar consulta".
+   - Todo se persiste en una sola transaccion: si algo falla, no queda consulta
+     ni observaciones ni archivos a medias.
+   - Los archivos se guardan en `storage/app/public/consultas/{paciente_id}/` y
+     se relacionan con la consulta via la tabla `archivos`.
+7. **Detalle de consulta** (`/consultas/{consulta}`): muestra resumen, observaciones
+   y archivos adjuntos con dos acciones por archivo:
+   - **Ver** abre el archivo en una pestana nueva (stream inline).
+   - **Descargar** lo baja con su nombre original.
+
+El paciente accede al mismo detalle en modo solo lectura desde
+`/portal/historial-clinico/{consulta}`.
+
+### Roles aplicados al flujo
+
+- `admin` y `doctor`: pueden seleccionar pacientes, crear consultas, agregar
+  observaciones, adjuntar archivos y consultar todo el historial.
+- `paciente`: solo accede a su propio historial via `/portal/historial-clinico`.
+  Cualquier intento de ver una consulta o un archivo de otro paciente devuelve 403.
+
 ## Archivos adjuntos
 
 Se permiten archivos simples:
@@ -241,7 +275,19 @@ Se permiten archivos simples:
 - PNG
 - WEBP
 
-Para exponerlos correctamente en un entorno local sin Docker, crea el symlink de storage:
+### Acceso autenticado a los archivos
+
+Los archivos no se enlazan directamente desde `/storage/...`. La aplicacion sirve
+cada archivo a traves de rutas autenticadas con guard de rol:
+
+- `GET /archivos/{archivo}` → ver inline (admin, doctor o paciente dueno).
+- `GET /archivos/{archivo}/descargar` → descargar con nombre original.
+
+Si un paciente intenta acceder a un archivo de otra consulta, recibe 403.
+
+### Symlink de storage
+
+Para entornos sin Docker, crea el symlink de storage:
 
 ```powershell
 php artisan storage:link
@@ -252,6 +298,11 @@ Con Docker:
 ```powershell
 docker compose --env-file .env.docker exec app php artisan storage:link
 ```
+
+> Nota: con la nueva ruta `/archivos/{archivo}` el symlink ya no es estrictamente
+> necesario para servir adjuntos de consultas (la app los streamea via Storage),
+> pero se mantiene por compatibilidad y por si se sirve contenido publico desde
+> `public/storage/`.
 
 ## Pruebas
 

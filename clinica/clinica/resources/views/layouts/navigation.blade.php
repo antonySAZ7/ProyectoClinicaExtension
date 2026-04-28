@@ -19,7 +19,7 @@
                 <div class="hidden sm:flex gap-4">
                     @if ($canAccessBackoffice)
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                            Dashboard
+                            Panel
                         </x-nav-link>
                         <x-nav-link :href="route('pacientes.index')" :active="request()->routeIs('pacientes.*')">
                             Pacientes
@@ -52,14 +52,14 @@
 
                     <x-slot name="content">
                         <x-dropdown-link :href="route('profile.edit')">
-                            Profile
+                            Perfil
                         </x-dropdown-link>
 
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <x-dropdown-link :href="route('logout')"
                                 onclick="event.preventDefault(); this.closest('form').submit();">
-                                Log Out
+                                Cerrar sesion
                             </x-dropdown-link>
                         </form>
                     </x-slot>
@@ -78,7 +78,7 @@
     <!-- Mobile menu -->
     <div x-show="open" class="sm:hidden px-4 pb-4 space-y-2">
         @if ($canAccessBackoffice)
-            <x-responsive-nav-link :href="route('dashboard')">Dashboard</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('dashboard')">Panel</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('pacientes.index')">Pacientes</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('citas.index')">Citas</x-responsive-nav-link>
         @else

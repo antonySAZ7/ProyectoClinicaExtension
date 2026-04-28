@@ -58,7 +58,7 @@ class ConsultaController extends Controller
     {
         return view('consultas.create', [
             'paciente' => $paciente,
-            'observaciones' => old('observaciones', ['']),
+            'observaciones' => old('observaciones', ''),
         ]);
     }
 
@@ -76,9 +76,9 @@ class ConsultaController extends Controller
                 'diagnostico' => $validated['diagnostico'],
             ]);
 
-            foreach ($validated['observaciones'] ?? [] as $descripcion) {
+            if (! empty($validated['observaciones'])) {
                 $consulta->observaciones()->create([
-                    'descripcion' => $descripcion,
+                    'descripcion' => $validated['observaciones'],
                 ]);
             }
 

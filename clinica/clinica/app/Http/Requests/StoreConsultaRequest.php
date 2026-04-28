@@ -16,9 +16,8 @@ class StoreConsultaRequest extends FormRequest
         return [
             'fecha' => ['required', 'date'],
             'motivo' => ['required', 'string', 'max:255'],
-            'diagnostico' => ['required', 'string'],
-            'observaciones' => ['nullable', 'array'],
-            'observaciones.*' => ['nullable', 'string'],
+            'diagnostico' => ['required', 'string', 'max:4000'],
+            'observaciones' => ['nullable', 'string', 'max:4000'],
             'archivos' => ['nullable', 'array'],
             'archivos.*' => ['file', 'mimes:pdf,jpg,jpeg,png,webp', 'max:5120'],
         ];
@@ -26,14 +25,10 @@ class StoreConsultaRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $observaciones = collect($this->input('observaciones', []))
-            ->map(fn ($observacion) => is_string($observacion) ? trim($observacion) : $observacion)
-            ->filter(fn ($observacion) => filled($observacion))
-            ->values()
-            ->all();
+        $observaciones = $this->input('observaciones');
 
         $this->merge([
-            'observaciones' => $observaciones,
+            'observaciones' => is_string($observaciones) ? trim($observaciones) : null,
         ]);
     }
 }

@@ -10,11 +10,17 @@
                 </p>
             </div>
 
-            @if (! $isPortal)
-                <x-link-button href="{{ route('pacientes.consultas.create', $paciente) }}" variant="primary">
-                    Nueva consulta
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <x-link-button href="{{ $isPortal ? route('portal') : route('pacientes.index') }}">
+                    Volver
                 </x-link-button>
-            @endif
+
+                @if (! $isPortal)
+                    <x-link-button href="{{ route('pacientes.consultas.create', $paciente) }}" variant="primary">
+                        Nueva consulta
+                    </x-link-button>
+                @endif
+            </div>
         </div>
     </x-slot>
 

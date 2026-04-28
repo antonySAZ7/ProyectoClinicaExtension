@@ -44,14 +44,25 @@ class CitaController extends Controller
             ->orderBy('hora')
             ->get()
             ->map(function (Cita $cita) {
-                $hora = substr((string) $cita->hora, 0, 5);
+                $horaCompleta = substr((string) $cita->hora, 0, 8);
+                $horaCorta = substr($horaCompleta, 0, 5);
+
+                $inicio = $cita->fecha?->copy()->setTimeFromTimeString($horaCompleta);
+                $fin = $inicio?->copy()->addMinutes(30);
+                $finDelDia = $cita->fecha?->copy()->endOfDay();
+
+                if ($fin && $finDelDia && $fin->greaterThan($finDelDia)) {
+                    $fin = $finDelDia;
+                }
 
                 return [
                     'title' => $cita->paciente?->nombre_completo ?? 'Paciente no disponible',
-                    'start' => $cita->fecha?->format('Y-m-d') . 'T' . substr((string) $cita->hora, 0, 8),
+                    'start' => $inicio?->format('Y-m-d\TH:i:s'),
+                    'end' => $fin?->format('Y-m-d\TH:i:s'),
+                    'allDay' => false,
                     'extendedProps' => [
                         'fecha' => $cita->fecha?->format('d/m/Y'),
-                        'hora' => $hora,
+                        'hora' => $horaCorta,
                         'estado' => ucfirst($cita->estado ?? 'pendiente'),
                         'motivo' => $cita->motivo,
                         'observaciones' => $cita->observaciones ?: 'Sin observaciones',

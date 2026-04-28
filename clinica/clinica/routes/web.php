@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ArchivoController;
 use App\Http\Controllers\CitaController;
 use App\Http\Controllers\ConsultaController;
 use App\Http\Controllers\PacienteController;
@@ -8,13 +9,21 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    if (auth()->check()) {
+        return redirect()->route(auth()->user()->homeRoute());
+    }
+
+    return redirect()->route('login');
 });
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('/archivos/{archivo}', [ArchivoController::class, 'ver'])->name('archivos.ver');
+    Route::get('/archivos/{archivo}/descargar', [ArchivoController::class, 'descargar'])
+        ->name('archivos.descargar');
 });
 
 Route::middleware(['auth', 'role:admin,doctor'])->group(function () {
