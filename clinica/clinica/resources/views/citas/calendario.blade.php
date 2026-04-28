@@ -98,13 +98,30 @@
                 document.getElementById(id).textContent = value || '-';
             }
 
+            const coloresEstado = {
+                'Confirmada': { bg: '#dcfce7', text: '#15803d' },
+                'Cancelada':  { bg: '#fee2e2', text: '#b91c1c' },
+                'Pendiente':  { bg: '#fef3c7', text: '#b45309' },
+            };
+
             function mostrarPopup(fcEvent, anchorEl) {
                 setText('dc-paciente', fcEvent.title);
                 setText('dc-fecha', fcEvent.extendedProps.fecha);
                 setText('dc-hora', fcEvent.extendedProps.hora);
-                setText('dc-estado', fcEvent.extendedProps.estado);
                 setText('dc-motivo', fcEvent.extendedProps.motivo);
                 setText('dc-observaciones', fcEvent.extendedProps.observaciones);
+
+                const estadoEl = document.getElementById('dc-estado');
+                const estadoVal = fcEvent.extendedProps.estado || 'Pendiente';
+                const col = coloresEstado[estadoVal] ?? { bg: '#f3f4f6', text: '#374151' };
+                estadoEl.textContent = estadoVal;
+                estadoEl.style.display = 'inline-block';
+                estadoEl.style.background = col.bg;
+                estadoEl.style.color = col.text;
+                estadoEl.style.borderRadius = '9999px';
+                estadoEl.style.padding = '2px 10px';
+                estadoEl.style.fontSize = '12px';
+                estadoEl.style.fontWeight = '700';
 
                 // Mostrarlo oculto para medir dimensiones antes de posicionarlo.
                 popup.style.visibility = 'hidden';

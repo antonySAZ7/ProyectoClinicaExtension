@@ -60,14 +60,14 @@
                                     </td>
                                     <td class="whitespace-nowrap px-4 py-4 text-sm">
                                         @php
-                                            $badgeClasses = match ($cita->estado) {
-                                                'confirmada' => 'bg-blue-100 text-blue-800',
-                                                'cancelada' => 'bg-red-100 text-red-800',
-                                                default => 'bg-amber-100 text-amber-800',
+                                            $badgeEstilo = match ($cita->estado) {
+                                                'confirmada' => 'background:#dcfce7; color:#15803d;',
+                                                'cancelada'  => 'background:#fee2e2; color:#b91c1c;',
+                                                default      => 'background:#fef3c7; color:#b45309;',
                                             };
                                         @endphp
 
-                                        <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold {{ $badgeClasses }}">
+                                        <span style="display:inline-flex; border-radius:9999px; padding:2px 10px; font-size:12px; font-weight:700; {{ $badgeEstilo }}">
                                             {{ ucfirst($cita->estado) }}
                                         </span>
                                     </td>
