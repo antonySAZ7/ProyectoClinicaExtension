@@ -75,7 +75,18 @@
                                             <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-700">{{ $cita->fecha?->format('d/m/Y') }}</td>
                                             <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-700">{{ \Illuminate\Support\Str::of((string) $cita->hora)->substr(0, 5) }}</td>
                                             <td class="px-6 py-4 text-sm text-gray-700">{{ $cita->motivo }}</td>
-                                            <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">{{ ucfirst($cita->estado) }}</td>
+                                            <td class="whitespace-nowrap px-6 py-4 text-sm">
+                                                @php
+                                                    $badgeEstilo = match ($cita->estado) {
+                                                        'confirmada' => 'background:#dcfce7; color:#15803d;',
+                                                        'cancelada'  => 'background:#fee2e2; color:#b91c1c;',
+                                                        default      => 'background:#fef3c7; color:#b45309;',
+                                                    };
+                                                @endphp
+                                                <span style="display:inline-flex; border-radius:9999px; padding:2px 10px; font-size:12px; font-weight:700; {{ $badgeEstilo }}">
+                                                    {{ ucfirst($cita->estado) }}
+                                                </span>
+                                            </td>
                                         </tr>
                                     @empty
                                         <tr>
