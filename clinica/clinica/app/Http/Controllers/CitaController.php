@@ -55,15 +55,24 @@ class CitaController extends Controller
                     $fin = $finDelDia;
                 }
 
+                $estado = $cita->estado ?? 'pendiente';
+                $colorEvento = match ($estado) {
+                    'confirmada' => ['bg' => '#16a34a', 'border' => '#15803d'],
+                    'cancelada'  => ['bg' => '#dc2626', 'border' => '#b91c1c'],
+                    default      => ['bg' => '#d97706', 'border' => '#b45309'],
+                };
+
                 return [
                     'title' => $cita->paciente?->nombre_completo ?? 'Paciente no disponible',
                     'start' => $inicio?->format('Y-m-d\TH:i:s'),
                     'end' => $fin?->format('Y-m-d\TH:i:s'),
                     'allDay' => false,
+                    'backgroundColor' => $colorEvento['bg'],
+                    'borderColor' => $colorEvento['border'],
                     'extendedProps' => [
                         'fecha' => $cita->fecha?->format('d/m/Y'),
                         'hora' => $horaCorta,
-                        'estado' => ucfirst($cita->estado ?? 'pendiente'),
+                        'estado' => ucfirst($estado),
                         'motivo' => $cita->motivo,
                         'observaciones' => $cita->observaciones ?: 'Sin observaciones',
                     ],
