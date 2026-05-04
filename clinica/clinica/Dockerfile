@@ -5,16 +5,17 @@ COPY --from=node:20-bookworm-slim /usr/local/ /usr/local/
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        default-mysql-client \
-        git \
-        libicu-dev \
-        libzip-dev \
-        unzip \
+    default-mysql-client \
+    git \
+    libicu-dev \
+    libzip-dev \
+    openssl \
+    unzip \
     && docker-php-ext-install \
-        bcmath \
-        intl \
-        pdo_mysql \
-        zip \
+    bcmath \
+    intl \
+    pdo_mysql \
+    zip \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /var/www/html

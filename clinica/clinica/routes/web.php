@@ -51,6 +51,8 @@ Route::middleware(['auth', 'role:paciente'])->group(function () {
         ->name('portal.consultas.index');
     Route::get('/portal/historial-clinico/{consulta}', [ConsultaController::class, 'show'])
         ->name('portal.consultas.show');
+    Route::post('/citas/{cita}/confirmar', [CitaController::class, 'confirmar'])
+        ->name('citas.confirmar');
     Route::patch('/portal/citas/{cita}/cancelar', [PacientePortalController::class, 'cancel'])
         ->name('portal.citas.cancelar');
 });

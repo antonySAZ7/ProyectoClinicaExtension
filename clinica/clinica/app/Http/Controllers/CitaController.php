@@ -29,7 +29,7 @@ class CitaController extends Controller
     public function create()
     {
         $pacientes = Paciente::orderBy('nombre_completo')->get();
-        $estados = ['pendiente', 'confirmada'];
+        $estados = [Cita::ESTADO_PENDIENTE, Cita::ESTADO_CONFIRMADA];
 
         return view('citas.create', compact('pacientes', 'estados'));
     }
@@ -57,9 +57,9 @@ class CitaController extends Controller
 
                 $estado = $cita->estado ?? 'pendiente';
                 $colorEvento = match ($estado) {
-                    'confirmada' => ['bg' => '#16a34a', 'border' => '#15803d'],
-                    'cancelada'  => ['bg' => '#dc2626', 'border' => '#b91c1c'],
-                    default      => ['bg' => '#d97706', 'border' => '#b45309'],
+                    Cita::ESTADO_CONFIRMADA => ['bg' => '#16a34a', 'border' => '#15803d'],
+                    Cita::ESTADO_CANCELADA => ['bg' => '#dc2626', 'border' => '#b91c1c'],
+                    default => ['bg' => '#d97706', 'border' => '#b45309'],
                 };
 
                 return [
@@ -95,11 +95,11 @@ class CitaController extends Controller
             'fecha' => ['required', 'date', 'after_or_equal:today'],
             'hora' => ['required', 'date_format:H:i'],
             'motivo' => ['required', 'string', 'max:255'],
-            'estado' => ['nullable', Rule::in(['pendiente', 'confirmada', 'cancelada'])],
+            'estado' => ['nullable', Rule::in([Cita::ESTADO_PENDIENTE, Cita::ESTADO_CONFIRMADA, Cita::ESTADO_CANCELADA])],
             'observaciones' => ['nullable', 'string'],
         ]);
 
-        $validated['estado'] = $validated['estado'] ?? 'pendiente';
+        $validated['estado'] = $validated['estado'] ?? Cita::ESTADO_PENDIENTE;
 
         Cita::create($validated);
 
@@ -113,7 +113,7 @@ class CitaController extends Controller
     public function edit(Cita $cita)
     {
         $pacientes = Paciente::orderBy('nombre_completo')->get();
-        $estados = ['pendiente', 'confirmada', 'cancelada'];
+        $estados = [Cita::ESTADO_PENDIENTE, Cita::ESTADO_CONFIRMADA, Cita::ESTADO_CANCELADA];
 
         return view('citas.edit', compact('cita', 'pacientes', 'estados'));
     }
@@ -128,7 +128,7 @@ class CitaController extends Controller
             'fecha' => ['required', 'date', 'after_or_equal:today'],
             'hora' => ['required', 'date_format:H:i'],
             'motivo' => ['required', 'string', 'max:255'],
-            'estado' => ['required', Rule::in(['pendiente', 'confirmada', 'cancelada'])],
+            'estado' => ['required', Rule::in([Cita::ESTADO_PENDIENTE, Cita::ESTADO_CONFIRMADA, Cita::ESTADO_CANCELADA])],
             'observaciones' => ['nullable', 'string'],
         ]);
 
@@ -139,12 +139,47 @@ class CitaController extends Controller
     }
 
     /**
+     * Confirm an upcoming appointment by its owner patient.
+     */
+    public function confirmar(Request $request, Cita $cita)
+    {
+        $user = $request->user();
+        $user->loadMissing('paciente');
+
+        if (! $user->paciente || $cita->paciente_id !== $user->paciente->id) {
+            abort(403);
+        }
+
+        if (! $cita->isFuture()) {
+            return redirect()->route('portal')
+                ->with('error', 'No puedes confirmar una cita pasada.');
+        }
+
+        if ($cita->estado === Cita::ESTADO_CANCELADA) {
+            return redirect()->route('portal')
+                ->with('error', 'No puedes confirmar una cita cancelada.');
+        }
+
+        if ($cita->estado === Cita::ESTADO_CONFIRMADA) {
+            return redirect()->route('portal')
+                ->with('success', 'Tu cita ya estaba confirmada.');
+        }
+
+        $cita->update([
+            'estado' => Cita::ESTADO_CONFIRMADA,
+        ]);
+
+        return redirect()->route('portal')
+            ->with('success', 'Tu cita fue confirmada correctamente.');
+    }
+
+    /**
      * Cancel the specified appointment instead of deleting it.
      */
     public function destroy(Cita $cita)
     {
         $cita->update([
-            'estado' => 'cancelada',
+            'estado' => Cita::ESTADO_CANCELADA,
         ]);
 
         return redirect()->route('citas.index')

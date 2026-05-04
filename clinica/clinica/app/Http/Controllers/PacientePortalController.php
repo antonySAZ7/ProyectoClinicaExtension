@@ -59,13 +59,13 @@ class PacientePortalController extends Controller
             ->upcoming()
             ->findOrFail($cita->getKey());
 
-        if ($cita->estado === 'cancelada') {
+        if ($cita->estado === Cita::ESTADO_CANCELADA) {
             return redirect()->route('portal')
                 ->with('error', 'La cita seleccionada ya estaba cancelada.');
         }
 
         $cita->update([
-            'estado' => 'cancelada',
+            'estado' => Cita::ESTADO_CANCELADA,
         ]);
 
         return redirect()->route('portal')

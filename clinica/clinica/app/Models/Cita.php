@@ -6,11 +6,19 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
 
 class Cita extends Model
 {
+    public const ESTADO_PENDIENTE = 'pendiente';
+
+    public const ESTADO_CONFIRMADA = 'confirmada';
+
+    public const ESTADO_CANCELADA = 'cancelada';
+
     protected $casts = [
         'fecha' => 'date',
+        'recordatorio_enviado_at' => 'datetime',
     ];
 
     protected $fillable = [
@@ -20,6 +28,7 @@ class Cita extends Model
         'motivo',
         'estado',
         'observaciones',
+        'recordatorio_enviado_at',
     ];
 
     public function scopeUpcoming(Builder $query): Builder
@@ -39,6 +48,20 @@ class Cita extends Model
     public function paciente(): BelongsTo
     {
         return $this->belongsTo(Paciente::class);
+    }
+
+    public function startsAt(): ?Carbon
+    {
+        if (! $this->fecha || ! $this->hora) {
+            return null;
+        }
+
+        return $this->fecha->copy()->setTimeFromTimeString((string) $this->hora);
+    }
+
+    public function isFuture(): bool
+    {
+        return $this->startsAt()?->greaterThanOrEqualTo(now()) ?? false;
     }
 
     public function pago(): HasOne
