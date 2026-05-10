@@ -1,9 +1,16 @@
 @props(['label' => null, 'name' => null, 'value' => null])
 
+@php
+    $isRequired = $attributes->has('required');
+@endphp
+
 <div>
     @if($label && $name)
         <label for="{{ $name }}" class="block text-base font-medium text-brand-muted mb-1">
             {{ $label }}
+            @if ($isRequired)
+                <span class="text-red-500" aria-hidden="true">*</span>
+            @endif
         </label>
     @endif
 
