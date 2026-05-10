@@ -40,7 +40,7 @@
 
                         <div class="grid gap-6 md:grid-cols-2">
                             <div>
-                                <label for="paciente_id" class="mb-2 block text-sm font-medium text-gray-700">Paciente</label>
+                                <label for="paciente_id" class="mb-2 block text-sm font-medium text-gray-700">Paciente <span class="text-red-500" aria-hidden="true">*</span></label>
                                 <select
                                     id="paciente_id"
                                     name="paciente_id"
@@ -72,7 +72,7 @@
                             </div>
 
                             <div>
-                                <label for="fecha" class="mb-2 block text-sm font-medium text-gray-700">Fecha</label>
+                                <label for="fecha" class="mb-2 block text-sm font-medium text-gray-700">Fecha <span class="text-red-500" aria-hidden="true">*</span></label>
                                 <input
                                     id="fecha"
                                     type="date"
@@ -85,7 +85,7 @@
                             </div>
 
                             <div>
-                                <label for="hora" class="mb-2 block text-sm font-medium text-gray-700">Hora</label>
+                                <label for="hora" class="mb-2 block text-sm font-medium text-gray-700">Hora <span class="text-red-500" aria-hidden="true">*</span></label>
                                 <input
                                     id="hora"
                                     type="time"
@@ -98,7 +98,7 @@
                         </div>
 
                         <div>
-                            <label for="motivo" class="mb-2 block text-sm font-medium text-gray-700">Motivo</label>
+                            <label for="motivo" class="mb-2 block text-sm font-medium text-gray-700">Motivo <span class="text-red-500" aria-hidden="true">*</span></label>
                             <input
                                 id="motivo"
                                 type="text"
@@ -120,6 +120,8 @@
                                 placeholder="Notas adicionales sobre la cita"
                             >{{ old('observaciones') }}</textarea>
                         </div>
+
+                        <p class="text-xs text-gray-500"><span class="text-red-500">*</span> Campos obligatorios</p>
 
                         <div class="flex flex-col gap-3 sm:flex-row">
                             <button

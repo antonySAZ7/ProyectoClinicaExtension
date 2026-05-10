@@ -41,35 +41,37 @@
 
                     <div class="grid gap-6 sm:grid-cols-2">
                         <div class="sm:col-span-2">
-                            <label for="nombre_completo" class="block text-sm font-medium text-gray-700">Nombre completo</label>
-                            <input id="nombre_completo" type="text" name="nombre_completo" value="{{ old('nombre_completo') }}" class="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-gray-400 focus:ring-gray-400">
+                            <label for="nombre_completo" class="block text-sm font-medium text-gray-700">Nombre completo <span class="text-red-500" aria-hidden="true">*</span></label>
+                            <input id="nombre_completo" type="text" name="nombre_completo" value="{{ old('nombre_completo') }}" required class="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-gray-400 focus:ring-gray-400">
                         </div>
 
                         <div>
-                            <label for="dpi" class="block text-sm font-medium text-gray-700">DPI</label>
-                            <input id="dpi" type="text" name="dpi" value="{{ old('dpi') }}" class="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-gray-400 focus:ring-gray-400">
+                            <label for="dpi" class="block text-sm font-medium text-gray-700">DPI <span class="text-red-500" aria-hidden="true">*</span></label>
+                            <input id="dpi" type="text" name="dpi" value="{{ old('dpi') }}" required class="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-gray-400 focus:ring-gray-400">
                         </div>
 
                         <div>
-                            <label for="fecha_nacimiento" class="block text-sm font-medium text-gray-700">Fecha de nacimiento</label>
-                            <input id="fecha_nacimiento" type="date" name="fecha_nacimiento" value="{{ old('fecha_nacimiento') }}" class="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-gray-400 focus:ring-gray-400">
+                            <label for="fecha_nacimiento" class="block text-sm font-medium text-gray-700">Fecha de nacimiento <span class="text-red-500" aria-hidden="true">*</span></label>
+                            <input id="fecha_nacimiento" type="date" name="fecha_nacimiento" value="{{ old('fecha_nacimiento') }}" required class="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-gray-400 focus:ring-gray-400">
                         </div>
 
                         <div>
-                            <label for="telefono" class="block text-sm font-medium text-gray-700">Telefono</label>
-                            <input id="telefono" type="text" name="telefono" value="{{ old('telefono') }}" class="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-gray-400 focus:ring-gray-400">
+                            <label for="telefono" class="block text-sm font-medium text-gray-700">Teléfono <span class="text-red-500" aria-hidden="true">*</span></label>
+                            <input id="telefono" type="text" name="telefono" value="{{ old('telefono') }}" required class="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-gray-400 focus:ring-gray-400">
                         </div>
 
                         <div>
-                            <label for="correo" class="block text-sm font-medium text-gray-700">Correo</label>
-                            <input id="correo" type="email" name="correo" value="{{ old('correo') }}" class="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-gray-400 focus:ring-gray-400">
+                            <label for="correo" class="block text-sm font-medium text-gray-700">Correo <span class="text-red-500" aria-hidden="true">*</span></label>
+                            <input id="correo" type="email" name="correo" value="{{ old('correo') }}" required class="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-gray-400 focus:ring-gray-400">
                         </div>
 
                         <div class="sm:col-span-2">
-                            <label for="direccion" class="block text-sm font-medium text-gray-700">Direccion</label>
-                            <input id="direccion" type="text" name="direccion" value="{{ old('direccion') }}" class="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-gray-400 focus:ring-gray-400">
+                            <label for="direccion" class="block text-sm font-medium text-gray-700">Dirección <span class="text-red-500" aria-hidden="true">*</span></label>
+                            <input id="direccion" type="text" name="direccion" value="{{ old('direccion') }}" required class="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-gray-400 focus:ring-gray-400">
                         </div>
                     </div>
+
+                    <p class="text-xs text-gray-500"><span class="text-red-500">*</span> Campos obligatorios</p>
 
                     <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
                         <a
