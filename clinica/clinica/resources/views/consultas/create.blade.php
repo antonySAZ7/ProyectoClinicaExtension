@@ -50,7 +50,7 @@
 
                     <div>
                         <div class="mb-2 flex items-center justify-between">
-                            <label for="diagnostico" class="block text-sm font-medium text-brand-muted">Diagnostico</label>
+                            <label for="diagnostico" class="block text-sm font-medium text-brand-muted">Diagnóstico <span class="text-red-500" aria-hidden="true">*</span></label>
                             <span id="contador-diagnostico" class="text-xs text-brand-muted">0/4000</span>
                         </div>
                         <x-textarea
@@ -103,6 +103,8 @@
 
                         <p class="mt-2 text-xs text-brand-muted">Formatos permitidos: PDF, JPG, JPEG, PNG y WEBP. Maximo 5 MB por archivo.</p>
                     </div>
+
+                    <p class="text-xs text-brand-muted"><span class="text-red-500">*</span> Campos obligatorios</p>
 
                     <div class="flex flex-col gap-3 sm:flex-row">
                         <x-button id="submit-consulta" type="submit" class="btn btn-primary">

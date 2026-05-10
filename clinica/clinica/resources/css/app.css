@@ -1,3 +1,42 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Great+Vibes&family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+|--------------------------------------------------------------------------
+| Tokens de marca DENS32 (landing)
+|--------------------------------------------------------------------------
+| Espejo de figma/src/styles/theme.css (vars --brand-*).
+| Se usan vía Tailwind arbitrary values: bg-[var(--brand-soft)], etc.
+*/
+:root {
+    --brand-primary:        #35342f;
+    --brand-primary-strong: #24231f;
+    --brand-soft:           #eceee7;
+    --brand-surface:        #f8f8f3;
+    --brand-muted:          #6b6f66;
+    --brand-border:         #cdd1c6;
+    --brand-contrast:       #fdfdf9;
+    --brand-hero-overlay:   rgba(45, 45, 42, 0.56);
+}
+
+/*
+|--------------------------------------------------------------------------
+| Familias tipográficas (landing)
+|--------------------------------------------------------------------------
+| Espejo de figma/src/styles/fonts.css.
+*/
+.font-inter   { font-family: 'Inter', sans-serif; }
+.font-display { font-family: 'Cormorant Garamond', serif; }
+.font-script  { font-family: 'Great Vibes', cursive; }
+
+/*
+|--------------------------------------------------------------------------
+| Scroll suave para anclas del landing
+|--------------------------------------------------------------------------
+*/
+html {
+    scroll-behavior: smooth;
+}

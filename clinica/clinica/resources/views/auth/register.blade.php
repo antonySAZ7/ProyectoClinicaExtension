@@ -3,32 +3,32 @@
         @csrf
 
         <div>
-            <x-input-label for="nombre_completo" value="Nombre completo" />
+            <x-input-label for="nombre_completo" value="Nombre completo" :required="true" />
             <x-text-input id="nombre_completo" class="block mt-1 w-full" type="text" name="nombre_completo" :value="old('nombre_completo')" required autofocus autocomplete="name" />
             <x-input-error :messages="$errors->get('nombre_completo')" class="mt-2" />
         </div>
 
         <div>
-            <x-input-label for="correo" value="Correo" />
+            <x-input-label for="correo" value="Correo" :required="true" />
             <x-text-input id="correo" class="block mt-1 w-full" type="email" name="correo" :value="old('correo')" required autocomplete="username" />
             <x-input-error :messages="$errors->get('correo')" class="mt-2" />
         </div>
 
         <div class="grid gap-4 sm:grid-cols-2">
             <div>
-                <x-input-label for="dpi" value="DPI" />
+                <x-input-label for="dpi" value="DPI" :required="true" />
                 <x-text-input id="dpi" class="block mt-1 w-full" type="text" name="dpi" :value="old('dpi')" required maxlength="20" />
                 <x-input-error :messages="$errors->get('dpi')" class="mt-2" />
             </div>
 
             <div>
-                <x-input-label for="fecha_nacimiento" value="Fecha de nacimiento" />
+                <x-input-label for="fecha_nacimiento" value="Fecha de nacimiento" :required="true" />
                 <x-text-input id="fecha_nacimiento" class="block mt-1 w-full" type="date" name="fecha_nacimiento" :value="old('fecha_nacimiento')" required />
                 <x-input-error :messages="$errors->get('fecha_nacimiento')" class="mt-2" />
             </div>
 
             <div>
-                <x-input-label for="telefono" value="Telefono" />
+                <x-input-label for="telefono" value="Teléfono" :required="true" />
                 <x-text-input id="telefono" class="block mt-1 w-full" type="text" name="telefono" :value="old('telefono')" required maxlength="20" autocomplete="tel" />
                 <x-input-error :messages="$errors->get('telefono')" class="mt-2" />
             </div>
@@ -51,37 +51,39 @@
             </div>
 
             <div>
-                <x-input-label for="ocupacion" value="Ocupacion (opcional)" />
+                <x-input-label for="ocupacion" value="Ocupación (opcional)" />
                 <x-text-input id="ocupacion" class="block mt-1 w-full" type="text" name="ocupacion" :value="old('ocupacion')" maxlength="255" />
                 <x-input-error :messages="$errors->get('ocupacion')" class="mt-2" />
             </div>
         </div>
 
         <div>
-            <x-input-label for="direccion" value="Direccion" />
+            <x-input-label for="direccion" value="Dirección" :required="true" />
             <x-text-input id="direccion" class="block mt-1 w-full" type="text" name="direccion" :value="old('direccion')" required maxlength="255" autocomplete="street-address" />
             <x-input-error :messages="$errors->get('direccion')" class="mt-2" />
         </div>
 
         <div>
-            <x-input-label for="password" :value="__('Password')" />
+            <x-input-label for="password" value="Contraseña" :required="true" />
             <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
 
         <div>
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
+            <x-input-label for="password_confirmation" value="Confirmar contraseña" :required="true" />
             <x-text-input id="password_confirmation" class="block mt-1 w-full" type="password" name="password_confirmation" required autocomplete="new-password" />
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
 
+        <p class="text-xs text-gray-500"><span class="text-red-500">*</span> Campos obligatorios</p>
+
         <div class="flex items-center justify-end mt-4">
             <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
-                {{ __('Already registered?') }}
+                ¿Ya tienes cuenta?
             </a>
 
             <x-primary-button class="ms-4">
-                {{ __('Register') }}
+                Registrarse
             </x-primary-button>
         </div>
     </form>
