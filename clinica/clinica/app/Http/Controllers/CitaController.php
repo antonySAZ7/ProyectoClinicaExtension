@@ -46,9 +46,12 @@ class CitaController extends Controller
             ->map(function (Cita $cita) {
                 $horaCompleta = substr((string) $cita->hora, 0, 8);
                 $horaCorta = substr($horaCompleta, 0, 5);
+                $horaFinCorta = $cita->hora_fin ? substr((string) $cita->hora_fin, 0, 5) : null;
 
                 $inicio = $cita->fecha?->copy()->setTimeFromTimeString($horaCompleta);
-                $fin = $inicio?->copy()->addMinutes(30);
+                $fin = $cita->hora_fin
+                    ? $cita->fecha?->copy()->setTimeFromTimeString(substr((string) $cita->hora_fin, 0, 8))
+                    : $inicio?->copy()->addMinutes(30);
                 $finDelDia = $cita->fecha?->copy()->endOfDay();
 
                 if ($fin && $finDelDia && $fin->greaterThan($finDelDia)) {
@@ -72,6 +75,7 @@ class CitaController extends Controller
                     'extendedProps' => [
                         'fecha' => $cita->fecha?->format('d/m/Y'),
                         'hora' => $horaCorta,
+                        'hora_fin' => $horaFinCorta,
                         'estado' => ucfirst($estado),
                         'motivo' => $cita->motivo,
                         'observaciones' => $cita->observaciones ?: 'Sin observaciones',
@@ -94,9 +98,12 @@ class CitaController extends Controller
             'paciente_id' => ['required', 'exists:pacientes,id'],
             'fecha' => ['required', 'date', 'after_or_equal:today'],
             'hora' => ['required', 'date_format:H:i'],
+            'hora_fin' => ['required', 'date_format:H:i', 'after:hora'],
             'motivo' => ['required', 'string', 'max:255'],
             'estado' => ['nullable', Rule::in([Cita::ESTADO_PENDIENTE, Cita::ESTADO_CONFIRMADA, Cita::ESTADO_CANCELADA])],
             'observaciones' => ['nullable', 'string'],
+        ], [
+            'hora_fin.after' => 'La hora de fin debe ser posterior a la hora de inicio.',
         ]);
 
         $validated['estado'] = $validated['estado'] ?? Cita::ESTADO_PENDIENTE;
@@ -127,9 +134,12 @@ class CitaController extends Controller
             'paciente_id' => ['required', 'exists:pacientes,id'],
             'fecha' => ['required', 'date', 'after_or_equal:today'],
             'hora' => ['required', 'date_format:H:i'],
+            'hora_fin' => ['required', 'date_format:H:i', 'after:hora'],
             'motivo' => ['required', 'string', 'max:255'],
             'estado' => ['required', Rule::in([Cita::ESTADO_PENDIENTE, Cita::ESTADO_CONFIRMADA, Cita::ESTADO_CANCELADA])],
             'observaciones' => ['nullable', 'string'],
+        ], [
+            'hora_fin.after' => 'La hora de fin debe ser posterior a la hora de inicio.',
         ]);
 
         $cita->update($validated);

@@ -107,7 +107,9 @@
             function mostrarPopup(fcEvent, anchorEl) {
                 setText('dc-paciente', fcEvent.title);
                 setText('dc-fecha', fcEvent.extendedProps.fecha);
-                setText('dc-hora', fcEvent.extendedProps.hora);
+                const horaIni = fcEvent.extendedProps.hora;
+                const horaFin = fcEvent.extendedProps.hora_fin;
+                setText('dc-hora', horaFin ? (horaIni + ' - ' + horaFin) : horaIni);
                 setText('dc-motivo', fcEvent.extendedProps.motivo);
                 setText('dc-observaciones', fcEvent.extendedProps.observaciones);
 

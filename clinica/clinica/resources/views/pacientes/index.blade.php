@@ -24,13 +24,19 @@
             @endif
 
             <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                <form method="GET" action="{{ route('pacientes.index') }}" class="flex flex-col gap-3 sm:flex-row">
+                <form
+                    id="form-buscar-pacientes"
+                    method="GET"
+                    action="{{ route('pacientes.index') }}"
+                    class="flex flex-col gap-3 sm:flex-row"
+                >
                     <input
                         type="text"
                         name="buscar"
                         value="{{ request('buscar') }}"
                         class="w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-gray-400 focus:ring-gray-400"
                         placeholder="Buscar por nombre o DPI"
+                        autocomplete="off"
                     >
                     <button
                         type="submit"
@@ -40,6 +46,30 @@
                     </button>
                 </form>
             </div>
+
+            @once
+                <script>
+                    (function () {
+                        const form = document.getElementById('form-buscar-pacientes');
+                        if (!form) return;
+                        const input = form.querySelector('input[name="buscar"]');
+                        if (!input) return;
+                        let timer = null;
+                        input.addEventListener('input', function () {
+                            clearTimeout(timer);
+                            timer = setTimeout(function () {
+                                form.submit();
+                            }, 350);
+                        });
+
+                        if (input.value !== '') {
+                            input.focus();
+                            const v = input.value;
+                            input.setSelectionRange(v.length, v.length);
+                        }
+                    })();
+                </script>
+            @endonce
 
             <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
                 <div class="overflow-x-auto">

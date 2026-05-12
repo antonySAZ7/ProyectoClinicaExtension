@@ -57,6 +57,9 @@
                                     </td>
                                     <td class="whitespace-nowrap px-4 py-4 text-sm text-gray-700">
                                         {{ \Illuminate\Support\Str::of((string) $cita->hora)->substr(0, 5) }}
+                                        @if ($cita->hora_fin)
+                                            - {{ \Illuminate\Support\Str::of((string) $cita->hora_fin)->substr(0, 5) }}
+                                        @endif
                                     </td>
                                     <td class="whitespace-nowrap px-4 py-4 text-sm">
                                         @php

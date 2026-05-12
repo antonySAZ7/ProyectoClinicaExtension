@@ -41,19 +41,10 @@
                         <div class="grid gap-6 md:grid-cols-2">
                             <div>
                                 <label for="paciente_id" class="mb-2 block text-sm font-medium text-gray-700">Paciente <span class="text-red-500" aria-hidden="true">*</span></label>
-                                <select
-                                    id="paciente_id"
-                                    name="paciente_id"
-                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-900 focus:ring-gray-900"
-                                    required
-                                >
-                                    <option value="">Selecciona un paciente</option>
-                                    @foreach ($pacientes as $paciente)
-                                        <option value="{{ $paciente->id }}" @selected(old('paciente_id') == $paciente->id)>
-                                            {{ $paciente->nombre_completo }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                <x-paciente-combobox
+                                    :pacientes="$pacientes"
+                                    placeholder="Escribe el nombre o DPI..."
+                                />
                             </div>
 
                             <div>
@@ -85,12 +76,24 @@
                             </div>
 
                             <div>
-                                <label for="hora" class="mb-2 block text-sm font-medium text-gray-700">Hora <span class="text-red-500" aria-hidden="true">*</span></label>
+                                <label for="hora" class="mb-2 block text-sm font-medium text-gray-700">Hora inicio <span class="text-red-500" aria-hidden="true">*</span></label>
                                 <input
                                     id="hora"
                                     type="time"
                                     name="hora"
                                     value="{{ old('hora') }}"
+                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-900 focus:ring-gray-900"
+                                    required
+                                >
+                            </div>
+
+                            <div>
+                                <label for="hora_fin" class="mb-2 block text-sm font-medium text-gray-700">Hora fin <span class="text-red-500" aria-hidden="true">*</span></label>
+                                <input
+                                    id="hora_fin"
+                                    type="time"
+                                    name="hora_fin"
+                                    value="{{ old('hora_fin') }}"
                                     class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-900 focus:ring-gray-900"
                                     required
                                 >
@@ -122,6 +125,34 @@
                         </div>
 
                         <p class="text-xs text-gray-500"><span class="text-red-500">*</span> Campos obligatorios</p>
+
+                        @once
+                            <script>
+                                (function () {
+                                    const inicio = document.getElementById('hora');
+                                    const fin = document.getElementById('hora_fin');
+                                    if (!inicio || !fin) return;
+
+                                    function sync() {
+                                        if (inicio.value) {
+                                            fin.min = inicio.value;
+                                            if (fin.value && fin.value <= inicio.value) {
+                                                fin.setCustomValidity('La hora de fin debe ser posterior a la hora de inicio.');
+                                            } else {
+                                                fin.setCustomValidity('');
+                                            }
+                                        } else {
+                                            fin.removeAttribute('min');
+                                            fin.setCustomValidity('');
+                                        }
+                                    }
+
+                                    inicio.addEventListener('change', sync);
+                                    fin.addEventListener('change', sync);
+                                    sync();
+                                })();
+                            </script>
+                        @endonce
 
                         <div class="flex flex-col gap-3 sm:flex-row">
                             <button

@@ -25,6 +25,7 @@ class Cita extends Model
         'paciente_id',
         'fecha',
         'hora',
+        'hora_fin',
         'motivo',
         'estado',
         'observaciones',
@@ -57,6 +58,15 @@ class Cita extends Model
         }
 
         return $this->fecha->copy()->setTimeFromTimeString((string) $this->hora);
+    }
+
+    public function endsAt(): ?Carbon
+    {
+        if (! $this->fecha || ! $this->hora_fin) {
+            return null;
+        }
+
+        return $this->fecha->copy()->setTimeFromTimeString((string) $this->hora_fin);
     }
 
     public function isFuture(): bool
