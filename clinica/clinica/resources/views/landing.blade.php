@@ -36,7 +36,7 @@
 
                     <div class="flex flex-col gap-4 sm:flex-row">
                         <a
-                            href="{{ route('register') }}"
+                            href="{{ route('public.citas.create') }}"
                             class="inline-flex items-center justify-center rounded-md bg-[var(--brand-primary)] px-8 py-4 text-base font-semibold text-[var(--brand-contrast)] transition hover:bg-[var(--brand-primary-strong)]"
                         >
                             Agenda tu cita

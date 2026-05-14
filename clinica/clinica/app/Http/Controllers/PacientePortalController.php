@@ -3,9 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cita;
+use App\Models\NotificacionLog;
+use App\Models\Servicio;
 use App\Models\User;
+use App\Services\AppointmentAvailabilityService;
+use App\Services\WhatsAppService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class PacientePortalController extends Controller
@@ -70,5 +75,79 @@ class PacientePortalController extends Controller
 
         return redirect()->route('portal')
             ->with('success', 'La cita fue cancelada correctamente.');
+    }
+
+    public function reschedule(
+        Request $request,
+        Cita $cita,
+        AppointmentAvailabilityService $availability,
+        WhatsAppService $whatsApp
+    ): RedirectResponse {
+        /** @var User $user */
+        $user = $request->user();
+        $paciente = $user->paciente;
+
+        if (! $paciente) {
+            return redirect()->route('portal')
+                ->with('error', 'Tu usuario todavia no tiene un expediente de paciente asociado.');
+        }
+
+        $cita = $paciente->citas()
+            ->whereIn('estado', [Cita::ESTADO_PENDIENTE, Cita::ESTADO_CONFIRMADA])
+            ->findOrFail($cita->getKey());
+
+        if (! $cita->isFuture()) {
+            return redirect()->route('portal')
+                ->with('error', 'No puedes reagendar una cita pasada.');
+        }
+
+        $validated = $request->validate([
+            'servicio_id' => ['nullable', Rule::exists('servicios', 'id')->where('activo', true)],
+            'fecha' => ['required', 'date', 'after_or_equal:today'],
+            'hora' => ['required', 'date_format:H:i'],
+        ]);
+
+        $servicio = isset($validated['servicio_id'])
+            ? Servicio::find($validated['servicio_id'])
+            : $cita->servicio;
+
+        $horaFin = $servicio
+            ? $availability->endTimeFor($validated['hora'], $servicio)
+            : now()->setTimeFromTimeString($validated['hora'])->addMinutes(30)->format('H:i');
+
+        if (! $availability->isAvailable($validated['fecha'], $validated['hora'], $horaFin, $cita->id)) {
+            return redirect()->route('portal')
+                ->with('error', 'El nuevo horario seleccionado no esta disponible.');
+        }
+
+        $cita->update([
+            'servicio_id' => $servicio?->id,
+            'fecha' => $validated['fecha'],
+            'hora' => $validated['hora'],
+            'hora_fin' => $horaFin,
+            'estado' => Cita::ESTADO_PENDIENTE,
+        ]);
+
+        $doctorNumber = config('services.whatsapp.doctor_number');
+
+        if ($doctorNumber) {
+            $result = $whatsApp->sendText(
+                $doctorNumber,
+                "Cita reagendada por paciente: {$paciente->nombre_completo}, {$cita->fecha?->format('d/m/Y')} {$cita->hora}."
+            );
+
+            NotificacionLog::create([
+                'cita_id' => $cita->id,
+                'canal' => 'whatsapp',
+                'tipo' => 'reagendamiento_paciente',
+                'destinatario' => $doctorNumber,
+                'estado' => $result['skipped'] ? 'omitido' : ($result['ok'] ? 'enviado' : 'error'),
+                'payload' => $result,
+                'enviado_en' => now(),
+            ]);
+        }
+
+        return redirect()->route('portal')
+            ->with('success', 'Tu cita fue reagendada correctamente.');
     }
 }

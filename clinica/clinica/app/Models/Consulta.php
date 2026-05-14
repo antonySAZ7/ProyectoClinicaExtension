@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Consulta extends Model
@@ -41,5 +42,12 @@ class Consulta extends Model
     public function archivos(): HasMany
     {
         return $this->hasMany(Archivo::class);
+    }
+
+    public function piezasDentales(): BelongsToMany
+    {
+        return $this->belongsToMany(PiezaDental::class, 'consulta_pieza_dental', 'consulta_id', 'pieza_id')
+            ->withPivot(['estado', 'observaciones'])
+            ->withTimestamps();
     }
 }

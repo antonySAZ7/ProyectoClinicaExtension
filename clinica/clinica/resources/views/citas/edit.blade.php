@@ -52,6 +52,26 @@
                         </div>
 
                         <div>
+                            <label for="servicio_id" class="mb-2 block text-sm font-medium text-gray-700">Servicio</label>
+                            <select
+                                id="servicio_id"
+                                name="servicio_id"
+                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-900 focus:ring-gray-900"
+                            >
+                                <option value="">Sin servicio especifico</option>
+                                @foreach ($servicios as $servicio)
+                                    <option
+                                        value="{{ $servicio->id }}"
+                                        data-duration="{{ $servicio->duracion_minutos }}"
+                                        @selected((string) old('servicio_id', $cita->servicio_id) === (string) $servicio->id)
+                                    >
+                                        {{ $servicio->nombre }} ({{ $servicio->duracion_minutos }} min)
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
                             <label for="fecha" class="mb-2 block text-sm font-medium text-gray-700">Fecha <span class="text-red-500" aria-hidden="true">*</span></label>
                             <input
                                 id="fecha"
@@ -111,16 +131,36 @@
                         >{{ old('observaciones', $cita->observaciones) }}</textarea>
                     </div>
 
+                    @include('citas.partials.seguimiento-fields', [
+                        'recordatorio' => $cita->recordatoriosSeguimiento->first(),
+                    ])
+
                     <p class="text-xs text-gray-500"><span class="text-red-500">*</span> Campos obligatorios</p>
 
                     @once
                         <script>
                             (function () {
+                                const servicio = document.getElementById('servicio_id');
                                 const inicio = document.getElementById('hora');
                                 const fin = document.getElementById('hora_fin');
                                 if (!inicio || !fin) return;
 
+                                function addMinutes(value, minutes) {
+                                    const parts = value.split(':').map(Number);
+                                    if (parts.length < 2 || Number.isNaN(parts[0]) || Number.isNaN(parts[1])) return '';
+                                    const date = new Date();
+                                    date.setHours(parts[0], parts[1] + minutes, 0, 0);
+                                    return String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0');
+                                }
+
                                 function sync() {
+                                    const selected = servicio ? servicio.options[servicio.selectedIndex] : null;
+                                    const duration = selected ? Number(selected.dataset.duration || 0) : 0;
+
+                                    if (inicio.value && duration > 0) {
+                                        fin.value = addMinutes(inicio.value, duration);
+                                    }
+
                                     if (inicio.value) {
                                         fin.min = inicio.value;
                                         if (fin.value && fin.value <= inicio.value) {
@@ -136,6 +176,7 @@
 
                                 inicio.addEventListener('change', sync);
                                 fin.addEventListener('change', sync);
+                                if (servicio) servicio.addEventListener('change', sync);
                                 sync();
                             })();
                         </script>

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
@@ -23,6 +24,7 @@ class Cita extends Model
 
     protected $fillable = [
         'paciente_id',
+        'servicio_id',
         'fecha',
         'hora',
         'hora_fin',
@@ -51,6 +53,11 @@ class Cita extends Model
         return $this->belongsTo(Paciente::class);
     }
 
+    public function servicio(): BelongsTo
+    {
+        return $this->belongsTo(Servicio::class);
+    }
+
     public function startsAt(): ?Carbon
     {
         if (! $this->fecha || ! $this->hora) {
@@ -77,5 +84,10 @@ class Cita extends Model
     public function pago(): HasOne
     {
         return $this->hasOne(Pago::class);
+    }
+
+    public function recordatoriosSeguimiento(): HasMany
+    {
+        return $this->hasMany(RecordatorioSeguimiento::class);
     }
 }

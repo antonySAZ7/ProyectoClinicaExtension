@@ -11,6 +11,7 @@ services:
       APP_ENV: ${APP_ENV:-local}
       APP_DEBUG: ${APP_DEBUG:-true}
       APP_URL: ${APP_URL:-http://localhost:8000}
+      APP_TIMEZONE: ${APP_TIMEZONE:-America/Guatemala}
       DB_CONNECTION: ${DB_CONNECTION:-mysql}
       DB_HOST: ${DB_HOST:-mysql}
       DB_PORT: ${DB_PORT:-3306}
@@ -21,6 +22,7 @@ services:
       CACHE_STORE: ${CACHE_STORE:-file}
       QUEUE_CONNECTION: ${QUEUE_CONNECTION:-sync}
       FORCE_VITE_BUILD: ${FORCE_VITE_BUILD:-false}
+      RUN_SCHEDULER: ${RUN_SCHEDULER:-true}
     ports:
       - "${APP_PORT:-8000}:8000"
     volumes:

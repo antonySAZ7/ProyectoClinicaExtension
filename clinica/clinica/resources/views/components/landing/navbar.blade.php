@@ -41,7 +41,7 @@
                 @endforeach
 
                 <a
-                    href="{{ route('register') }}"
+                    href="{{ route('public.citas.create') }}"
                     class="inline-flex items-center justify-center rounded-md bg-[var(--brand-primary)] px-6 py-3 text-sm font-semibold text-[var(--brand-contrast)] transition hover:bg-[var(--brand-primary-strong)]"
                 >
                     Agenda tu cita
@@ -126,7 +126,7 @@
 
                 <div class="border-t border-[var(--brand-border)] pt-4">
                     <a
-                        href="{{ route('register') }}"
+                        href="{{ route('public.citas.create') }}"
                         class="block w-full rounded-md bg-[var(--brand-primary)] px-6 py-3 text-center text-sm font-semibold text-[var(--brand-contrast)] transition hover:bg-[var(--brand-primary-strong)]"
                     >
                         Agenda tu cita

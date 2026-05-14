@@ -8,9 +8,17 @@
                 </p>
             </div>
 
-            <x-link-button href="{{ $isPortal ? route('portal.consultas.index') : route('pacientes.consultas.index', $consulta->paciente) }}">
-                Volver
-            </x-link-button>
+            <div class="flex flex-wrap gap-3">
+                @unless ($isPortal)
+                    <x-link-button variant="primary" href="{{ route('consultas.pdf', $consulta) }}">
+                        Exportar PDF
+                    </x-link-button>
+                @endunless
+
+                <x-link-button href="{{ $isPortal ? route('portal.consultas.index') : route('pacientes.consultas.index', $consulta->paciente) }}">
+                    Volver
+                </x-link-button>
+            </div>
         </div>
     </x-slot>
 

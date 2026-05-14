@@ -45,4 +45,9 @@ class Paciente extends Model
     {
         return $this->hasMany(Historial::class);
     }
+
+    public function recordatoriosSeguimiento(): HasMany
+    {
+        return $this->hasMany(RecordatorioSeguimiento::class);
+    }
 }

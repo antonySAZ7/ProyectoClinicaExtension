@@ -4,12 +4,20 @@ use App\Http\Controllers\ArchivoController;
 use App\Http\Controllers\CitaController;
 use App\Http\Controllers\ConsultaController;
 use App\Http\Controllers\LandingController;
+use App\Http\Controllers\ConsultaPdfController;
+use App\Http\Controllers\OdontogramaController;
 use App\Http\Controllers\PacienteController;
 use App\Http\Controllers\PacientePortalController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicCitaController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [LandingController::class, 'index'])->name('landing');
+
+Route::middleware('throttle:5,60')->group(function () {
+    Route::get('/agendar-cita', [PublicCitaController::class, 'create'])->name('public.citas.create');
+    Route::post('/agendar-cita', [PublicCitaController::class, 'store'])->name('public.citas.store');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -34,6 +42,16 @@ Route::middleware(['auth', 'role:admin,doctor'])->group(function () {
         ->name('pacientes.consultas.store');
     Route::get('/consultas/{consulta}', [ConsultaController::class, 'show'])
         ->name('consultas.show');
+    Route::get('/consultas/{consulta}/odontograma', [OdontogramaController::class, 'index'])
+        ->name('consultas.odontograma.index');
+    Route::post('/consultas/{consulta}/odontograma', [OdontogramaController::class, 'store'])
+        ->name('consultas.odontograma.store');
+    Route::put('/consultas/{consulta}/odontograma/{pieza}', [OdontogramaController::class, 'update'])
+        ->name('consultas.odontograma.update');
+    Route::delete('/consultas/{consulta}/odontograma/{pieza}', [OdontogramaController::class, 'destroy'])
+        ->name('consultas.odontograma.destroy');
+    Route::get('/consultas/{consulta}/pdf', ConsultaPdfController::class)
+        ->name('consultas.pdf');
 
     Route::resource('pacientes', PacienteController::class)->except(['show']);
     Route::get('/citas/calendario', [CitaController::class, 'calendario'])->name('citas.calendario');
@@ -50,6 +68,8 @@ Route::middleware(['auth', 'role:paciente'])->group(function () {
         ->name('citas.confirmar');
     Route::patch('/portal/citas/{cita}/cancelar', [PacientePortalController::class, 'cancel'])
         ->name('portal.citas.cancelar');
+    Route::patch('/portal/citas/{cita}/reagendar', [PacientePortalController::class, 'reschedule'])
+        ->name('portal.citas.reagendar');
 });
 
 require __DIR__.'/auth.php';

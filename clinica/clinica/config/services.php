@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    'whatsapp' => [
+        'graph_version' => env('WHATSAPP_GRAPH_VERSION', 'v23.0'),
+        'phone_id' => env('WHATSAPP_PHONE_ID'),
+        'access_token' => env('WHATSAPP_ACCESS_TOKEN'),
+        'doctor_number' => env('WHATSAPP_DOCTOR_NUMBER'),
+        'verify_token' => env('WHATSAPP_VERIFY_TOKEN'),
+        'template_language' => env('WHATSAPP_TEMPLATE_LANGUAGE', 'es'),
+        'followup_template' => env('WHATSAPP_FOLLOWUP_TEMPLATE', 'recordatorio_seguimiento'),
+    ],
+
 ];

@@ -7,6 +7,7 @@ APP_NAME="${APP_NAME:-ClinicaExtension}"
 APP_ENV="${APP_ENV:-local}"
 APP_DEBUG="${APP_DEBUG:-true}"
 APP_URL="${APP_URL:-http://localhost:8000}"
+APP_TIMEZONE="${APP_TIMEZONE:-America/Guatemala}"
 DB_CONNECTION="${DB_CONNECTION:-mysql}"
 DB_HOST="${DB_HOST:-mysql}"
 DB_PORT="${DB_PORT:-3306}"
@@ -17,6 +18,7 @@ SESSION_DRIVER="${SESSION_DRIVER:-file}"
 CACHE_STORE="${CACHE_STORE:-file}"
 QUEUE_CONNECTION="${QUEUE_CONNECTION:-sync}"
 FORCE_VITE_BUILD="${FORCE_VITE_BUILD:-false}"
+RUN_SCHEDULER="${RUN_SCHEDULER:-true}"
 
 if [ ! -f artisan ]; then
     echo "Error: Laravel project files are not available in /var/www/html."
@@ -68,6 +70,10 @@ php artisan db:seed --force
 
 if [ ! -f public/build/manifest.json ] || [ "$FORCE_VITE_BUILD" = "true" ]; then
     npm run build
+fi
+
+if [ "$RUN_SCHEDULER" = "true" ]; then
+    php artisan schedule:work >> storage/logs/scheduler.log 2>&1 &
 fi
 
 exec php artisan serve --host=0.0.0.0 --port=8000

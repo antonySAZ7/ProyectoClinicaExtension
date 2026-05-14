@@ -1,7 +1,7 @@
 <?php
 
-it('redirects guests from / to login', function () {
+it('shows the public landing page to guests', function () {
     $response = $this->get('/');
 
-    $response->assertRedirect(route('login', absolute: false));
+    $response->assertOk();
 });
