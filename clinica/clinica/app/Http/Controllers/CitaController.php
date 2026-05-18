@@ -109,10 +109,11 @@ class CitaController extends Controller
             'observaciones' => ['nullable', 'string'],
             'activar_recordatorio_seguimiento' => ['nullable', 'boolean'],
             'recordatorio_modo' => ['nullable', Rule::in([RecordatorioSeguimiento::MODO_INTERVALO, RecordatorioSeguimiento::MODO_PERSONALIZADO])],
+            'recordatorio_titulo' => ['nullable', 'string', 'max:255'],
             'recordatorio_intervalo_meses' => ['nullable', 'integer', 'min:1', 'max:60'],
             'recordatorio_fecha_objetivo' => ['nullable', 'date', 'after_or_equal:today'],
             'recordatorio_dias_antes' => ['nullable', 'array'],
-            'recordatorio_dias_antes.*' => ['integer', Rule::in([0, 1])],
+            'recordatorio_dias_antes.*' => ['integer', Rule::in([0, 1, 7])],
             'recordatorio_mensaje' => ['nullable', 'string', 'max:1000'],
         ], [
             'hora_fin.after' => 'La hora de fin debe ser posterior a la hora de inicio.',
@@ -167,10 +168,11 @@ class CitaController extends Controller
             'observaciones' => ['nullable', 'string'],
             'activar_recordatorio_seguimiento' => ['nullable', 'boolean'],
             'recordatorio_modo' => ['nullable', Rule::in([RecordatorioSeguimiento::MODO_INTERVALO, RecordatorioSeguimiento::MODO_PERSONALIZADO])],
+            'recordatorio_titulo' => ['nullable', 'string', 'max:255'],
             'recordatorio_intervalo_meses' => ['nullable', 'integer', 'min:1', 'max:60'],
             'recordatorio_fecha_objetivo' => ['nullable', 'date', 'after_or_equal:today'],
             'recordatorio_dias_antes' => ['nullable', 'array'],
-            'recordatorio_dias_antes.*' => ['integer', Rule::in([0, 1])],
+            'recordatorio_dias_antes.*' => ['integer', Rule::in([0, 1, 7])],
             'recordatorio_mensaje' => ['nullable', 'string', 'max:1000'],
         ], [
             'hora_fin.after' => 'La hora de fin debe ser posterior a la hora de inicio.',
@@ -251,15 +253,17 @@ class CitaController extends Controller
         $data = [
             'activo' => (bool) ($validated['activar_recordatorio_seguimiento'] ?? false),
             'modo' => $validated['recordatorio_modo'] ?? RecordatorioSeguimiento::MODO_INTERVALO,
+            'titulo' => $validated['recordatorio_titulo'] ?? null,
             'intervalo_meses' => $validated['recordatorio_intervalo_meses'] ?? null,
             'fecha_objetivo' => $validated['recordatorio_fecha_objetivo'] ?? null,
-            'dias_antes' => $validated['recordatorio_dias_antes'] ?? [1, 0],
+            'dias_antes' => $validated['recordatorio_dias_antes'] ?? [7, 1, 0],
             'mensaje' => $validated['recordatorio_mensaje'] ?? null,
         ];
 
         unset(
             $validated['activar_recordatorio_seguimiento'],
             $validated['recordatorio_modo'],
+            $validated['recordatorio_titulo'],
             $validated['recordatorio_intervalo_meses'],
             $validated['recordatorio_fecha_objetivo'],
             $validated['recordatorio_dias_antes'],
@@ -295,9 +299,10 @@ class CitaController extends Controller
             'paciente_id' => $cita->paciente_id,
             'activo' => true,
             'modo' => $modo,
+            'titulo' => $data['titulo'],
             'intervalo_meses' => $intervaloMeses,
             'fecha_objetivo' => $fechaObjetivo,
-            'dias_antes' => collect($data['dias_antes'] ?: [1, 0])
+            'dias_antes' => collect($data['dias_antes'] ?: [7, 1, 0])
                 ->map(fn ($day) => (int) $day)
                 ->unique()
                 ->values()

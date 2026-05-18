@@ -14,7 +14,7 @@
                     DENS32
                 </h1>
                 <p class="mt-6 max-w-xl text-lg leading-relaxed text-[var(--brand-muted)]">
-                    Selecciona el servicio, fecha y hora disponible. Te enviaremos confirmacion por correo y WhatsApp.
+                    Selecciona el servicio, fecha y hora disponible. Te enviaremos confirmacion por correo.
                 </p>
             </div>
 
@@ -49,7 +49,7 @@
                                 <input id="correo" type="email" name="correo" value="{{ old('correo') }}" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-900 focus:ring-gray-900" required>
                             </div>
                             <div>
-                                <label for="telefono" class="mb-2 block text-sm font-medium text-gray-700">WhatsApp</label>
+                                <label for="telefono" class="mb-2 block text-sm font-medium text-gray-700">Telefono</label>
                                 <input id="telefono" name="telefono" value="{{ old('telefono') }}" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-900 focus:ring-gray-900" required>
                             </div>
                             <div>

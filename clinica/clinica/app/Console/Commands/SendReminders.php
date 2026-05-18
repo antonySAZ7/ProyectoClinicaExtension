@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App\Mail\CitaReminderMail;
 use App\Models\Cita;
 use App\Models\NotificacionLog;
-use App\Services\WhatsAppService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
 
@@ -17,7 +16,6 @@ class SendReminders extends Command
 
     public function handle(): int
     {
-        $whatsApp = app(WhatsAppService::class);
         $hours = max(1, (int) $this->option('hours'));
         $now = now();
         $until = $now->copy()->addHours($hours);
@@ -54,25 +52,19 @@ class SendReminders extends Command
 
             Mail::to($cita->paciente->correo)->send(new CitaReminderMail($cita));
 
-            if ($cita->paciente->telefono) {
-                $this->sendWhatsAppReminder(
-                    $whatsApp,
-                    $cita,
-                    $cita->paciente->telefono,
-                    'recordatorio_paciente',
-                    'recordatorio_paciente'
-                );
-            }
-
-            if (config('services.whatsapp.doctor_number')) {
-                $this->sendWhatsAppReminder(
-                    $whatsApp,
-                    $cita,
-                    config('services.whatsapp.doctor_number'),
-                    'recordatorio_doctora',
-                    'recordatorio_doctora'
-                );
-            }
+            NotificacionLog::create([
+                'cita_id' => $cita->id,
+                'canal' => 'email',
+                'tipo' => 'recordatorio_cita',
+                'destinatario' => $cita->paciente->correo,
+                'estado' => 'enviado',
+                'payload' => [
+                    'fecha' => $cita->fecha?->toDateString(),
+                    'hora' => substr((string) $cita->hora, 0, 5),
+                    'motivo' => $cita->motivo,
+                ],
+                'enviado_en' => now(),
+            ]);
 
             $cita->update([
                 'recordatorio_enviado_at' => $now,
@@ -84,30 +76,5 @@ class SendReminders extends Command
         $this->info("Recordatorios enviados: {$enviados}. Omitidos: {$omitidos}.");
 
         return self::SUCCESS;
-    }
-
-    protected function sendWhatsAppReminder(
-        WhatsAppService $whatsApp,
-        Cita $cita,
-        string $to,
-        string $template,
-        string $tipo
-    ): void {
-        $result = $whatsApp->sendTemplate($to, $template, [
-            $cita->paciente?->nombre_completo ?? 'Paciente',
-            $cita->fecha?->format('d/m/Y'),
-            substr((string) $cita->hora, 0, 5),
-            $cita->motivo,
-        ]);
-
-        NotificacionLog::create([
-            'cita_id' => $cita->id,
-            'canal' => 'whatsapp',
-            'tipo' => $tipo,
-            'destinatario' => $to,
-            'estado' => $result['skipped'] ? 'omitido' : ($result['ok'] ? 'enviado' : 'error'),
-            'payload' => $result,
-            'enviado_en' => now(),
-        ]);
     }
 }

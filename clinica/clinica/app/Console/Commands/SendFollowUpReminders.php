@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App\Mail\SeguimientoReminderMail;
 use App\Models\NotificacionLog;
 use App\Models\RecordatorioSeguimiento;
-use App\Services\WhatsAppService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
 
@@ -15,7 +14,7 @@ class SendFollowUpReminders extends Command
 
     protected $description = 'Enviar recordatorios de seguimiento preventivo para que pacientes agenden una nueva cita.';
 
-    public function handle(WhatsAppService $whatsApp): int
+    public function handle(): int
     {
         $today = today();
         $sent = 0;
@@ -56,38 +55,12 @@ class SendFollowUpReminders extends Command
                 'estado' => 'enviado',
                 'payload' => [
                     'recordatorio_id' => $recordatorio->id,
+                    'titulo' => $recordatorio->displayTitle(),
                     'fecha_objetivo' => $recordatorio->fecha_objetivo?->toDateString(),
                     'fecha_envio' => $sendDateKey,
                 ],
                 'enviado_en' => now(),
             ]);
-
-            if ($recordatorio->paciente->telefono) {
-                $result = $whatsApp->sendTemplate(
-                    $recordatorio->paciente->telefono,
-                    config('services.whatsapp.followup_template', 'recordatorio_seguimiento'),
-                    [
-                        $recordatorio->paciente->nombre_completo,
-                        $recordatorio->cita?->servicio?->nombre ?? 'seguimiento dental',
-                        $recordatorio->fecha_objetivo?->format('d/m/Y'),
-                        $this->messageFor($recordatorio),
-                    ]
-                );
-
-                NotificacionLog::create([
-                    'cita_id' => $recordatorio->cita_id,
-                    'canal' => 'whatsapp',
-                    'tipo' => 'recordatorio_seguimiento',
-                    'destinatario' => $recordatorio->paciente->telefono,
-                    'estado' => $result['skipped'] ? 'omitido' : ($result['ok'] ? 'enviado' : 'error'),
-                    'payload' => $result + [
-                        'recordatorio_id' => $recordatorio->id,
-                        'fecha_objetivo' => $recordatorio->fecha_objetivo?->toDateString(),
-                        'fecha_envio' => $sendDateKey,
-                    ],
-                    'enviado_en' => now(),
-                ]);
-            }
 
             $recordatorio->markSentFor($sendDateKey);
             $sent++;

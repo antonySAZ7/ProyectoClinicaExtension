@@ -14,6 +14,7 @@ return new class extends Migration
             $table->foreignId('paciente_id')->constrained('pacientes')->cascadeOnDelete();
             $table->boolean('activo')->default(true);
             $table->string('modo', 40);
+            $table->string('titulo')->nullable();
             $table->unsignedSmallInteger('intervalo_meses')->nullable();
             $table->date('fecha_objetivo');
             $table->json('dias_antes');

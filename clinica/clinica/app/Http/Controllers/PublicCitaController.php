@@ -9,7 +9,6 @@ use App\Models\Paciente;
 use App\Models\Servicio;
 use App\Models\User;
 use App\Services\AppointmentAvailabilityService;
-use App\Services\WhatsAppService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -36,8 +35,7 @@ class PublicCitaController extends Controller
 
     public function store(
         Request $request,
-        AppointmentAvailabilityService $availability,
-        WhatsAppService $whatsApp
+        AppointmentAvailabilityService $availability
     ): RedirectResponse {
         $user = $request->user();
         $user?->loadMissing('paciente');
@@ -91,7 +89,11 @@ class PublicCitaController extends Controller
 
         $cita->load(['paciente', 'servicio']);
         Mail::to($cita->paciente->correo)->send(new CitaConfirmationMail($cita));
-        $this->notifyAppointmentCreated($cita, $whatsApp);
+        $this->logEmail($cita, 'confirmacion_agendamiento', $cita->paciente->correo, [
+            'fecha' => $cita->fecha?->toDateString(),
+            'hora' => substr((string) $cita->hora, 0, 5),
+            'servicio' => $cita->servicio?->nombre,
+        ]);
 
         return redirect()->route('public.citas.create')
             ->with('success', 'Tu solicitud de cita fue registrada correctamente.');
@@ -127,38 +129,15 @@ class PublicCitaController extends Controller
         ]);
     }
 
-    protected function notifyAppointmentCreated(Cita $cita, WhatsAppService $whatsApp): void
-    {
-        $patientResult = $whatsApp->sendTemplate($cita->paciente->telefono, 'confirmacion_agendamiento', [
-            $cita->paciente->nombre_completo,
-            $cita->fecha?->format('d/m/Y'),
-            substr((string) $cita->hora, 0, 5),
-            $cita->servicio?->nombre ?? $cita->motivo,
-        ]);
-
-        $this->logWhatsApp($cita, 'confirmacion_agendamiento', $cita->paciente->telefono, $patientResult);
-
-        $doctorNumber = config('services.whatsapp.doctor_number');
-
-        if ($doctorNumber) {
-            $doctorResult = $whatsApp->sendText(
-                $doctorNumber,
-                "Nueva cita: {$cita->paciente->nombre_completo}, {$cita->fecha?->format('d/m/Y')} {$cita->hora}, {$cita->motivo}."
-            );
-
-            $this->logWhatsApp($cita, 'nueva_cita_doctora', $doctorNumber, $doctorResult);
-        }
-    }
-
-    protected function logWhatsApp(Cita $cita, string $tipo, string $to, array $result): void
+    protected function logEmail(Cita $cita, string $tipo, string $to, array $payload): void
     {
         NotificacionLog::create([
             'cita_id' => $cita->id,
-            'canal' => 'whatsapp',
+            'canal' => 'email',
             'tipo' => $tipo,
             'destinatario' => $to,
-            'estado' => $result['skipped'] ? 'omitido' : ($result['ok'] ? 'enviado' : 'error'),
-            'payload' => $result,
+            'estado' => 'enviado',
+            'payload' => $payload,
             'enviado_en' => now(),
         ]);
     }

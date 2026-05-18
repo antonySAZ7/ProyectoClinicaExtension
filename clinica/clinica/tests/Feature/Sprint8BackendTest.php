@@ -103,51 +103,9 @@ test('public appointment scheduling creates paciente user cita and notifications
     ]);
 
     Mail::assertSent(CitaConfirmationMail::class);
-    expect(NotificacionLog::where('tipo', 'confirmacion_agendamiento')->exists())->toBeTrue();
-
-    Carbon::setTestNow();
-});
-
-test('whatsapp webhook confirms upcoming patient appointment from yes response', function () {
-    Carbon::setTestNow(Carbon::create(2026, 5, 11, 10, 0, 0));
-
-    $paciente = Paciente::create([
-        'nombre_completo' => 'Paciente WhatsApp',
-        'dpi' => '2000000000003',
-        'fecha_nacimiento' => '1990-01-01',
-        'telefono' => '50255550003',
-        'correo' => 'whatsapp@example.com',
-        'direccion' => 'Zona 3',
-    ]);
-
-    $cita = Cita::create([
-        'paciente_id' => $paciente->id,
-        'fecha' => '2026-05-12',
-        'hora' => '10:00',
-        'hora_fin' => '10:30',
-        'motivo' => 'Confirmar',
-        'estado' => Cita::ESTADO_PENDIENTE,
-    ]);
-
-    $this->postJson('/api/whatsapp/webhook', [
-        'entry' => [[
-            'changes' => [[
-                'value' => [
-                    'messages' => [[
-                        'from' => '50255550003',
-                        'text' => ['body' => 'SI'],
-                    ]],
-                ],
-            ]],
-        ]],
-    ])->assertOk();
-
-    expect($cita->refresh()->estado)->toBe(Cita::ESTADO_CONFIRMADA);
-    $this->assertDatabaseHas('notificaciones_log', [
-        'cita_id' => $cita->id,
-        'tipo' => 'confirmacion_bidireccional',
-        'estado' => 'procesado',
-    ]);
+    expect(NotificacionLog::where('canal', 'email')
+        ->where('tipo', 'confirmacion_agendamiento')
+        ->exists())->toBeTrue();
 
     Carbon::setTestNow();
 });
@@ -244,16 +202,18 @@ test('admin can create appointment with interval follow up reminder', function (
             'estado' => Cita::ESTADO_PENDIENTE,
             'activar_recordatorio_seguimiento' => '1',
             'recordatorio_modo' => RecordatorioSeguimiento::MODO_INTERVALO,
-            'recordatorio_intervalo_meses' => 6,
-            'recordatorio_dias_antes' => [1, 0],
+            'recordatorio_titulo' => 'Limpieza semestral',
+            'recordatorio_intervalo_meses' => 5,
+            'recordatorio_dias_antes' => [7, 1, 0],
         ])
         ->assertRedirect(route('citas.index', absolute: false));
 
     $this->assertDatabaseHas('recordatorios_seguimiento', [
         'paciente_id' => $paciente->id,
         'modo' => RecordatorioSeguimiento::MODO_INTERVALO,
-        'intervalo_meses' => 6,
-        'fecha_objetivo' => '2026-07-10 00:00:00',
+        'titulo' => 'Limpieza semestral',
+        'intervalo_meses' => 5,
+        'fecha_objetivo' => '2026-06-10 00:00:00',
     ]);
 
     Carbon::setTestNow();
@@ -284,9 +244,10 @@ test('follow up command sends due reminders only once per configured date', func
         'paciente_id' => $paciente->id,
         'activo' => true,
         'modo' => RecordatorioSeguimiento::MODO_INTERVALO,
+        'titulo' => null,
         'intervalo_meses' => 6,
         'fecha_objetivo' => '2026-07-10',
-        'dias_antes' => [1, 0],
+        'dias_antes' => [7, 1, 0],
         'fechas_enviadas' => [],
     ]);
 
@@ -304,6 +265,7 @@ test('follow up command sends due reminders only once per configured date', func
         'destinatario' => 'aviso@example.com',
         'estado' => 'enviado',
     ]);
+    expect($recordatorio->fresh()->displayTitle())->toBe('Seguimiento dental');
 
     $this->artisan('followups:send')
         ->expectsOutput('Recordatorios de seguimiento enviados: 0. Omitidos: 0.')

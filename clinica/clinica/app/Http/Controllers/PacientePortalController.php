@@ -7,7 +7,6 @@ use App\Models\NotificacionLog;
 use App\Models\Servicio;
 use App\Models\User;
 use App\Services\AppointmentAvailabilityService;
-use App\Services\WhatsAppService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -80,8 +79,7 @@ class PacientePortalController extends Controller
     public function reschedule(
         Request $request,
         Cita $cita,
-        AppointmentAvailabilityService $availability,
-        WhatsAppService $whatsApp
+        AppointmentAvailabilityService $availability
     ): RedirectResponse {
         /** @var User $user */
         $user = $request->user();
@@ -128,24 +126,19 @@ class PacientePortalController extends Controller
             'estado' => Cita::ESTADO_PENDIENTE,
         ]);
 
-        $doctorNumber = config('services.whatsapp.doctor_number');
-
-        if ($doctorNumber) {
-            $result = $whatsApp->sendText(
-                $doctorNumber,
-                "Cita reagendada por paciente: {$paciente->nombre_completo}, {$cita->fecha?->format('d/m/Y')} {$cita->hora}."
-            );
-
-            NotificacionLog::create([
-                'cita_id' => $cita->id,
-                'canal' => 'whatsapp',
-                'tipo' => 'reagendamiento_paciente',
-                'destinatario' => $doctorNumber,
-                'estado' => $result['skipped'] ? 'omitido' : ($result['ok'] ? 'enviado' : 'error'),
-                'payload' => $result,
-                'enviado_en' => now(),
-            ]);
-        }
+        NotificacionLog::create([
+            'cita_id' => $cita->id,
+            'canal' => 'email',
+            'tipo' => 'reagendamiento_paciente',
+            'destinatario' => $paciente->correo,
+            'estado' => 'registrado',
+            'payload' => [
+                'fecha' => $cita->fecha?->toDateString(),
+                'hora' => substr((string) $cita->hora, 0, 5),
+                'hora_fin' => substr((string) $cita->hora_fin, 0, 5),
+            ],
+            'enviado_en' => now(),
+        ]);
 
         return redirect()->route('portal')
             ->with('success', 'Tu cita fue reagendada correctamente.');

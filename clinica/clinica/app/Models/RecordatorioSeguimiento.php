@@ -18,6 +18,7 @@ class RecordatorioSeguimiento extends Model
         'paciente_id',
         'activo',
         'modo',
+        'titulo',
         'intervalo_meses',
         'fecha_objetivo',
         'dias_antes',
@@ -46,6 +47,12 @@ class RecordatorioSeguimiento extends Model
     public function paciente(): BelongsTo
     {
         return $this->belongsTo(Paciente::class);
+    }
+
+    public function displayTitle(): string
+    {
+        return $this->titulo
+            ?: ($this->cita?->servicio?->nombre ?? 'Seguimiento dental');
     }
 
     public function hasBeenSentFor(string $date): bool

@@ -21,7 +21,7 @@ class SeguimientoReminderMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Recordatorio de seguimiento dental'
+            subject: 'Recordatorio: '.$this->recordatorio->displayTitle()
         );
     }
 

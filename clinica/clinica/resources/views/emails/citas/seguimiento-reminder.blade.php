@@ -1,9 +1,12 @@
 @php
     $paciente = $recordatorio->paciente;
     $servicio = $recordatorio->cita?->servicio?->nombre ?? 'seguimiento dental';
+    $titulo = $recordatorio->displayTitle();
 @endphp
 
 <p>Hola {{ $paciente?->nombre_completo ?? 'paciente' }},</p>
+
+<h2>{{ $titulo }}</h2>
 
 @if ($recordatorio->mensaje)
     <p>{{ $recordatorio->mensaje }}</p>

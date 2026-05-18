@@ -3,9 +3,10 @@
     $recordatorio = $recordatorio ?? null;
     $activo = old('activar_recordatorio_seguimiento', $recordatorio?->activo ? '1' : null);
     $modo = old('recordatorio_modo', $recordatorio?->modo ?? 'intervalo');
+    $titulo = old('recordatorio_titulo', $recordatorio?->titulo);
     $intervalo = old('recordatorio_intervalo_meses', $recordatorio?->intervalo_meses ?? 6);
     $fechaObjetivo = old('recordatorio_fecha_objetivo', $recordatorio?->fecha_objetivo?->format('Y-m-d'));
-    $diasAntes = old('recordatorio_dias_antes', $recordatorio?->dias_antes ?? [1, 0]);
+    $diasAntes = old('recordatorio_dias_antes', $recordatorio?->dias_antes ?? [7, 1, 0]);
     $mensaje = old('recordatorio_mensaje', $recordatorio?->mensaje);
 @endphp
 
@@ -40,19 +41,32 @@
             </select>
         </div>
 
-        <div data-recordatorio-intervalo>
-            <label for="recordatorio_intervalo_meses" class="mb-2 block text-sm font-medium text-gray-700">Recordar en</label>
-            <select
-                id="recordatorio_intervalo_meses"
-                name="recordatorio_intervalo_meses"
+        <div class="md:col-span-2">
+            <label for="recordatorio_titulo" class="mb-2 block text-sm font-medium text-gray-700">Titulo del recordatorio</label>
+            <input
+                id="recordatorio_titulo"
+                type="text"
+                name="recordatorio_titulo"
+                value="{{ $titulo }}"
                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-900 focus:ring-gray-900"
+                placeholder="Si se deja vacio, se usa el servicio de la cita, por ejemplo Limpieza"
             >
-                @foreach ([1, 3, 4, 6, 9, 12] as $meses)
-                    <option value="{{ $meses }}" @selected((string) $intervalo === (string) $meses)>
-                        {{ $meses }} {{ $meses === 1 ? 'mes' : 'meses' }} despues de esta cita
-                    </option>
-                @endforeach
-            </select>
+        </div>
+
+        <div data-recordatorio-intervalo>
+            <label for="recordatorio_intervalo_meses" class="mb-2 block text-sm font-medium text-gray-700">Recordar en meses</label>
+            <input
+                id="recordatorio_intervalo_meses"
+                type="number"
+                name="recordatorio_intervalo_meses"
+                value="{{ $intervalo }}"
+                min="1"
+                max="60"
+                step="1"
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-900 focus:ring-gray-900"
+                placeholder="Ej. 3, 5, 6, 12"
+            >
+            <p class="mt-1 text-xs text-gray-500">Ejemplo: 5 significa cinco meses despues de esta cita.</p>
         </div>
 
         <div data-recordatorio-personalizado>
@@ -70,6 +84,16 @@
         <div>
             <p class="mb-2 block text-sm font-medium text-gray-700">Enviar aviso</p>
             <div class="flex flex-wrap gap-4 rounded-md border border-gray-200 bg-white px-3 py-2">
+                <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+                    <input
+                        type="checkbox"
+                        name="recordatorio_dias_antes[]"
+                        value="7"
+                        class="rounded border-gray-300 text-sky-700 focus:ring-sky-600"
+                        @checked(in_array(7, array_map('intval', $diasAntes), true))
+                    >
+                    Una semana antes
+                </label>
                 <label class="inline-flex items-center gap-2 text-sm text-gray-700">
                     <input
                         type="checkbox"
