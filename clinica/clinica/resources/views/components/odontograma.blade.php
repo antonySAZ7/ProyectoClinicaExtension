@@ -1,12 +1,12 @@
 @props([
     'consultaId',
-    'readonly' => false,
+    'viewOnly' => false,
 ])
 
 <div
     x-data="odontograma({
         consultaId: {{ $consultaId }},
-        readonly: @json((bool) $readonly),
+        readonly: @json((bool) $viewOnly),
         baseUrl: '{{ url('/consultas/'.$consultaId.'/odontograma') }}',
         csrfToken: document.querySelector('meta[name=\'csrf-token\']')?.content || '',
     })"
@@ -18,6 +18,49 @@
         class="rounded-xl border border-[var(--brand-border)] bg-white px-6 py-12 text-center text-sm text-[var(--brand-muted)]">
         Cargando odontograma...
     </div>
+
+    {{-- Vista para paciente (solo lectura, solo piezas con registro) --}}
+    @if ($viewOnly)
+        <div x-show="piezas.length > 0" x-cloak class="space-y-4">
+            <template x-if="resumenPiezas.length === 0">
+                <div class="rounded-xl border border-[var(--brand-border)] bg-white px-6 py-10 text-center">
+                    <p class="text-base font-medium text-[var(--brand-primary)]">No hay registros dentales en esta consulta.</p>
+                    <p class="mt-1 text-sm text-[var(--brand-muted)]">El doctor no marcó ningún hallazgo o tratamiento en tus piezas dentales.</p>
+                </div>
+            </template>
+
+            <template x-if="resumenPiezas.length > 0">
+                <ul class="space-y-3">
+                    <template x-for="pieza in resumenPiezas" :key="pieza.id">
+                        <li class="overflow-hidden rounded-xl border border-[var(--brand-border)] bg-white shadow-sm">
+                            <div class="flex items-stretch gap-0">
+                                <span :style="`display:block; width:8px; flex-shrink:0; background:${estadosMeta[pieza.estado].color};`"></span>
+
+                                <div class="flex-1 px-5 py-4">
+                                    <p class="font-display text-xl text-[var(--brand-primary)]"
+                                        x-text="nombreCompleto(pieza)"
+                                    ></p>
+
+                                    <p class="mt-2 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
+                                        :style="`background:${estadosMeta[pieza.estado].color}; color:${textoSobreColor(estadosMeta[pieza.estado].color)};`"
+                                    >
+                                        <span x-text="estadosMeta[pieza.estado].label"></span>
+                                    </p>
+
+                                    <div x-show="pieza.observaciones" x-cloak class="mt-3">
+                                        <p class="text-xs font-semibold uppercase tracking-wide text-[var(--brand-muted)]">Notas del doctor</p>
+                                        <p class="mt-1 whitespace-pre-line text-sm text-[var(--brand-primary)]"
+                                            x-text="pieza.observaciones"
+                                        ></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </template>
+                </ul>
+            </template>
+        </div>
+    @else
 
     <div x-show="piezas.length > 0" x-cloak class="space-y-6">
 
@@ -106,7 +149,7 @@
             </p>
         </div>
 
-        @unless ($readonly)
+        @unless ($viewOnly)
             <p class="text-xs text-[var(--brand-muted)]">
                 Click sobre una pieza para registrar su estado.
             </p>
@@ -135,29 +178,23 @@
             </ul>
         </div>
     </div>
+    @endif
 
-    {{-- Backdrop drawer --}}
-    @unless ($readonly)
-        <div
-            x-show="drawerAbierto"
-            x-cloak
-            x-transition.opacity
-            @click="cerrarDrawer()"
-            class="fixed inset-0 z-40 bg-black/30"
-        ></div>
+    {{-- Drawer (teleport al body para evitar conflictos con padres transform/overflow) --}}
+    @unless ($viewOnly)
+    <template x-teleport="body">
+        <div x-show="drawerAbierto" style="position: fixed; inset: 0; z-index: 9999;">
+            {{-- Backdrop --}}
+            <div
+                @click="cerrarDrawer()"
+                style="position: absolute; inset: 0; background: rgba(0,0,0,0.35);"
+            ></div>
 
-        {{-- Drawer lateral --}}
-        <aside
-            x-show="drawerAbierto"
-            x-cloak
-            x-transition:enter="transition ease-out duration-200"
-            x-transition:enter-start="translate-x-full"
-            x-transition:enter-end="translate-x-0"
-            x-transition:leave="transition ease-in duration-150"
-            x-transition:leave-start="translate-x-0"
-            x-transition:leave-end="translate-x-full"
-            class="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col bg-white shadow-2xl"
-        >
+            {{-- Drawer lateral --}}
+            <aside
+                @click.stop
+                style="position: absolute; top: 0; right: 0; bottom: 0; width: 100%; max-width: 28rem; background: white; box-shadow: -10px 0 30px rgba(0,0,0,0.15); display: flex; flex-direction: column;"
+            >
             <header class="flex items-start justify-between gap-3 border-b border-[var(--brand-border)] px-6 py-5">
                 <div>
                     <p class="text-xs uppercase tracking-[0.2em] text-[var(--brand-muted)]">Pieza dental</p>
@@ -220,7 +257,9 @@
                     </button>
                 </div>
             </footer>
-        </aside>
+            </aside>
+        </div>
+    </template>
     @endunless
 </div>
 
@@ -253,6 +292,27 @@
                 return this.piezas
                     .filter(p => p.cuadrante === n)
                     .sort((a, b) => a.posicion - b.posicion);
+            },
+
+            nombreCompleto(pieza) {
+                const ubicaciones = {
+                    1: 'superior derecho',
+                    2: 'superior izquierdo',
+                    3: 'inferior izquierdo',
+                    4: 'inferior derecho',
+                };
+                const ubicacion = ubicaciones[pieza.cuadrante] || '';
+                return `${pieza.nombre} ${ubicacion}`.trim();
+            },
+
+            textoSobreColor(hex) {
+                if (! hex) return '#1f2937';
+                const c = hex.replace('#', '');
+                const r = parseInt(c.substr(0, 2), 16);
+                const g = parseInt(c.substr(2, 2), 16);
+                const b = parseInt(c.substr(4, 2), 16);
+                const luminancia = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+                return luminancia > 0.6 ? '#1f2937' : '#ffffff';
             },
 
             get resumenPiezas() {

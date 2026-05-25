@@ -32,6 +32,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/archivos/{archivo}', [ArchivoController::class, 'ver'])->name('archivos.ver');
     Route::get('/archivos/{archivo}/descargar', [ArchivoController::class, 'descargar'])
         ->name('archivos.descargar');
+
+    Route::get('/consultas/{consulta}/odontograma', [OdontogramaController::class, 'index'])
+        ->name('consultas.odontograma.index');
 });
 
 Route::middleware(['auth', 'role:admin,doctor'])->group(function () {
@@ -47,8 +50,6 @@ Route::middleware(['auth', 'role:admin,doctor'])->group(function () {
         ->name('pacientes.consultas.store');
     Route::get('/consultas/{consulta}', [ConsultaController::class, 'show'])
         ->name('consultas.show');
-    Route::get('/consultas/{consulta}/odontograma', [OdontogramaController::class, 'index'])
-        ->name('consultas.odontograma.index');
     Route::post('/consultas/{consulta}/odontograma', [OdontogramaController::class, 'store'])
         ->name('consultas.odontograma.store');
     Route::put('/consultas/{consulta}/odontograma/{pieza}', [OdontogramaController::class, 'update'])

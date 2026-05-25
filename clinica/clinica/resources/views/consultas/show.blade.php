@@ -155,7 +155,7 @@
                     </div>
                 </div>
 
-                <x-odontograma :consulta-id="$consulta->id" :readonly="$isPortal" />
+                <x-odontograma :consulta-id="$consulta->id" :view-only="$isPortal" />
             </x-card>
         </div>
     </div>

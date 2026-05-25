@@ -20,8 +20,10 @@ class OdontogramaController extends Controller
         'endodoncia',
     ];
 
-    public function index(Consulta $consulta): JsonResponse
+    public function index(Request $request, Consulta $consulta): JsonResponse
     {
+        $this->authorizeView($request, $consulta);
+
         $consulta->load('piezasDentales');
         $piezasConsulta = $consulta->piezasDentales->keyBy('id');
 
@@ -92,5 +94,23 @@ class OdontogramaController extends Controller
         $consulta->piezasDentales()->detach($pieza->id);
 
         return response()->json(['ok' => true]);
+    }
+
+    protected function authorizeView(Request $request, Consulta $consulta): void
+    {
+        $user = $request->user();
+
+        if ($user->canAccessBackoffice()) {
+            return;
+        }
+
+        if ($user->isPaciente()) {
+            $user->loadMissing('paciente');
+            if ($user->paciente && $consulta->paciente_id === $user->paciente->id) {
+                return;
+            }
+        }
+
+        abort(403);
     }
 }
