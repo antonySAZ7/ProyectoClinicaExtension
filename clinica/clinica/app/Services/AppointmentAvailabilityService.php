@@ -11,8 +11,17 @@ class AppointmentAvailabilityService
 {
     public function availableSlots(string $fecha, ?Servicio $servicio = null): array
     {
+        return array_values(array_filter(
+            $this->timelineSlots($fecha, $servicio),
+            fn (array $slot) => $slot['disponible']
+        ));
+    }
+
+    public function timelineSlots(string $fecha, ?Servicio $servicio = null): array
+    {
         $date = Carbon::parse($fecha)->startOfDay();
         $duration = $servicio?->duracion_minutos ?? 30;
+        $step = 60;
         $schedule = HorarioClinica::query()
             ->where('dia_semana', $date->dayOfWeek)
             ->where('activo', true)
@@ -24,23 +33,22 @@ class AppointmentAvailabilityService
 
         $start = $date->copy()->setTimeFromTimeString((string) $schedule->hora_apertura);
         $close = $date->copy()->setTimeFromTimeString((string) $schedule->hora_cierre);
-
-        if ($date->isToday() && now()->greaterThan($start)) {
-            $start = $this->ceilToInterval(now(), 15);
-        }
+        $minHora = $date->isToday() && now()->greaterThan($start) ? $this->ceilToInterval(now(), 15) : null;
 
         $slots = [];
 
-        for ($cursor = $start->copy(); $cursor->copy()->addMinutes($duration)->lessThanOrEqualTo($close); $cursor->addMinutes(15)) {
+        for ($cursor = $start->copy(); $cursor->copy()->addMinutes($duration)->lessThanOrEqualTo($close); $cursor->addMinutes($step)) {
             $end = $cursor->copy()->addMinutes($duration);
+            $pasado = $minHora && $cursor->lessThan($minHora);
+            $libre = ! $pasado && $this->isAvailable($date->toDateString(), $cursor->format('H:i'), $end->format('H:i'));
 
-            if ($this->isAvailable($date->toDateString(), $cursor->format('H:i'), $end->format('H:i'))) {
-                $slots[] = [
-                    'hora' => $cursor->format('H:i'),
-                    'hora_fin' => $end->format('H:i'),
-                    'label' => $cursor->format('H:i').' - '.$end->format('H:i'),
-                ];
-            }
+            $slots[] = [
+                'hora' => $cursor->format('H:i'),
+                'hora_fin' => $end->format('H:i'),
+                'label' => $cursor->format('H:i').' - '.$end->format('H:i'),
+                'disponible' => $libre,
+                'motivo' => $pasado ? 'pasado' : ($libre ? null : 'ocupado'),
+            ];
         }
 
         return $slots;

@@ -9,28 +9,66 @@ use App\Models\Paciente;
 use App\Models\Servicio;
 use App\Models\User;
 use App\Services\AppointmentAvailabilityService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
 class PublicCitaController extends Controller
 {
-    public function create(): View
+    public function availability(Request $request, AppointmentAvailabilityService $availability): JsonResponse
+    {
+        $validated = $request->validate([
+            'fecha' => ['required', 'date', 'after_or_equal:today'],
+            'servicio_id' => ['required', Rule::exists('servicios', 'id')->where('activo', true)],
+        ]);
+
+        $servicio = Servicio::find($validated['servicio_id']);
+
+        return response()->json([
+            'fecha' => $validated['fecha'],
+            'servicio' => [
+                'id' => $servicio->id,
+                'nombre' => $servicio->nombre,
+                'duracion_minutos' => $servicio->duracion_minutos,
+            ],
+            'bloques' => $availability->timelineSlots($validated['fecha'], $servicio),
+        ]);
+    }
+
+    public function create(AppointmentAvailabilityService $availability): View
     {
         $user = Auth::user();
         $user?->loadMissing('paciente');
 
+        $servicios = Servicio::where('activo', true)->orderBy('nombre')->get();
+
         return view('citas.public-create', [
-            'servicios' => Servicio::where('activo', true)->orderBy('nombre')->get(),
+            'servicios' => $servicios,
             'user' => $user,
             'needsPacienteData' => ! $user || ! $user->isPaciente() || ($user->isPaciente() && ! $user->paciente),
+            'fechaSugerida' => $this->nextAvailableDate($availability, $servicios->first()),
         ]);
+    }
+
+    protected function nextAvailableDate(AppointmentAvailabilityService $availability, ?Servicio $servicio): string
+    {
+        $fecha = now()->startOfDay();
+
+        for ($i = 0; $i < 14; $i++) {
+            if (! empty($availability->availableSlots($fecha->toDateString(), $servicio))) {
+                return $fecha->toDateString();
+            }
+            $fecha->addDay();
+        }
+
+        return now()->addDay()->toDateString();
     }
 
     public function store(
@@ -57,6 +95,7 @@ class PublicCitaController extends Controller
         if ($needsPacienteData) {
             $rules['correo'][] = Rule::unique('pacientes', 'correo');
             $rules['dpi'][] = Rule::unique('pacientes', 'dpi');
+            $rules['password'] = ['required', 'confirmed', Password::defaults()];
         }
 
         if (! $user || ! $user->isPaciente()) {
@@ -73,10 +112,13 @@ class PublicCitaController extends Controller
                 ->withInput();
         }
 
-        $cita = DB::transaction(function () use ($validated, $user, $servicio, $horaFin) {
-            $paciente = $this->resolvePaciente($validated, $user);
+        $wasGuest = ! $user;
 
-            return Cita::create([
+        [$cita, $pacienteUser] = DB::transaction(function () use ($validated, $user, $servicio, $horaFin) {
+            $paciente = $this->resolvePaciente($validated, $user);
+            $paciente->loadMissing('user');
+
+            $cita = Cita::create([
                 'paciente_id' => $paciente->id,
                 'servicio_id' => $servicio->id,
                 'fecha' => $validated['fecha'],
@@ -85,6 +127,8 @@ class PublicCitaController extends Controller
                 'motivo' => ($validated['motivo'] ?? null) ?: $servicio->nombre,
                 'estado' => Cita::ESTADO_PENDIENTE,
             ]);
+
+            return [$cita, $paciente->user];
         });
 
         $cita->load(['paciente', 'servicio']);
@@ -94,6 +138,14 @@ class PublicCitaController extends Controller
             'hora' => substr((string) $cita->hora, 0, 5),
             'servicio' => $cita->servicio?->nombre,
         ]);
+
+        if ($wasGuest && $pacienteUser) {
+            Auth::login($pacienteUser);
+            $request->session()->regenerate();
+
+            return redirect()->route('portal')
+                ->with('success', 'Tu cita fue registrada y tu cuenta quedó activa. Aquí puedes ver tus citas.');
+        }
 
         return redirect()->route('public.citas.create')
             ->with('success', 'Tu solicitud de cita fue registrada correctamente.');
@@ -114,7 +166,7 @@ class PublicCitaController extends Controller
                 'name' => $validated['nombre_completo'],
                 'email' => $validated['correo'],
                 'role' => User::ROLE_PACIENTE,
-                'password' => Hash::make(Str::password(16)),
+                'password' => Hash::make($validated['password']),
             ]);
         }
 

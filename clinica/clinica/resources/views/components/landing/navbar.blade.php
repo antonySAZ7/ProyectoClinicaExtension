@@ -45,6 +45,13 @@
                 @endforeach
 
                 <a
+                    href="{{ route('login') }}"
+                    class="inline-flex items-center justify-center rounded-md border border-[var(--brand-border)] bg-[var(--brand-soft)] px-6 py-3 text-sm font-semibold text-[var(--brand-primary)] transition hover:bg-[var(--brand-border)]"
+                >
+                    Iniciar sesión
+                </a>
+
+                <a
                     href="{{ route('public.citas.create') }}"
                     class="inline-flex items-center justify-center rounded-md bg-[var(--brand-primary)] px-6 py-3 text-sm font-semibold text-[var(--brand-contrast)] transition hover:bg-[var(--brand-primary-strong)]"
                 >
@@ -133,7 +140,14 @@
                     </a>
                 @endforeach
 
-                <div class="border-t border-[var(--brand-border)] pt-4">
+                <div class="space-y-3 border-t border-[var(--brand-border)] pt-4">
+                    <a
+                        href="{{ route('login') }}"
+                        @click="mobileOpen = false"
+                        class="block w-full rounded-md border border-[var(--brand-border)] bg-white px-6 py-3 text-center text-sm font-semibold text-[var(--brand-primary)] transition hover:bg-[var(--brand-soft)]"
+                    >
+                        Iniciar sesión
+                    </a>
                     <a
                         href="{{ route('public.citas.create') }}"
                         class="block w-full rounded-md bg-[var(--brand-primary)] px-6 py-3 text-center text-sm font-semibold text-[var(--brand-contrast)] transition hover:bg-[var(--brand-primary-strong)]"

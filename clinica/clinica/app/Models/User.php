@@ -92,6 +92,17 @@ class User extends Authenticatable
 
     public function homeRoute(): string
     {
-        return $this->isPaciente() ? 'portal' : 'dashboard';
+        if (! $this->isPaciente()) {
+            return 'dashboard';
+        }
+
+        $this->loadMissing('paciente');
+        $tieneCitasActivas = $this->paciente
+            ?->citas()
+            ->whereIn('estado', ['pendiente', 'confirmada'])
+            ->exists()
+            ?? false;
+
+        return $tieneCitasActivas ? 'portal' : 'public.citas.create';
     }
 }
