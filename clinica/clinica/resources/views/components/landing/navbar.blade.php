@@ -1,11 +1,10 @@
 @php
     $brand = config('site.brand');
     $navLinks = [
-        ['label' => 'Inicio',           'href' => '#inicio'],
-        ['label' => 'Nosotros',         'href' => '#sobre-nosotros'],
-        ['label' => 'Objetivos',        'href' => '#objetivos'],
-        ['label' => 'Misión y visión',  'href' => '#mision-vision'],
-        ['label' => 'Contacto',         'href' => '#contacto'],
+        ['label' => 'Inicio',     'href' => route('landing'),           'route' => 'landing'],
+        ['label' => 'Nosotros',   'href' => route('landing.nosotros'),  'route' => 'landing.nosotros'],
+        ['label' => 'Objetivos',  'href' => route('landing.objetivos'), 'route' => 'landing.objetivos'],
+        ['label' => 'Contacto',   'href' => route('landing.contacto'),  'route' => 'landing.contacto'],
     ];
 @endphp
 
@@ -32,9 +31,14 @@
         <div class="hidden items-center gap-8 md:flex">
             @guest
                 @foreach ($navLinks as $link)
+                    @php $active = request()->routeIs($link['route']); @endphp
                     <a
                         href="{{ $link['href'] }}"
-                        class="font-medium text-[var(--brand-muted)] transition-colors hover:text-[var(--brand-primary)]"
+                        @class([
+                            'font-medium transition-colors',
+                            'text-[var(--brand-primary)]' => $active,
+                            'text-[var(--brand-muted)] hover:text-[var(--brand-primary)]' => ! $active,
+                        ])
                     >
                         {{ $link['label'] }}
                     </a>
@@ -115,10 +119,15 @@
         <div class="flex flex-col gap-6 px-6 py-8">
             @guest
                 @foreach ($navLinks as $link)
+                    @php $active = request()->routeIs($link['route']); @endphp
                     <a
                         href="{{ $link['href'] }}"
                         @click="mobileOpen = false"
-                        class="text-left text-lg font-medium text-[var(--brand-primary)]"
+                        @class([
+                            'text-left text-lg font-medium',
+                            'text-[var(--brand-primary)]' => $active,
+                            'text-[var(--brand-muted)]' => ! $active,
+                        ])
                     >
                         {{ $link['label'] }}
                     </a>
