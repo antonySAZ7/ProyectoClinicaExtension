@@ -139,6 +139,24 @@
                 </x-card>
                 </div>
             </div>
+
+            {{-- Odontograma --}}
+            <x-card class="p-6">
+                <div class="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-brand-primary">Odontograma</h3>
+                        <p class="mt-1 text-sm text-brand-muted">
+                            @if ($isPortal)
+                                Estado dental registrado en esta consulta.
+                            @else
+                                Registra el estado clínico de cada pieza dental.
+                            @endif
+                        </p>
+                    </div>
+                </div>
+
+                <x-odontograma :consulta-id="$consulta->id" :readonly="$isPortal" />
+            </x-card>
         </div>
     </div>
 </x-app-layout>
