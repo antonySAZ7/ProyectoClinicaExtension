@@ -13,11 +13,16 @@ use App\Http\Controllers\PublicCitaController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [LandingController::class, 'index'])->name('landing');
+Route::get('/nosotros', [LandingController::class, 'nosotros'])->name('landing.nosotros');
+Route::get('/objetivos', [LandingController::class, 'objetivos'])->name('landing.objetivos');
+Route::get('/contacto', [LandingController::class, 'contacto'])->name('landing.contacto');
 
-Route::middleware('throttle:5,60')->group(function () {
-    Route::get('/agendar-cita', [PublicCitaController::class, 'create'])->name('public.citas.create');
-    Route::post('/agendar-cita', [PublicCitaController::class, 'store'])->name('public.citas.store');
-});
+Route::get('/agendar-cita', [PublicCitaController::class, 'create'])->name('public.citas.create');
+Route::get('/agendar-cita/disponibilidad', [PublicCitaController::class, 'availability'])
+    ->name('public.citas.disponibilidad');
+Route::post('/agendar-cita', [PublicCitaController::class, 'store'])
+    ->middleware('throttle:5,60')
+    ->name('public.citas.store');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
