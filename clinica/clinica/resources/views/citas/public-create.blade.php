@@ -185,7 +185,7 @@
                                                         ? ' cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400'
                                                         : ' cursor-not-allowed border-rose-200 bg-rose-50 text-rose-600');
                                                 }
-                                                if (sel) return base + ' border-emerald-600 bg-emerald-600 text-white shadow-sm';
+                                                if (sel) return base + ' border-[var(--brand-primary)] bg-[var(--brand-primary)] text-[var(--brand-contrast)] shadow-sm';
                                                 return base + ' border-emerald-300 bg-emerald-50 text-emerald-800 hover:border-emerald-600 hover:bg-emerald-100';
                                             })()"
                                         >
