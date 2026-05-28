@@ -4,6 +4,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Alpine: ocultar elementos con x-cloak hasta que Alpine inicialice. */
+[x-cloak] { display: none !important; }
+
 /*
 |--------------------------------------------------------------------------
 | Tokens de marca DENS32 (landing)

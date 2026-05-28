@@ -15,10 +15,24 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans text-gray-900 antialiased">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
+        @php $brand = config('site.brand'); @endphp
+        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-brand-surface">
+            <a
+                href="{{ route('landing') }}"
+                class="absolute left-4 top-4 inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-brand-muted transition hover:bg-brand-soft hover:text-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2"
+            >
+                <x-lucide-arrow-left class="h-4 w-4" />
+                Volver al inicio
+            </a>
+
             <div>
-                <a href="/">
-                    <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
+                <a href="/" class="block text-center">
+                    <p class="font-display text-5xl leading-none text-brand-primary">
+                        {{ $brand['name'] }}
+                    </p>
+                    <p class="mt-1 text-xs uppercase tracking-[0.28em] text-brand-muted">
+                        {{ $brand['subtitle'] }}
+                    </p>
                 </a>
             </div>
 

@@ -24,8 +24,11 @@
                         <x-nav-link :href="route('pacientes.index')" :active="request()->routeIs('pacientes.*')">
                             Pacientes
                         </x-nav-link>
-                        <x-nav-link :href="route('citas.index')" :active="request()->routeIs('citas.*')">
+                        <x-nav-link :href="route('citas.index')" :active="request()->routeIs('citas.*') && ! request()->routeIs('citas.calendario')">
                             Citas
+                        </x-nav-link>
+                        <x-nav-link :href="route('citas.calendario')" :active="request()->routeIs('citas.calendario')">
+                            Calendario
                         </x-nav-link>
                     @else
                         <x-nav-link :href="route('portal')" :active="request()->routeIs('portal')">
@@ -81,6 +84,7 @@
             <x-responsive-nav-link :href="route('dashboard')">Panel</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('pacientes.index')">Pacientes</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('citas.index')">Citas</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('citas.calendario')">Calendario</x-responsive-nav-link>
         @else
             <x-responsive-nav-link :href="route('portal')">Portal</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('portal.consultas.index')">Historial</x-responsive-nav-link>

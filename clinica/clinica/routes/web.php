@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\AntecedenteClinicoController;
 use App\Http\Controllers\ArchivoController;
 use App\Http\Controllers\CitaController;
 use App\Http\Controllers\ConsultaController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\ConsultaPdfController;
 use App\Http\Controllers\OdontogramaController;
@@ -38,9 +40,7 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'role:admin,doctor'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/pacientes/{paciente}/consultas', [ConsultaController::class, 'index'])
         ->name('pacientes.consultas.index');
@@ -58,6 +58,11 @@ Route::middleware(['auth', 'role:admin,doctor'])->group(function () {
         ->name('consultas.odontograma.destroy');
     Route::get('/consultas/{consulta}/pdf', ConsultaPdfController::class)
         ->name('consultas.pdf');
+
+    Route::get('/pacientes/{paciente}/antecedentes', [AntecedenteClinicoController::class, 'edit'])
+        ->name('pacientes.antecedentes.edit');
+    Route::put('/pacientes/{paciente}/antecedentes', [AntecedenteClinicoController::class, 'update'])
+        ->name('pacientes.antecedentes.update');
 
     Route::resource('pacientes', PacienteController::class)->except(['show']);
     Route::get('/citas/calendario', [CitaController::class, 'calendario'])->name('citas.calendario');

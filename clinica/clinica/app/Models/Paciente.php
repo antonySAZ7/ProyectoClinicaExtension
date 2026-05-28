@@ -2,9 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
 
 class Paciente extends Model
 {
@@ -21,9 +24,26 @@ class Paciente extends Model
         'ocupacion',
     ];
 
+    /**
+     * Edad en anios calculada desde la fecha de nacimiento.
+     */
+    protected function edad(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->fecha_nacimiento
+                ? Carbon::parse($this->fecha_nacimiento)->age
+                : null,
+        );
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function antecedenteClinico(): HasOne
+    {
+        return $this->hasOne(AntecedenteClinico::class);
     }
 
     public function citas(): HasMany

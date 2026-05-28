@@ -76,6 +76,45 @@
                         >{{ $observaciones }}</x-textarea>
                     </div>
 
+                    <div class="rounded-lg border border-brand-border p-4">
+                        <p class="text-sm font-semibold text-brand-primary">Signos vitales</p>
+                        <p class="mt-1 text-xs text-brand-muted">Opcionales. Se registran para esta consulta.</p>
+
+                        <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                            <div>
+                                <label for="peso" class="block text-sm font-medium text-brand-muted">Peso (kg)</label>
+                                <input id="peso" type="number" step="0.01" min="0" name="peso" value="{{ old('peso') }}"
+                                    class="mt-1 block w-full rounded-md border-brand-border text-sm shadow-sm focus:border-brand-primary focus:ring-brand-primary">
+                            </div>
+                            <div>
+                                <label for="altura" class="block text-sm font-medium text-brand-muted">Altura (m)</label>
+                                <input id="altura" type="number" step="0.01" min="0" name="altura" value="{{ old('altura') }}"
+                                    class="mt-1 block w-full rounded-md border-brand-border text-sm shadow-sm focus:border-brand-primary focus:ring-brand-primary">
+                            </div>
+                            <div>
+                                <label for="presion_arterial" class="block text-sm font-medium text-brand-muted">Presion arterial</label>
+                                <input id="presion_arterial" type="text" name="presion_arterial" value="{{ old('presion_arterial') }}"
+                                    placeholder="Ej. 120/80"
+                                    class="mt-1 block w-full rounded-md border-brand-border text-sm shadow-sm focus:border-brand-primary focus:ring-brand-primary">
+                            </div>
+                            <div>
+                                <label for="frecuencia_cardiaca" class="block text-sm font-medium text-brand-muted">Frecuencia cardiaca (lpm)</label>
+                                <input id="frecuencia_cardiaca" type="number" min="0" name="frecuencia_cardiaca" value="{{ old('frecuencia_cardiaca') }}"
+                                    class="mt-1 block w-full rounded-md border-brand-border text-sm shadow-sm focus:border-brand-primary focus:ring-brand-primary">
+                            </div>
+                            <div>
+                                <label for="frecuencia_respiratoria" class="block text-sm font-medium text-brand-muted">Frecuencia respiratoria (rpm)</label>
+                                <input id="frecuencia_respiratoria" type="number" min="0" name="frecuencia_respiratoria" value="{{ old('frecuencia_respiratoria') }}"
+                                    class="mt-1 block w-full rounded-md border-brand-border text-sm shadow-sm focus:border-brand-primary focus:ring-brand-primary">
+                            </div>
+                            <div>
+                                <label for="signos_otros" class="block text-sm font-medium text-brand-muted">Otros</label>
+                                <input id="signos_otros" type="text" name="signos_otros" value="{{ old('signos_otros') }}"
+                                    class="mt-1 block w-full rounded-md border-brand-border text-sm shadow-sm focus:border-brand-primary focus:ring-brand-primary">
+                            </div>
+                        </div>
+                    </div>
+
                     <div>
                         <span class="mb-2 block text-sm font-medium text-brand-muted">Archivos adjuntos</span>
 

@@ -15,12 +15,22 @@ class Consulta extends Model
         'fecha',
         'motivo',
         'diagnostico',
+        'peso',
+        'altura',
+        'presion_arterial',
+        'frecuencia_cardiaca',
+        'frecuencia_respiratoria',
+        'signos_otros',
     ];
 
     protected function casts(): array
     {
         return [
             'fecha' => 'date',
+            'peso' => 'decimal:2',
+            'altura' => 'decimal:2',
+            'frecuencia_cardiaca' => 'integer',
+            'frecuencia_respiratoria' => 'integer',
         ];
     }
 

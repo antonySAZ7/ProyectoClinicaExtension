@@ -39,6 +39,51 @@
     <h2>Diagnostico</h2>
     <p>{{ $consulta->diagnostico }}</p>
 
+    @php
+        $tieneSignos = $consulta->peso || $consulta->altura || $consulta->presion_arterial
+            || $consulta->frecuencia_cardiaca || $consulta->frecuencia_respiratoria || $consulta->signos_otros;
+    @endphp
+    @if ($tieneSignos)
+        <h2>Signos vitales</h2>
+        <div class="grid">
+            <div class="row">
+                <div class="cell"><strong>Peso:</strong> {{ $consulta->peso ? $consulta->peso.' kg' : '-' }}</div>
+                <div class="cell"><strong>Altura:</strong> {{ $consulta->altura ? $consulta->altura.' m' : '-' }}</div>
+            </div>
+            <div class="row">
+                <div class="cell"><strong>Presion arterial:</strong> {{ $consulta->presion_arterial ?: '-' }}</div>
+                <div class="cell"><strong>Frec. cardiaca:</strong> {{ $consulta->frecuencia_cardiaca ? $consulta->frecuencia_cardiaca.' lpm' : '-' }}</div>
+            </div>
+            <div class="row">
+                <div class="cell"><strong>Frec. respiratoria:</strong> {{ $consulta->frecuencia_respiratoria ? $consulta->frecuencia_respiratoria.' rpm' : '-' }}</div>
+                <div class="cell"><strong>Otros:</strong> {{ $consulta->signos_otros ?: '-' }}</div>
+            </div>
+        </div>
+    @endif
+
+    @php $ant = $consulta->paciente?->antecedenteClinico; @endphp
+    @if ($ant)
+        @php
+            $medicosSi = collect(\App\Models\AntecedenteClinico::CAMPOS_MEDICOS)->filter(fn ($e, $c) => $ant->$c)->values();
+            $odontoSi = collect(\App\Models\AntecedenteClinico::CAMPOS_ODONTOLOGICOS)->filter(fn ($e, $c) => $ant->$c)->values();
+        @endphp
+        <h2>Antecedentes medicos</h2>
+        <p>{{ $medicosSi->isNotEmpty() ? $medicosSi->implode(', ') : 'Ninguno marcado.' }}</p>
+
+        <h2>Antecedentes odontologicos</h2>
+        <p>{{ $odontoSi->isNotEmpty() ? $odontoSi->implode(', ') : 'Ninguno marcado.' }}</p>
+
+        @if ($ant->toma_medicamento && $ant->cual_medicamento)
+            <p><strong>Medicamento que toma:</strong> {{ $ant->cual_medicamento }}</p>
+        @endif
+        @if ($ant->alergico_medicamento && $ant->cuales_medicamentos)
+            <p><strong>Alergias a medicamentos:</strong> {{ $ant->cuales_medicamentos }}</p>
+        @endif
+        @if ($ant->descripcion_enfermedades)
+            <p><strong>Descripcion de enfermedades:</strong> {{ $ant->descripcion_enfermedades }}</p>
+        @endif
+    @endif
+
     <h2>Observaciones</h2>
     @forelse ($consulta->observaciones as $observacion)
         <p>{{ $observacion->descripcion }}</p>

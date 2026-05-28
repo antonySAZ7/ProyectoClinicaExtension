@@ -74,6 +74,12 @@ class ConsultaController extends Controller
                 'fecha' => $validated['fecha'],
                 'motivo' => $validated['motivo'],
                 'diagnostico' => $validated['diagnostico'],
+                'peso' => $validated['peso'] ?? null,
+                'altura' => $validated['altura'] ?? null,
+                'presion_arterial' => $validated['presion_arterial'] ?? null,
+                'frecuencia_cardiaca' => $validated['frecuencia_cardiaca'] ?? null,
+                'frecuencia_respiratoria' => $validated['frecuencia_respiratoria'] ?? null,
+                'signos_otros' => $validated['signos_otros'] ?? null,
             ]);
 
             if (! empty($validated['observaciones'])) {

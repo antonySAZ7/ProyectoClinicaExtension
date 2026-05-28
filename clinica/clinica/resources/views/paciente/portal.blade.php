@@ -55,6 +55,64 @@
                 </div>
             @endif
 
+            @if ($paciente?->antecedenteClinico)
+                @php
+                    $ant = $paciente->antecedenteClinico;
+                    $medicosSi = collect(\App\Models\AntecedenteClinico::CAMPOS_MEDICOS)
+                        ->filter(fn ($etq, $campo) => $ant->$campo)->values();
+                    $odontoSi = collect(\App\Models\AntecedenteClinico::CAMPOS_ODONTOLOGICOS)
+                        ->filter(fn ($etq, $campo) => $ant->$campo)->values();
+                @endphp
+                <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                    <div class="border-b border-gray-100 px-6 py-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Mis antecedentes clinicos</h3>
+                        <p class="mt-1 text-xs text-gray-500">Informacion registrada por la clinica (solo lectura).</p>
+                    </div>
+
+                    <div class="grid gap-6 px-6 py-5 sm:grid-cols-2">
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Antecedentes medicos</p>
+                            @if ($medicosSi->isEmpty())
+                                <p class="mt-1 text-sm text-gray-500">Sin antecedentes medicos marcados.</p>
+                            @else
+                                <ul class="mt-2 flex flex-wrap gap-2">
+                                    @foreach ($medicosSi as $etiqueta)
+                                        <li class="rounded-full bg-rose-50 px-3 py-1 text-xs font-medium text-rose-700">{{ $etiqueta }}</li>
+                                    @endforeach
+                                </ul>
+                            @endif
+                        </div>
+
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Antecedentes odontologicos</p>
+                            @if ($odontoSi->isEmpty())
+                                <p class="mt-1 text-sm text-gray-500">Sin antecedentes odontologicos marcados.</p>
+                            @else
+                                <ul class="mt-2 flex flex-wrap gap-2">
+                                    @foreach ($odontoSi as $etiqueta)
+                                        <li class="rounded-full bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700">{{ $etiqueta }}</li>
+                                    @endforeach
+                                </ul>
+                            @endif
+                        </div>
+
+                        @if ($ant->toma_medicamento && $ant->cual_medicamento)
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Medicamento que toma</p>
+                                <p class="mt-1 text-sm text-gray-900">{{ $ant->cual_medicamento }}</p>
+                            </div>
+                        @endif
+
+                        @if ($ant->alergico_medicamento && $ant->cuales_medicamentos)
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Alergias a medicamentos</p>
+                                <p class="mt-1 text-sm text-gray-900">{{ $ant->cuales_medicamentos }}</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
             <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
                 <div class="border-b border-gray-100 px-6 py-4">
                     <h3 class="text-lg font-semibold text-gray-900">Mis citas</h3>

@@ -12,7 +12,7 @@ class ConsultaPdfController extends Controller
     {
         abort_unless(class_exists(\Barryvdh\DomPDF\Facade\Pdf::class), 500, 'barryvdh/laravel-dompdf no esta instalado.');
 
-        $consulta->load(['paciente', 'user', 'observaciones', 'archivos', 'piezasDentales']);
+        $consulta->load(['paciente.antecedenteClinico', 'user', 'observaciones', 'archivos', 'piezasDentales']);
 
         $piezasConsulta = $consulta->piezasDentales->keyBy('id');
         $piezas = PiezaDental::query()

@@ -57,6 +57,54 @@
                         </dl>
                     </x-card>
 
+                    @php
+                        $tieneSignos = $consulta->peso || $consulta->altura || $consulta->presion_arterial
+                            || $consulta->frecuencia_cardiaca || $consulta->frecuencia_respiratoria || $consulta->signos_otros;
+                    @endphp
+                    @if ($tieneSignos)
+                        <x-card class="p-6">
+                            <h3 class="text-lg font-semibold text-brand-primary">Signos vitales</h3>
+                            <dl class="mt-4 grid gap-4 sm:grid-cols-3">
+                                @if ($consulta->peso)
+                                    <div>
+                                        <dt class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Peso</dt>
+                                        <dd class="mt-1 text-base text-brand-primary">{{ $consulta->peso }} kg</dd>
+                                    </div>
+                                @endif
+                                @if ($consulta->altura)
+                                    <div>
+                                        <dt class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Altura</dt>
+                                        <dd class="mt-1 text-base text-brand-primary">{{ $consulta->altura }} m</dd>
+                                    </div>
+                                @endif
+                                @if ($consulta->presion_arterial)
+                                    <div>
+                                        <dt class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Presion arterial</dt>
+                                        <dd class="mt-1 text-base text-brand-primary">{{ $consulta->presion_arterial }}</dd>
+                                    </div>
+                                @endif
+                                @if ($consulta->frecuencia_cardiaca)
+                                    <div>
+                                        <dt class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Frec. cardiaca</dt>
+                                        <dd class="mt-1 text-base text-brand-primary">{{ $consulta->frecuencia_cardiaca }} lpm</dd>
+                                    </div>
+                                @endif
+                                @if ($consulta->frecuencia_respiratoria)
+                                    <div>
+                                        <dt class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Frec. respiratoria</dt>
+                                        <dd class="mt-1 text-base text-brand-primary">{{ $consulta->frecuencia_respiratoria }} rpm</dd>
+                                    </div>
+                                @endif
+                                @if ($consulta->signos_otros)
+                                    <div class="min-w-0 sm:col-span-3">
+                                        <dt class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Otros</dt>
+                                        <dd class="mt-1 text-base text-brand-primary [overflow-wrap:anywhere]">{{ $consulta->signos_otros }}</dd>
+                                    </div>
+                                @endif
+                            </dl>
+                        </x-card>
+                    @endif
+
                     <x-card class="p-6">
                         <h3 class="text-lg font-semibold text-brand-primary">Paciente</h3>
                         <dl class="mt-4 grid gap-4 sm:grid-cols-2">

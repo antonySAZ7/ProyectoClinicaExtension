@@ -26,6 +26,8 @@ class PacientePortalController extends Controller
         $consultasRecientes = collect();
 
         if ($paciente) {
+            $paciente->loadMissing('antecedenteClinico');
+
             $citas = $paciente->citas()
                 ->upcoming()
                 ->orderBy('fecha')
