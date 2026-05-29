@@ -79,6 +79,7 @@
                                                 @php
                                                     $badgeEstilo = match ($cita->estado) {
                                                         'confirmada' => 'background:#dcfce7; color:#15803d;',
+                                                        'atendida'   => 'background:#dbeafe; color:#1d4ed8;',
                                                         'cancelada'  => 'background:#fee2e2; color:#b91c1c;',
                                                         default      => 'background:#fef3c7; color:#b45309;',
                                                     };

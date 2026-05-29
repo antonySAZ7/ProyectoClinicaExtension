@@ -17,7 +17,7 @@ class CitaController extends Controller
      */
     public function index()
     {
-        $citas = Cita::with('paciente')
+        $citas = Cita::with(['paciente', 'consulta'])
             ->upcoming()
             ->orderBy('fecha')
             ->orderBy('hora')
@@ -65,6 +65,7 @@ class CitaController extends Controller
                 $estado = $cita->estado ?? 'pendiente';
                 $colorEvento = match ($estado) {
                     Cita::ESTADO_CONFIRMADA => ['bg' => '#16a34a', 'border' => '#15803d'],
+                    Cita::ESTADO_ATENDIDA => ['bg' => '#2563eb', 'border' => '#1d4ed8'],
                     Cita::ESTADO_CANCELADA => ['bg' => '#dc2626', 'border' => '#b91c1c'],
                     default => ['bg' => '#d97706', 'border' => '#b45309'],
                 };

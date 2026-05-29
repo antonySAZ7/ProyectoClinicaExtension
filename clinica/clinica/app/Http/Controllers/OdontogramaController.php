@@ -69,7 +69,7 @@ class OdontogramaController extends Controller
             ]);
         }
 
-        return $this->index($consulta);
+        return $this->index($request, $consulta);
     }
 
     public function update(Request $request, Consulta $consulta, PiezaDental $pieza): JsonResponse
@@ -86,7 +86,7 @@ class OdontogramaController extends Controller
             ],
         ]);
 
-        return $this->index($consulta);
+        return $this->index($request, $consulta);
     }
 
     public function destroy(Consulta $consulta, PiezaDental $pieza): JsonResponse

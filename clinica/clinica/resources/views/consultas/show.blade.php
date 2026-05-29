@@ -10,6 +10,10 @@
 
             <div class="flex flex-wrap gap-3">
                 @unless ($isPortal)
+                    <x-link-button href="{{ route('consultas.edit', $consulta) }}">
+                        Editar consulta
+                    </x-link-button>
+
                     <x-link-button variant="primary" href="{{ route('consultas.pdf', $consulta) }}">
                         Exportar PDF
                     </x-link-button>
@@ -136,14 +140,54 @@
                         <h3 class="text-lg font-semibold text-brand-primary">Observaciones</h3>
 
                         <div class="mt-4 space-y-3">
-                            @forelse ($consulta->observaciones as $observacion)
-                                <div class="whitespace-pre-line rounded-lg border border-brand-border bg-brand-soft px-4 py-3 text-base text-brand-primary [overflow-wrap:anywhere]">
-                                    {{ $observacion->descripcion }}
+                            @forelse ($consulta->observaciones->sortBy('created_at') as $observacion)
+                                <div class="rounded-lg border border-brand-border bg-brand-soft px-4 py-3">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <p class="text-xs font-semibold uppercase tracking-wide text-brand-muted">
+                                            {{ $observacion->created_at?->format('d/m/Y H:i') ?? 'Sin fecha' }}
+                                        </p>
+
+                                        @unless ($isPortal)
+                                            <form method="POST" action="{{ route('observaciones.destroy', $observacion) }}">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button
+                                                    type="submit"
+                                                    onclick="return confirm('¿Eliminar esta observación?');"
+                                                    class="text-xs font-medium text-rose-600 hover:text-rose-700"
+                                                >
+                                                    Eliminar
+                                                </button>
+                                            </form>
+                                        @endunless
+                                    </div>
+                                    <p class="mt-2 whitespace-pre-line text-base text-brand-primary [overflow-wrap:anywhere]">
+                                        {{ $observacion->descripcion }}
+                                    </p>
                                 </div>
                             @empty
                                 <p class="text-base text-brand-muted">No se registraron observaciones adicionales para esta consulta.</p>
                             @endforelse
                         </div>
+
+                        @unless ($isPortal)
+                            <form method="POST" action="{{ route('consultas.observaciones.store', $consulta) }}" class="mt-5 space-y-3">
+                                @csrf
+                                <label for="nueva-observacion" class="block text-sm font-medium text-brand-muted">
+                                    Agregar nueva observación
+                                </label>
+                                <x-textarea
+                                    id="nueva-observacion"
+                                    name="descripcion"
+                                    rows="3"
+                                    maxlength="4000"
+                                    placeholder="Escribe una nota de seguimiento, hallazgo o evolución."
+                                    required></x-textarea>
+                                <x-button type="submit" class="btn btn-primary">
+                                    Agregar observación
+                                </x-button>
+                            </form>
+                        @endunless
                     </x-card>
 
                     <x-card class="p-6">
@@ -176,6 +220,20 @@
                                     >
                                         Descargar
                                     </x-link-button>
+
+                                    @unless ($isPortal)
+                                        <form method="POST" action="{{ route('archivos.destroy', $archivo) }}">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button
+                                                type="submit"
+                                                onclick="return confirm('¿Eliminar este archivo?');"
+                                                class="inline-flex items-center justify-center rounded-md border border-rose-300 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
+                                            >
+                                                Eliminar
+                                            </button>
+                                        </form>
+                                    @endunless
                                 </div>
                             </div>
                         @empty
@@ -184,6 +242,36 @@
                             </p>
                         @endforelse
                     </div>
+
+                    @unless ($isPortal)
+                        <form
+                            method="POST"
+                            action="{{ route('consultas.archivos.store', $consulta) }}"
+                            enctype="multipart/form-data"
+                            class="mt-5 space-y-3 border-t border-brand-border pt-5"
+                        >
+                            @csrf
+                            <label for="archivos-nuevos" class="block text-sm font-medium text-brand-muted">
+                                Agregar archivos
+                            </label>
+
+                            <input
+                                id="archivos-nuevos"
+                                type="file"
+                                name="archivos[]"
+                                multiple
+                                accept=".pdf,image/png,image/jpeg,image/jpg,image/webp"
+                                class="block w-full text-sm text-brand-primary file:mr-3 file:rounded-md file:border-0 file:bg-brand-soft file:px-4 file:py-2 file:text-sm file:font-semibold file:text-brand-primary hover:file:bg-brand-border"
+                                required
+                            >
+
+                            <p class="text-xs text-brand-muted">PDF, JPG, JPEG, PNG, WEBP — máximo 5 MB por archivo.</p>
+
+                            <x-button type="submit" class="btn btn-primary">
+                                Subir archivos
+                            </x-button>
+                        </form>
+                    @endunless
                 </x-card>
                 </div>
             </div>

@@ -65,6 +65,7 @@
                                         @php
                                             $badgeEstilo = match ($cita->estado) {
                                                 'confirmada' => 'background:#dcfce7; color:#15803d;',
+                                                'atendida'   => 'background:#dbeafe; color:#1d4ed8;',
                                                 'cancelada'  => 'background:#fee2e2; color:#b91c1c;',
                                                 default      => 'background:#fef3c7; color:#b45309;',
                                             };
@@ -75,7 +76,25 @@
                                         </span>
                                     </td>
                                     <td class="px-4 py-4 text-sm">
-                                        <div class="flex flex-col gap-2 sm:flex-row">
+                                        <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                                            @if ($cita->estado === 'confirmada')
+                                                <a
+                                                    href="{{ route('pacientes.consultas.create', ['paciente' => $cita->paciente_id, 'cita_id' => $cita->id]) }}"
+                                                    class="inline-flex items-center justify-center gap-1 rounded-md bg-emerald-600 px-3 py-2 font-semibold text-white transition hover:bg-emerald-700"
+                                                >
+                                                    <x-lucide-play class="h-4 w-4" />
+                                                    Iniciar consulta
+                                                </a>
+                                            @elseif ($cita->estado === 'atendida' && $cita->consulta)
+                                                <a
+                                                    href="{{ route('consultas.show', $cita->consulta) }}"
+                                                    class="inline-flex items-center justify-center gap-1 rounded-md border border-sky-300 px-3 py-2 font-medium text-sky-700 transition hover:bg-sky-50"
+                                                >
+                                                    <x-lucide-eye class="h-4 w-4" />
+                                                    Ver consulta
+                                                </a>
+                                            @endif
+
                                             <a
                                                 href="{{ route('citas.edit', $cita) }}"
                                                 class="inline-flex items-center justify-center rounded-md border border-amber-300 px-3 py-2 font-medium text-amber-700 transition hover:bg-amber-50"
@@ -83,7 +102,7 @@
                                                 Editar
                                             </a>
 
-                                            @if ($cita->estado !== 'cancelada')
+                                            @if (! in_array($cita->estado, ['cancelada', 'atendida']))
                                                 <form method="POST" action="{{ route('citas.destroy', $cita) }}">
                                                     @csrf
                                                     @method('DELETE')
@@ -96,7 +115,7 @@
                                                         Cancelar
                                                     </button>
                                                 </form>
-                                            @else
+                                            @elseif ($cita->estado === 'cancelada')
                                                 <span class="inline-flex items-center rounded-md bg-gray-100 px-3 py-2 font-medium text-gray-500">
                                                     Cancelada
                                                 </span>

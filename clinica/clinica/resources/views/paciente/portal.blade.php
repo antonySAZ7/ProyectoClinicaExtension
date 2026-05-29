@@ -156,6 +156,7 @@
                                         @php
                                             $badgeEstilo = match ($cita->estado) {
                                                 'confirmada' => 'background:#dcfce7; color:#15803d;',
+                                                'atendida'   => 'background:#dbeafe; color:#1d4ed8;',
                                                 'cancelada'  => 'background:#fee2e2; color:#b91c1c;',
                                                 default      => 'background:#fef3c7; color:#b45309;',
                                             };
@@ -168,7 +169,7 @@
                                         {{ $cita->motivo }}
                                     </td>
                                     <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
-                                        @if ($cita->estado === 'cancelada')
+                                        @if (in_array($cita->estado, ['cancelada', 'atendida']))
                                             <span class="text-xs font-medium text-gray-400">Sin accion</span>
                                         @else
                                             <div class="flex flex-col items-end gap-2 sm:flex-row sm:justify-end">

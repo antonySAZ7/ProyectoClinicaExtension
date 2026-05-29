@@ -12,6 +12,16 @@
                     <p class="mt-1 text-base text-brand-muted">
                         Completa la consulta, agrega observaciones y adjunta archivos si es necesario.
                     </p>
+
+                    @if (! empty($cita))
+                        <div class="mt-4 flex items-start gap-3 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+                            <x-lucide-calendar-check class="mt-0.5 h-5 w-5 flex-shrink-0" />
+                            <div>
+                                <p class="font-semibold">Vinculada a la cita del {{ $cita->fecha?->format('d/m/Y') }} a las {{ \Illuminate\Support\Str::of((string) $cita->hora)->substr(0, 5) }}</p>
+                                <p class="mt-1 text-xs">Al guardar, la cita se marcará como <strong>atendida</strong>.</p>
+                            </div>
+                        </div>
+                    @endif
                 </div>
 
                 @if ($errors->any())
@@ -27,23 +37,27 @@
                 <form id="form-consulta" method="POST" action="{{ route('pacientes.consultas.store', $paciente) }}" enctype="multipart/form-data" class="space-y-6">
                     @csrf
 
+                    @if (! empty($cita))
+                        <input type="hidden" name="cita_id" value="{{ $cita->id }}">
+                    @endif
+
                     <div class="grid gap-6 md:grid-cols-2">
                         <div>
-                            <x-form-input 
-                                label="Fecha" 
-                                name="fecha" 
-                                type="date" 
-                                value="{{ old('fecha', now()->toDateString()) }}" 
+                            <x-form-input
+                                label="Fecha"
+                                name="fecha"
+                                type="date"
+                                value="{{ old('fecha', $cita?->fecha?->toDateString() ?? now()->toDateString()) }}"
                                 required />
                         </div>
 
                         <div>
-                            <x-form-input 
-                                label="Motivo" 
-                                name="motivo" 
-                                type="text" 
-                                value="{{ old('motivo') }}" 
-                                placeholder="Ej. control post operatorio, consulta general" 
+                            <x-form-input
+                                label="Motivo"
+                                name="motivo"
+                                type="text"
+                                value="{{ old('motivo', $cita?->motivo) }}"
+                                placeholder="Ej. control post operatorio, consulta general"
                                 required />
                         </div>
                     </div>

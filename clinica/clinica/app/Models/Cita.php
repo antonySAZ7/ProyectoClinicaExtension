@@ -17,6 +17,8 @@ class Cita extends Model
 
     public const ESTADO_CANCELADA = 'cancelada';
 
+    public const ESTADO_ATENDIDA = 'atendida';
+
     protected $casts = [
         'fecha' => 'date',
         'recordatorio_enviado_at' => 'datetime',
@@ -84,6 +86,11 @@ class Cita extends Model
     public function pago(): HasOne
     {
         return $this->hasOne(Pago::class);
+    }
+
+    public function consulta(): HasOne
+    {
+        return $this->hasOne(Consulta::class);
     }
 
     public function recordatoriosSeguimiento(): HasMany

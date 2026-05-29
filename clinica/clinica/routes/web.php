@@ -50,6 +50,18 @@ Route::middleware(['auth', 'role:admin,doctor'])->group(function () {
         ->name('pacientes.consultas.store');
     Route::get('/consultas/{consulta}', [ConsultaController::class, 'show'])
         ->name('consultas.show');
+    Route::get('/consultas/{consulta}/edit', [ConsultaController::class, 'edit'])
+        ->name('consultas.edit');
+    Route::put('/consultas/{consulta}', [ConsultaController::class, 'update'])
+        ->name('consultas.update');
+    Route::post('/consultas/{consulta}/observaciones', [ConsultaController::class, 'storeObservacion'])
+        ->name('consultas.observaciones.store');
+    Route::delete('/observaciones/{observacion}', [ConsultaController::class, 'destroyObservacion'])
+        ->name('observaciones.destroy');
+    Route::post('/consultas/{consulta}/archivos', [ConsultaController::class, 'storeArchivo'])
+        ->name('consultas.archivos.store');
+    Route::delete('/archivos/{archivo}', [ConsultaController::class, 'destroyArchivo'])
+        ->name('archivos.destroy');
     Route::post('/consultas/{consulta}/odontograma', [OdontogramaController::class, 'store'])
         ->name('consultas.odontograma.store');
     Route::put('/consultas/{consulta}/odontograma/{pieza}', [OdontogramaController::class, 'update'])
