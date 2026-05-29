@@ -37,7 +37,7 @@ return [
         'eyebrow'    => 'Acerca de nosotros',
         'title'      => 'Odontología con propósito y calidez humana',
         'paragraphs' => [
-            'Somos Katherin Ruiz y Marco Pinelo, estudiantes de último año de odontología en la Universidad San Carlos de Guatemala. Desde el inicio de nuestra formación, nos hemos apasionado por la salud bucal y su impacto en la calidad de vida de las personas. Nuestra clínica dental, DENS32, nace con el propósito de brindar atención odontológica de calidad y con calidez humana.',
+            'Somos Katherin Ruiz y Marco Pinelo, odontólogos egresados de la Universidad de San Carlos de Guatemala. Desde el inicio de nuestra formación, nos hemos apasionado por la salud bucal y su impacto en la calidad de vida de las personas. Nuestra clínica dental, DENS32, nace con el propósito de brindar atención odontológica de calidad y con calidez humana.',
             'Vivir en Guatemala nos ha sensibilizado sobre las necesidades de nuestra comunidad. Nos afecta ver cómo la salud no siempre es una prioridad y cómo muchas personas no tienen acceso a cuidados dentales básicos. Queremos ser parte del cambio, ser la mano amiga que acompaña a quienes más lo necesitan y contribuir a una Guatemala más saludable y feliz.',
         ],
         'highlights' => [
