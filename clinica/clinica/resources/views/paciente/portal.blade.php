@@ -115,8 +115,20 @@
 
             <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
                 <div class="border-b border-gray-100 px-6 py-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Mis citas</h3>
-                    <p class="mt-1 text-sm text-gray-600">Solo se muestran las citas asociadas a tu expediente.</p>
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">Mis citas</h3>
+                            <p class="mt-1 text-sm text-gray-600">Solo se muestran las citas asociadas a tu expediente.</p>
+                        </div>
+
+                        <a
+                            href="{{ route('public.citas.create') }}"
+                            class="inline-flex items-center justify-center gap-2 rounded-md bg-[var(--brand-primary)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:ring-offset-2"
+                        >
+                            <x-lucide-calendar-plus class="h-4 w-4" />
+                            Agendar nueva cita
+                        </a>
+                    </div>
                 </div>
 
                 <div class="overflow-x-auto">
