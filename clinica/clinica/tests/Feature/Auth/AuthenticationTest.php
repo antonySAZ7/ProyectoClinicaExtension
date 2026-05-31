@@ -20,7 +20,7 @@ test('users can authenticate using the login screen', function () {
     $response->assertRedirect(route('dashboard', absolute: false));
 });
 
-test('paciente users are redirected to their portal after login', function () {
+test('paciente users without active appointments are redirected to schedule one after login', function () {
     $user = User::factory()->paciente()->create();
 
     $response = $this->post('/login', [
@@ -29,7 +29,7 @@ test('paciente users are redirected to their portal after login', function () {
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect(route('portal', absolute: false));
+    $response->assertRedirect(route('public.citas.create', absolute: false));
 });
 
 test('users can not authenticate with invalid password', function () {

@@ -21,6 +21,27 @@ class DashboardController extends Controller
     public const EXTRAS_DISPONIBLES = ['tasa', 'citas_dia', 'pacientes_nuevos'];
 
     /**
+     * Clave de la "version" del namespace de cache. Cuando algo cambia en la BD
+     * (citas, pacientes), incrementamos esta version y todas las claves viejas
+     * pasan a ser orphan (expiran solas via TTL).
+     */
+    private const VERSION_KEY = 'dashboard.metricas.version';
+
+    /**
+     * Invalidar todas las metricas cacheadas del dashboard.
+     *
+     * Llamar desde controllers que modifican citas o pacientes para que el
+     * admin vea cambios inmediatos sin esperar al TTL de 60s.
+     */
+    public static function invalidate(): void
+    {
+        // microtime garantiza valores estrictamente crecientes incluso cuando
+        // varias escrituras ocurren en el mismo segundo (ej. delete justo
+        // despues de un create).
+        Cache::forever(self::VERSION_KEY, (string) microtime(true));
+    }
+
+    /**
      * Mostrar el panel con metricas de citas y pacientes filtradas por periodo.
      */
     public function index(Request $request)
@@ -28,8 +49,11 @@ class DashboardController extends Controller
         [$desde, $hasta, $preset] = $this->resolverRango($request);
         $extras = $this->resolverExtras($request);
 
+        $version = Cache::rememberForever(self::VERSION_KEY, fn () => (string) microtime(true));
+
         $claveCache = sprintf(
-            'dashboard.metricas.%s.%s.%s',
+            'dashboard.metricas.v%s.%s.%s.%s',
+            $version,
             $desde->toDateString(),
             $hasta->toDateString(),
             implode('-', $extras) ?: 'base'

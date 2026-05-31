@@ -31,7 +31,7 @@ test('email can be verified', function () {
     $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
 });
 
-test('paciente users are redirected to portal after email verification', function () {
+test('paciente users without active appointments are redirected to schedule one after email verification', function () {
     $user = User::factory()->paciente()->unverified()->create();
 
     Event::fake();
@@ -46,7 +46,7 @@ test('paciente users are redirected to portal after email verification', functio
 
     Event::assertDispatched(Verified::class);
     expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
-    $response->assertRedirect(route('portal', absolute: false).'?verified=1');
+    $response->assertRedirect(route('public.citas.create', absolute: false).'?verified=1');
 });
 
 test('email is not verified with invalid hash', function () {

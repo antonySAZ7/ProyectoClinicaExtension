@@ -26,7 +26,7 @@ test('new users can register', function () {
 
     $response->assertSessionHasNoErrors();
     $this->assertAuthenticated();
-    $response->assertRedirect(route('portal', absolute: false));
+    $response->assertRedirect(route('public.citas.create', absolute: false));
 
     $user = auth()->user();
     expect($user->role)->toBe(User::ROLE_PACIENTE);

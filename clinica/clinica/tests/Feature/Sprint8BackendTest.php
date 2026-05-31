@@ -86,10 +86,12 @@ test('public appointment scheduling creates paciente user cita and notifications
         'fecha_nacimiento' => '1994-01-01',
         'telefono' => '50255550002',
         'direccion' => 'Zona 2',
+        'password' => 'password',
+        'password_confirmation' => 'password',
         'servicio_id' => $servicio->id,
         'fecha' => '2026-05-12',
         'hora' => '09:00',
-    ])->assertRedirect(route('public.citas.create', absolute: false));
+    ])->assertRedirect(route('portal', absolute: false));
 
     $this->assertDatabaseHas('users', [
         'email' => 'publico@example.com',

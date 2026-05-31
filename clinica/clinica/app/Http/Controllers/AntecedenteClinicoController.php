@@ -15,7 +15,7 @@ class AntecedenteClinicoController extends Controller
      */
     public function edit(Paciente $paciente): View
     {
-        $antecedente = $paciente->antecedenteClinico ?? new AntecedenteClinico();
+        $antecedente = $paciente->antecedenteClinico ?? new AntecedenteClinico;
 
         return view('antecedentes.edit', [
             'paciente' => $paciente,

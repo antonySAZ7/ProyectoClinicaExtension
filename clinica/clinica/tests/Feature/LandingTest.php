@@ -8,7 +8,7 @@ test('guest can view landing at /', function () {
     $response->assertOk();
     $response->assertSee('DENS32');
     $response->assertSee('Comprometidos con tu salud');
-    $response->assertSee('Acerca de nosotros');
+    $response->assertSee('Atención odontológica accesible', false);
 });
 
 test('authenticated paciente still sees landing without redirect', function () {
