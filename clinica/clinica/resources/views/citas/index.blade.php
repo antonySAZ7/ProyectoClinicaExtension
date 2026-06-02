@@ -67,12 +67,13 @@
                                                 'confirmada' => 'background:#dcfce7; color:#15803d;',
                                                 'atendida'   => 'background:#dbeafe; color:#1d4ed8;',
                                                 'cancelada'  => 'background:#fee2e2; color:#b91c1c;',
+                                                'no_show'    => 'background:#f3f4f6; color:#4b5563;',
                                                 default      => 'background:#fef3c7; color:#b45309;',
                                             };
                                         @endphp
 
                                         <span style="display:inline-flex; border-radius:9999px; padding:2px 10px; font-size:12px; font-weight:700; {{ $badgeEstilo }}">
-                                            {{ ucfirst($cita->estado) }}
+                                            {{ $cita->estado === 'no_show' ? 'No show' : ucfirst($cita->estado) }}
                                         </span>
                                     </td>
                                     <td class="px-4 py-4 text-sm">
@@ -102,7 +103,7 @@
                                                 Editar
                                             </a>
 
-                                            @if (! in_array($cita->estado, ['cancelada', 'atendida']))
+                                            @if (! in_array($cita->estado, ['cancelada', 'atendida', 'no_show']))
                                                 <form method="POST" action="{{ route('citas.destroy', $cita) }}">
                                                     @csrf
                                                     @method('DELETE')
@@ -118,6 +119,10 @@
                                             @elseif ($cita->estado === 'cancelada')
                                                 <span class="inline-flex items-center rounded-md bg-gray-100 px-3 py-2 font-medium text-gray-500">
                                                     Cancelada
+                                                </span>
+                                            @elseif ($cita->estado === 'no_show')
+                                                <span class="inline-flex items-center rounded-md bg-gray-100 px-3 py-2 font-medium text-gray-500">
+                                                    No show
                                                 </span>
                                             @endif
                                         </div>

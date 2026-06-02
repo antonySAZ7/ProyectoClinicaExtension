@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('reminders:send')->hourly();
 Schedule::command('followups:send')->dailyAt('08:00');
+Schedule::command('clinica:cerrar-citas-vencidas')->dailyAt('23:30');

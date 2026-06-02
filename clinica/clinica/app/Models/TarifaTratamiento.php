@@ -3,18 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use OwenIt\Auditing\Auditable as AuditableTrait;
 use OwenIt\Auditing\Contracts\Auditable;
 
-class Servicio extends Model implements Auditable
+class TarifaTratamiento extends Model implements Auditable
 {
     use AuditableTrait;
 
+    protected $table = 'tarifas_tratamientos';
+
     protected $fillable = [
-        'nombre',
-        'descripcion',
-        'duracion_minutos',
+        'estado_pieza',
+        'nombre_legible',
         'precio_sugerido',
         'activo',
     ];
@@ -22,14 +22,8 @@ class Servicio extends Model implements Auditable
     protected function casts(): array
     {
         return [
-            'activo' => 'boolean',
-            'duracion_minutos' => 'integer',
             'precio_sugerido' => 'decimal:2',
+            'activo' => 'boolean',
         ];
-    }
-
-    public function citas(): HasMany
-    {
-        return $this->hasMany(Cita::class);
     }
 }

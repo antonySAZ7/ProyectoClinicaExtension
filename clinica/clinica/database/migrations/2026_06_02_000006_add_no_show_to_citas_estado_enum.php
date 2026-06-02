@@ -1,0 +1,22 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE citas MODIFY estado ENUM('pendiente', 'confirmada', 'atendida', 'cancelada', 'no_show') NOT NULL DEFAULT 'pendiente'");
+        }
+    }
+
+    public function down(): void
+    {
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("UPDATE citas SET estado = 'cancelada' WHERE estado = 'no_show'");
+            DB::statement("ALTER TABLE citas MODIFY estado ENUM('pendiente', 'confirmada', 'atendida', 'cancelada') NOT NULL DEFAULT 'pendiente'");
+        }
+    }
+};

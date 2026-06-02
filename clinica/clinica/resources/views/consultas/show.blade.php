@@ -10,6 +10,13 @@
 
             <div class="flex flex-wrap gap-3">
                 @unless ($isPortal)
+                    <form method="POST" action="{{ route('consultas.seguimiento.store', $consulta) }}">
+                        @csrf
+                        <x-button type="submit" variant="outline">
+                            Crear seguimiento
+                        </x-button>
+                    </form>
+
                     <x-link-button href="{{ route('consultas.edit', $consulta) }}">
                         Editar consulta
                     </x-link-button>
@@ -132,6 +139,71 @@
                                 <dd class="mt-1 text-base text-brand-primary [overflow-wrap:anywhere]">{{ $consulta->paciente->correo }}</dd>
                             </div>
                         </dl>
+                    </x-card>
+
+                    <x-card class="p-6">
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                                <h3 class="text-lg font-semibold text-brand-primary">Presupuesto</h3>
+                                <p class="mt-1 text-sm text-brand-muted">
+                                    @if ($consulta->presupuesto_aceptado_en)
+                                        Aceptado el {{ $consulta->presupuesto_aceptado_en->format('d/m/Y H:i') }}.
+                                    @else
+                                        Pendiente de aceptacion.
+                                    @endif
+                                </p>
+                            </div>
+
+                            @unless ($isPortal || $consulta->presupuesto_aceptado_en)
+                                <form method="POST" action="{{ route('consultas.presupuesto.aceptar', $consulta) }}">
+                                    @csrf
+                                    <x-button type="submit" variant="outline">
+                                        Marcar aceptado
+                                    </x-button>
+                                </form>
+                            @endunless
+                        </div>
+
+                        <div class="mt-4 overflow-x-auto">
+                            <table class="min-w-full divide-y divide-brand-border text-sm">
+                                <thead>
+                                    <tr class="text-left text-xs font-semibold uppercase tracking-wide text-brand-muted">
+                                        <th class="py-2 pr-3">Pieza</th>
+                                        <th class="px-3 py-2">Diagnostico</th>
+                                        <th class="px-3 py-2">Tratamiento</th>
+                                        <th class="px-3 py-2 text-right">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-brand-border">
+                                    @forelse ($consulta->presupuestoItems as $item)
+                                        <tr>
+                                            <td class="py-2 pr-3 text-brand-primary">
+                                                {{ $item->pieza?->numero ?? 'N/A' }}
+                                            </td>
+                                            <td class="px-3 py-2 text-brand-primary">{{ $item->diagnostico }}</td>
+                                            <td class="px-3 py-2 text-brand-primary">{{ $item->tratamiento }}</td>
+                                            <td class="px-3 py-2 text-right text-brand-primary">
+                                                Q{{ number_format((float) $item->subtotal, 2) }}
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="4" class="py-4 text-center text-brand-muted">
+                                                Esta consulta todavia no tiene items de presupuesto.
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="3" class="pt-3 text-right text-brand-primary">Total</th>
+                                        <th class="pt-3 text-right text-brand-primary">
+                                            Q{{ number_format((float) $consulta->presupuesto_total, 2) }}
+                                        </th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
                     </x-card>
                 </div>
 

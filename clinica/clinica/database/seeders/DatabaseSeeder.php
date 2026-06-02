@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             ServicioSeeder::class,
+            TarifaTratamientoSeeder::class,
             HorarioClinicaSeeder::class,
             PiezaDentalSeeder::class,
         ]);

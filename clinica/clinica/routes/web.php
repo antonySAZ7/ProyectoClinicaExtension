@@ -4,12 +4,15 @@ use App\Http\Controllers\AntecedenteClinicoController;
 use App\Http\Controllers\ArchivoController;
 use App\Http\Controllers\CitaController;
 use App\Http\Controllers\ConsultaController;
+use App\Http\Controllers\ConsultaPdfController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LandingController;
-use App\Http\Controllers\ConsultaPdfController;
 use App\Http\Controllers\OdontogramaController;
 use App\Http\Controllers\PacienteController;
 use App\Http\Controllers\PacientePortalController;
+use App\Http\Controllers\PagoController;
+use App\Http\Controllers\PrecioController;
+use App\Http\Controllers\PresupuestoItemController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicCitaController;
 use Illuminate\Support\Facades\Route;
@@ -54,6 +57,8 @@ Route::middleware(['auth', 'role:admin,doctor'])->group(function () {
         ->name('consultas.edit');
     Route::put('/consultas/{consulta}', [ConsultaController::class, 'update'])
         ->name('consultas.update');
+    Route::post('/consultas/{consulta}/seguimiento', [ConsultaController::class, 'storeFollowUp'])
+        ->name('consultas.seguimiento.store');
     Route::post('/consultas/{consulta}/observaciones', [ConsultaController::class, 'storeObservacion'])
         ->name('consultas.observaciones.store');
     Route::delete('/observaciones/{observacion}', [ConsultaController::class, 'destroyObservacion'])
@@ -70,15 +75,39 @@ Route::middleware(['auth', 'role:admin,doctor'])->group(function () {
         ->name('consultas.odontograma.destroy');
     Route::get('/consultas/{consulta}/pdf', ConsultaPdfController::class)
         ->name('consultas.pdf');
+    Route::get('/consultas/{consulta}/presupuesto/sugerencias', [PresupuestoItemController::class, 'suggest'])
+        ->name('consultas.presupuesto.sugerencias');
+    Route::post('/consultas/{consulta}/presupuesto/aceptar', [PresupuestoItemController::class, 'accept'])
+        ->name('consultas.presupuesto.aceptar');
+    Route::post('/consultas/{consulta}/presupuesto', [PresupuestoItemController::class, 'store'])
+        ->name('consultas.presupuesto.store');
+    Route::put('/consultas/{consulta}/presupuesto/{item}', [PresupuestoItemController::class, 'update'])
+        ->name('consultas.presupuesto.update');
+    Route::delete('/consultas/{consulta}/presupuesto/{item}', [PresupuestoItemController::class, 'destroy'])
+        ->name('consultas.presupuesto.destroy');
 
     Route::get('/pacientes/{paciente}/antecedentes', [AntecedenteClinicoController::class, 'edit'])
         ->name('pacientes.antecedentes.edit');
     Route::put('/pacientes/{paciente}/antecedentes', [AntecedenteClinicoController::class, 'update'])
         ->name('pacientes.antecedentes.update');
+    Route::post('/pacientes/{paciente}/pagos', [PagoController::class, 'store'])
+        ->name('pacientes.pagos.store');
 
     Route::resource('pacientes', PacienteController::class)->except(['show']);
     Route::get('/citas/calendario', [CitaController::class, 'calendario'])->name('citas.calendario');
     Route::resource('citas', CitaController::class)->except(['show']);
+});
+
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/precios', [PrecioController::class, 'index'])->name('precios.index');
+    Route::patch('/precios/servicios/{servicio}', [PrecioController::class, 'updateServicio'])
+        ->name('precios.servicios.update');
+    Route::post('/precios/tarifas', [PrecioController::class, 'storeTarifa'])
+        ->name('precios.tarifas.store');
+    Route::patch('/precios/tarifas/{tarifa}', [PrecioController::class, 'updateTarifa'])
+        ->name('precios.tarifas.update');
+    Route::delete('/precios/tarifas/{tarifa}', [PrecioController::class, 'destroyTarifa'])
+        ->name('precios.tarifas.destroy');
 });
 
 Route::middleware(['auth', 'role:paciente'])->group(function () {

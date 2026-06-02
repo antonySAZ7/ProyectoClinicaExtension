@@ -36,6 +36,49 @@ class Paciente extends Model
         );
     }
 
+    protected function presupuestoTotal(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                if ($this->relationLoaded('consultas')) {
+                    return round((float) $this->consultas->sum(
+                        fn (Consulta $consulta) => $consulta->presupuesto_total
+                    ), 2);
+                }
+
+                return round((float) ConsultaPresupuestoItem::query()
+                    ->whereHas('consulta', fn ($query) => $query->where('paciente_id', $this->id))
+                    ->sum('subtotal'), 2);
+            },
+        );
+    }
+
+    protected function totalPagado(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                $estadosCompletados = [Pago::ESTADO_COMPLETADO, Pago::ESTADO_PAGADO];
+
+                if ($this->relationLoaded('pagos')) {
+                    return round((float) $this->pagos
+                        ->whereIn('estado', $estadosCompletados)
+                        ->sum('monto'), 2);
+                }
+
+                return round((float) $this->pagos()
+                    ->whereIn('estado', $estadosCompletados)
+                    ->sum('monto'), 2);
+            },
+        );
+    }
+
+    protected function saldoPendiente(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => round(max(0, (float) $this->presupuesto_total - (float) $this->total_pagado), 2),
+        );
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

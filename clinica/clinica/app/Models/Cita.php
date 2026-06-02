@@ -19,6 +19,8 @@ class Cita extends Model
 
     public const ESTADO_ATENDIDA = 'atendida';
 
+    public const ESTADO_NO_SHOW = 'no_show';
+
     protected $casts = [
         'fecha' => 'date',
         'recordatorio_enviado_at' => 'datetime',
@@ -86,6 +88,11 @@ class Cita extends Model
     public function pago(): HasOne
     {
         return $this->hasOne(Pago::class);
+    }
+
+    public function pagos(): HasMany
+    {
+        return $this->hasMany(Pago::class);
     }
 
     public function consulta(): HasOne

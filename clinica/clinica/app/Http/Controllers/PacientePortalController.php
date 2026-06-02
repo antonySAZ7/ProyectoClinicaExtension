@@ -26,7 +26,7 @@ class PacientePortalController extends Controller
         $consultasRecientes = collect();
 
         if ($paciente) {
-            $paciente->loadMissing('antecedenteClinico');
+            $paciente->loadMissing(['antecedenteClinico', 'consultas.presupuestoItems', 'pagos']);
 
             $citas = $paciente->citas()
                 ->upcoming()

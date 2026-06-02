@@ -4,9 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use OwenIt\Auditing\Auditable as AuditableTrait;
+use OwenIt\Auditing\Contracts\Auditable;
 
-class AntecedenteClinico extends Model
+class AntecedenteClinico extends Model implements Auditable
 {
+    use AuditableTrait;
+
     protected $table = 'antecedentes_clinicos';
 
     /**

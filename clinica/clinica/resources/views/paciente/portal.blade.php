@@ -55,6 +55,43 @@
                 </div>
             @endif
 
+            @if ($paciente)
+                @php
+                    $presupuestoTotal = (float) $paciente->presupuesto_total;
+                    $totalPagado = (float) $paciente->total_pagado;
+                    $saldoPendiente = (float) $paciente->saldo_pendiente;
+                    $progresoPago = $presupuestoTotal > 0 ? min(100, round($totalPagado / $presupuestoTotal * 100, 1)) : 0;
+                @endphp
+
+                <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                    <div class="border-b border-gray-100 px-6 py-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Mi saldo</h3>
+                        <p class="mt-1 text-sm text-gray-600">Resumen financiero de tus tratamientos registrados.</p>
+                    </div>
+
+                    <div class="grid gap-4 px-6 py-5 sm:grid-cols-3">
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Presupuesto</p>
+                            <p class="mt-1 text-lg font-semibold text-gray-900">Q{{ number_format($presupuestoTotal, 2) }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Pagado</p>
+                            <p class="mt-1 text-lg font-semibold text-emerald-700">Q{{ number_format($totalPagado, 2) }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Pendiente</p>
+                            <p class="mt-1 text-lg font-semibold text-amber-700">Q{{ number_format($saldoPendiente, 2) }}</p>
+                        </div>
+                    </div>
+
+                    <div class="px-6 pb-5">
+                        <div class="h-2 overflow-hidden rounded-full bg-gray-100">
+                            <div class="h-full rounded-full bg-emerald-500" style="width: {{ $progresoPago }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             @if ($paciente?->antecedenteClinico)
                 @php
                     $ant = $paciente->antecedenteClinico;
@@ -158,18 +195,19 @@
                                                 'confirmada' => 'background:#dcfce7; color:#15803d;',
                                                 'atendida'   => 'background:#dbeafe; color:#1d4ed8;',
                                                 'cancelada'  => 'background:#fee2e2; color:#b91c1c;',
+                                                'no_show'    => 'background:#f3f4f6; color:#4b5563;',
                                                 default      => 'background:#fef3c7; color:#b45309;',
                                             };
                                         @endphp
                                         <span style="display:inline-flex; border-radius:9999px; padding:2px 10px; font-size:12px; font-weight:700; {{ $badgeEstilo }}">
-                                            {{ ucfirst($cita->estado) }}
+                                            {{ $cita->estado === 'no_show' ? 'No show' : ucfirst($cita->estado) }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-700">
                                         {{ $cita->motivo }}
                                     </td>
                                     <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
-                                        @if (in_array($cita->estado, ['cancelada', 'atendida']))
+                                        @if (in_array($cita->estado, ['cancelada', 'atendida', 'no_show']))
                                             <span class="text-xs font-medium text-gray-400">Sin accion</span>
                                         @else
                                             <div class="flex flex-col items-end gap-2 sm:flex-row sm:justify-end">

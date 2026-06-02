@@ -64,7 +64,7 @@ class AppointmentAvailabilityService
             ->whereDate('fecha', $fecha)
             ->where('hora', '<', $horaFin)
             ->where('hora_fin', '>', $hora)
-            ->whereNotIn('estado', [Cita::ESTADO_CANCELADA])
+            ->whereNotIn('estado', [Cita::ESTADO_CANCELADA, Cita::ESTADO_NO_SHOW])
             ->when($exceptCitaId, fn ($query) => $query->whereKeyNot($exceptCitaId))
             ->exists();
     }

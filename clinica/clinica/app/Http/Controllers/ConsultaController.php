@@ -4,15 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreConsultaRequest;
 use App\Http\Requests\UpdateConsultaRequest;
+use App\Mail\ConsultaCerradaMail;
 use App\Models\Archivo;
 use App\Models\Cita;
 use App\Models\Consulta;
+use App\Models\NotificacionLog;
 use App\Models\Observacion;
 use App\Models\Paciente;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -127,6 +130,8 @@ class ConsultaController extends Controller
             return $consulta;
         });
 
+        $this->sendConsultaCerradaNotification($consulta);
+
         return redirect()->route('consultas.show', $consulta)
             ->with('success', 'Consulta registrada correctamente.');
     }
@@ -136,7 +141,15 @@ class ConsultaController extends Controller
         /** @var User $user */
         $user = $request->user();
 
-        $consulta->load(['paciente.user', 'user', 'observaciones', 'archivos']);
+        $consulta->load([
+            'paciente.user',
+            'user',
+            'observaciones',
+            'archivos',
+            'presupuestoItems.pieza',
+            'pagos',
+            'consultaOrigen',
+        ]);
 
         $this->authorizeConsultaView($user, $consulta);
 
@@ -162,6 +175,43 @@ class ConsultaController extends Controller
 
         return redirect()->route('consultas.show', $consulta)
             ->with('success', 'Consulta actualizada correctamente.');
+    }
+
+    public function storeFollowUp(Request $request, Consulta $consulta): RedirectResponse
+    {
+        if (! $request->user()?->canManageClinicalHistory()) {
+            abort(403);
+        }
+
+        $consulta->load(['paciente', 'piezasDentales']);
+
+        $seguimiento = DB::transaction(function () use ($request, $consulta) {
+            $seguimiento = $consulta->paciente->consultas()->create([
+                'user_id' => $request->user()->id,
+                'consulta_origen_id' => $consulta->id,
+                'fecha' => today()->toDateString(),
+                'motivo' => 'Seguimiento de '.$consulta->fecha?->format('d/m/Y'),
+                'diagnostico' => 'Seguimiento pendiente de documentar.',
+            ]);
+
+            $piezas = $consulta->piezasDentales
+                ->mapWithKeys(fn ($pieza) => [
+                    $pieza->id => [
+                        'estado' => $pieza->pivot?->estado ?? 'sana',
+                        'observaciones' => $pieza->pivot?->observaciones,
+                    ],
+                ])
+                ->all();
+
+            if (! empty($piezas)) {
+                $seguimiento->piezasDentales()->sync($piezas);
+            }
+
+            return $seguimiento;
+        });
+
+        return redirect()->route('consultas.show', $seguimiento)
+            ->with('success', 'Consulta de seguimiento creada correctamente.');
     }
 
     public function storeObservacion(Request $request, Consulta $consulta): RedirectResponse
@@ -251,5 +301,35 @@ class ConsultaController extends Controller
         if (! $user->canManageClinicalHistory()) {
             abort(403);
         }
+    }
+
+    protected function sendConsultaCerradaNotification(Consulta $consulta): void
+    {
+        $consulta->loadMissing([
+            'paciente.consultas.presupuestoItems',
+            'paciente.pagos',
+            'observaciones',
+        ]);
+
+        if (! $consulta->paciente?->correo) {
+            return;
+        }
+
+        Mail::to($consulta->paciente->correo)->send(new ConsultaCerradaMail($consulta));
+
+        NotificacionLog::create([
+            'cita_id' => $consulta->cita_id,
+            'canal' => 'email',
+            'tipo' => 'consulta_cerrada',
+            'destinatario' => $consulta->paciente->correo,
+            'estado' => 'enviado',
+            'payload' => [
+                'consulta_id' => $consulta->id,
+                'fecha' => $consulta->fecha?->toDateString(),
+                'motivo' => $consulta->motivo,
+                'saldo_actual' => $consulta->paciente->saldo_pendiente,
+            ],
+            'enviado_en' => now(),
+        ]);
     }
 }

@@ -13,9 +13,11 @@
         "barryvdh/laravel-dompdf": "^3.1",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
-        "mallardduck/blade-lucide-icons": "^1.26"
+        "mallardduck/blade-lucide-icons": "^1.26",
+        "owen-it/laravel-auditing": "dev-master"
     },
     "require-dev": {
+        "barryvdh/laravel-debugbar": "^4.2",
         "fakerphp/faker": "^1.23",
         "laravel/breeze": "^2.4",
         "laravel/pail": "^1.2.2",

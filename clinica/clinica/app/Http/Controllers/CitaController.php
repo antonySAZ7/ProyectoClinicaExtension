@@ -67,6 +67,7 @@ class CitaController extends Controller
                     Cita::ESTADO_CONFIRMADA => ['bg' => '#16a34a', 'border' => '#15803d'],
                     Cita::ESTADO_ATENDIDA => ['bg' => '#2563eb', 'border' => '#1d4ed8'],
                     Cita::ESTADO_CANCELADA => ['bg' => '#dc2626', 'border' => '#b91c1c'],
+                    Cita::ESTADO_NO_SHOW => ['bg' => '#6b7280', 'border' => '#4b5563'],
                     default => ['bg' => '#d97706', 'border' => '#b45309'],
                 };
 
@@ -148,7 +149,13 @@ class CitaController extends Controller
         $cita->load('recordatoriosSeguimiento');
         $pacientes = Paciente::orderBy('nombre_completo')->get();
         $servicios = Servicio::where('activo', true)->orderBy('nombre')->get();
-        $estados = [Cita::ESTADO_PENDIENTE, Cita::ESTADO_CONFIRMADA, Cita::ESTADO_CANCELADA];
+        $estados = [
+            Cita::ESTADO_PENDIENTE,
+            Cita::ESTADO_CONFIRMADA,
+            Cita::ESTADO_ATENDIDA,
+            Cita::ESTADO_CANCELADA,
+            Cita::ESTADO_NO_SHOW,
+        ];
 
         return view('citas.edit', compact('cita', 'pacientes', 'servicios', 'estados'));
     }
@@ -165,7 +172,13 @@ class CitaController extends Controller
             'hora' => ['required', 'date_format:H:i'],
             'hora_fin' => ['required', 'date_format:H:i', 'after:hora'],
             'motivo' => ['required', 'string', 'max:255'],
-            'estado' => ['required', Rule::in([Cita::ESTADO_PENDIENTE, Cita::ESTADO_CONFIRMADA, Cita::ESTADO_CANCELADA])],
+            'estado' => ['required', Rule::in([
+                Cita::ESTADO_PENDIENTE,
+                Cita::ESTADO_CONFIRMADA,
+                Cita::ESTADO_ATENDIDA,
+                Cita::ESTADO_CANCELADA,
+                Cita::ESTADO_NO_SHOW,
+            ])],
             'observaciones' => ['nullable', 'string'],
             'activar_recordatorio_seguimiento' => ['nullable', 'boolean'],
             'recordatorio_modo' => ['nullable', Rule::in([RecordatorioSeguimiento::MODO_INTERVALO, RecordatorioSeguimiento::MODO_PERSONALIZADO])],
@@ -186,7 +199,7 @@ class CitaController extends Controller
         }
 
         if (
-            $validated['estado'] !== Cita::ESTADO_CANCELADA
+            ! in_array($validated['estado'], [Cita::ESTADO_CANCELADA, Cita::ESTADO_NO_SHOW], true)
             && ! $availability->isAvailable($validated['fecha'], $validated['hora'], $validated['hora_fin'], $cita->id)
         ) {
             return back()

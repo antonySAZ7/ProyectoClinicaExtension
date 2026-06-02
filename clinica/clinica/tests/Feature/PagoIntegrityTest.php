@@ -1,11 +1,10 @@
 <?php
 
 use App\Models\Cita;
-use App\Models\Pago;
 use App\Models\Paciente;
-use Illuminate\Database\QueryException;
+use App\Models\Pago;
 
-test('a cita can not have more than one pago', function () {
+test('a cita can have multiple partial payments', function () {
     $paciente = Paciente::create([
         'nombre_completo' => 'Paciente Pago',
         'dpi' => '1000000000003',
@@ -32,12 +31,14 @@ test('a cita can not have more than one pago', function () {
         'fecha_pago' => now()->toDateString(),
     ]);
 
-    expect(fn () => Pago::create([
+    Pago::create([
         'paciente_id' => $paciente->id,
         'cita_id' => $cita->id,
         'monto' => 200,
         'metodo_pago' => 'tarjeta',
         'estado' => 'pagado',
         'fecha_pago' => now()->toDateString(),
-    ]))->toThrow(QueryException::class);
+    ]);
+
+    expect($cita->pagos()->count())->toBe(2);
 });
