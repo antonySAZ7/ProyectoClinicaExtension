@@ -1,5 +1,7 @@
 <?php
 
+use App\Mail\AdminAppointmentCreatedMail;
+use App\Mail\AdminUserRegisteredMail;
 use App\Mail\CitaConfirmationMail;
 use App\Mail\SeguimientoReminderMail;
 use App\Models\Cita;
@@ -66,6 +68,10 @@ test('public appointment scheduling creates paciente user cita and notifications
     Carbon::setTestNow(Carbon::create(2026, 5, 11, 10, 0, 0));
     Mail::fake();
 
+    $admin = User::factory()->create([
+        'email' => 'admin-citas@example.com',
+    ]);
+
     $servicio = Servicio::create([
         'nombre' => 'Consulta general',
         'duracion_minutos' => 45,
@@ -105,9 +111,26 @@ test('public appointment scheduling creates paciente user cita and notifications
     ]);
 
     Mail::assertSent(CitaConfirmationMail::class);
+    Mail::assertSent(AdminAppointmentCreatedMail::class, function (AdminAppointmentCreatedMail $mail) use ($admin) {
+        return $mail->hasTo($admin->email)
+            && $mail->cita->paciente?->correo === 'publico@example.com';
+    });
+    Mail::assertSent(AdminUserRegisteredMail::class, function (AdminUserRegisteredMail $mail) use ($admin) {
+        return $mail->hasTo($admin->email)
+            && $mail->registeredUser->email === 'publico@example.com';
+    });
+
     expect(NotificacionLog::where('canal', 'email')
         ->where('tipo', 'confirmacion_agendamiento')
-        ->exists())->toBeTrue();
+        ->exists())->toBeTrue()
+        ->and(NotificacionLog::where('canal', 'email')
+            ->where('tipo', 'admin_cita_creada')
+            ->where('destinatario', $admin->email)
+            ->exists())->toBeTrue()
+        ->and(NotificacionLog::where('canal', 'email')
+            ->where('tipo', 'admin_usuario_registrado')
+            ->where('destinatario', $admin->email)
+            ->exists())->toBeTrue();
 
     Carbon::setTestNow();
 });

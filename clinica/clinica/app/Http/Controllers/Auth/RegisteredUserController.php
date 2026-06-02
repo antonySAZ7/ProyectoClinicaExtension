@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Paciente;
 use App\Models\User;
+use App\Services\AdminNotificationService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,7 +32,7 @@ class RegisteredUserController extends Controller
      *
      * @throws ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, AdminNotificationService $adminNotifications): RedirectResponse
     {
         $validated = $request->validate([
             'nombre_completo' => ['required', 'string', 'max:255'],
@@ -79,6 +80,7 @@ class RegisteredUserController extends Controller
         });
 
         event(new Registered($user));
+        $adminNotifications->notifyUserRegistered($user);
 
         Auth::login($user);
 

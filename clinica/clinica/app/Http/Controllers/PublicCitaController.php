@@ -8,6 +8,7 @@ use App\Models\NotificacionLog;
 use App\Models\Paciente;
 use App\Models\Servicio;
 use App\Models\User;
+use App\Services\AdminNotificationService;
 use App\Services\AppointmentAvailabilityService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -73,7 +74,8 @@ class PublicCitaController extends Controller
 
     public function store(
         Request $request,
-        AppointmentAvailabilityService $availability
+        AppointmentAvailabilityService $availability,
+        AdminNotificationService $adminNotifications
     ): RedirectResponse {
         $user = $request->user();
         $user?->loadMissing('paciente');
@@ -114,8 +116,8 @@ class PublicCitaController extends Controller
 
         $wasGuest = ! $user;
 
-        [$cita, $pacienteUser] = DB::transaction(function () use ($validated, $user, $servicio, $horaFin) {
-            $paciente = $this->resolvePaciente($validated, $user);
+        [$cita, $pacienteUser, $createdUser] = DB::transaction(function () use ($validated, $user, $servicio, $horaFin) {
+            [$paciente, $createdUser] = $this->resolvePaciente($validated, $user);
             $paciente->loadMissing('user');
 
             $cita = Cita::create([
@@ -128,7 +130,7 @@ class PublicCitaController extends Controller
                 'estado' => Cita::ESTADO_PENDIENTE,
             ]);
 
-            return [$cita, $paciente->user];
+            return [$cita, $paciente->user, $createdUser];
         });
 
         $cita->load(['paciente', 'servicio']);
@@ -138,6 +140,11 @@ class PublicCitaController extends Controller
             'hora' => substr((string) $cita->hora, 0, 5),
             'servicio' => $cita->servicio?->nombre,
         ]);
+        $adminNotifications->notifyAppointmentCreated($cita);
+
+        if ($createdUser) {
+            $adminNotifications->notifyUserRegistered($createdUser);
+        }
 
         if ($wasGuest && $pacienteUser) {
             Auth::login($pacienteUser);
@@ -151,18 +158,20 @@ class PublicCitaController extends Controller
             ->with('success', 'Tu solicitud de cita fue registrada correctamente.');
     }
 
-    protected function resolvePaciente(array $validated, ?User $user): Paciente
+    protected function resolvePaciente(array $validated, ?User $user): array
     {
         if ($user?->isPaciente()) {
             $user->loadMissing('paciente');
 
             if ($user->paciente) {
-                return $user->paciente;
+                return [$user->paciente, null];
             }
         }
 
+        $createdUser = null;
+
         if (! $user || ! $user->isPaciente()) {
-            $user = User::create([
+            $createdUser = $user = User::create([
                 'name' => $validated['nombre_completo'],
                 'email' => $validated['correo'],
                 'role' => User::ROLE_PACIENTE,
@@ -170,7 +179,7 @@ class PublicCitaController extends Controller
             ]);
         }
 
-        return Paciente::create([
+        $paciente = Paciente::create([
             'user_id' => $user->id,
             'nombre_completo' => $validated['nombre_completo'] ?? $user->name,
             'dpi' => $validated['dpi'],
@@ -179,6 +188,8 @@ class PublicCitaController extends Controller
             'correo' => $validated['correo'] ?? $user->email,
             'direccion' => $validated['direccion'],
         ]);
+
+        return [$paciente, $createdUser];
     }
 
     protected function logEmail(Cita $cita, string $tipo, string $to, array $payload): void

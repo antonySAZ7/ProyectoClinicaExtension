@@ -6,6 +6,7 @@ use App\Models\Cita;
 use App\Models\Paciente;
 use App\Models\RecordatorioSeguimiento;
 use App\Models\Servicio;
+use App\Services\AdminNotificationService;
 use App\Services\AppointmentAvailabilityService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -98,8 +99,11 @@ class CitaController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, AppointmentAvailabilityService $availability)
-    {
+    public function store(
+        Request $request,
+        AppointmentAvailabilityService $availability,
+        AdminNotificationService $adminNotifications
+    ) {
         $validated = $request->validate([
             'paciente_id' => ['required', 'exists:pacientes,id'],
             'servicio_id' => ['nullable', Rule::exists('servicios', 'id')->where('activo', true)],
@@ -136,6 +140,7 @@ class CitaController extends Controller
 
         $cita = Cita::create($validated);
         $this->syncFollowUpReminder($cita, $followUpData);
+        $adminNotifications->notifyAppointmentCreated($cita);
 
         return redirect()->route('citas.index')
             ->with('success', 'Cita registrada correctamente.');

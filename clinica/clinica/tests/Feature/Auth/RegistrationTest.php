@@ -1,7 +1,10 @@
 <?php
 
+use App\Mail\AdminUserRegisteredMail;
+use App\Models\NotificacionLog;
 use App\Models\Paciente;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 
 test('registration screen can be rendered', function () {
     $response = $this->get('/register');
@@ -10,6 +13,12 @@ test('registration screen can be rendered', function () {
 });
 
 test('new users can register', function () {
+    Mail::fake();
+
+    $admin = User::factory()->create([
+        'email' => 'admin-registros@example.com',
+    ]);
+
     $response = $this->post('/register', [
         'nombre_completo' => 'Juan Perez',
         'correo' => 'juan.perez@example.com',
@@ -39,6 +48,14 @@ test('new users can register', function () {
     expect($paciente->correo)->toBe('juan.perez@example.com');
     expect($paciente->direccion)->toBe('Calle Falsa 123, Zona 1');
     expect($paciente->sexo)->toBe('masculino');
+
+    Mail::assertSent(AdminUserRegisteredMail::class, function (AdminUserRegisteredMail $mail) use ($admin) {
+        return $mail->hasTo($admin->email)
+            && $mail->registeredUser->email === 'juan.perez@example.com';
+    });
+    expect(NotificacionLog::where('tipo', 'admin_usuario_registrado')
+        ->where('destinatario', $admin->email)
+        ->exists())->toBeTrue();
 });
 
 test('registration rejects duplicate dpi', function () {
