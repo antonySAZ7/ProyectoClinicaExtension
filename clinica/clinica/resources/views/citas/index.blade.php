@@ -109,9 +109,15 @@
                                                     @method('DELETE')
 
                                                     <button
-                                                        type="submit"
+                                                        type="button"
                                                         class="inline-flex items-center justify-center rounded-md border border-red-300 px-3 py-2 font-medium text-red-700 transition hover:bg-red-50"
-                                                        onclick="return confirm('Deseas cancelar esta cita?')"
+                                                        onclick="window.confirmAndSubmit(this.closest('form'), {
+                                                            title: '¿Cancelar esta cita?',
+                                                            message: 'El paciente recibirá la cita como cancelada.',
+                                                            confirmText: 'Cancelar cita',
+                                                            cancelText: 'Volver',
+                                                            variant: 'warning',
+                                                        })"
                                                     >
                                                         Cancelar
                                                     </button>

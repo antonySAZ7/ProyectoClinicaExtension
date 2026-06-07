@@ -56,7 +56,7 @@
 
 <x-card class="p-5">
                         <p class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Consultas registradas</p>
-                        <p class="mt-2 text-base text-brand-primary">{{ $consultas->count() }}</p>
+                        <p class="mt-2 text-base text-brand-primary">{{ $consultas->total() }}</p>
                     </x-card>
             </div>
 
@@ -108,6 +108,12 @@
                     </table>
                 </div>
             </x-card>
+
+            @if ($consultas->hasPages())
+                <div class="mt-2">
+                    {{ $consultas->links() }}
+                </div>
+            @endif
         </div>
     </div>
 </x-app-layout>

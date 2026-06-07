@@ -7,18 +7,30 @@ use App\Models\TarifaTratamiento;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 
 class PrecioController extends Controller
 {
-    public function index(): JsonResponse
+    private const ESTADOS_ODONTOGRAMA = [
+        'sana',
+        'caries',
+        'obturada',
+        'ausente',
+        'extraccion',
+        'corona',
+        'endodoncia',
+    ];
+
+    public function index(): View
     {
-        return response()->json([
+        return view('precios.index', [
             'servicios' => Servicio::query()
                 ->orderBy('nombre')
                 ->get(['id', 'nombre', 'descripcion', 'duracion_minutos', 'precio_sugerido', 'activo']),
             'tarifas' => TarifaTratamiento::query()
                 ->orderBy('estado_pieza')
-                ->get(),
+                ->get(['id', 'estado_pieza', 'nombre_legible', 'precio_sugerido', 'activo']),
+            'estadosOdontograma' => self::ESTADOS_ODONTOGRAMA,
         ]);
     }
 

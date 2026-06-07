@@ -71,6 +71,12 @@
                 </script>
             @endonce
 
+            @if ($pacientes->total() > 0)
+                <p class="text-sm text-gray-500">
+                    Mostrando {{ $pacientes->firstItem() }}–{{ $pacientes->lastItem() }} de {{ $pacientes->total() }} pacientes.
+                </p>
+            @endif
+
             <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -87,13 +93,27 @@
                         <tbody class="divide-y divide-gray-200 bg-white">
                             @forelse ($pacientes as $paciente)
                                 <tr>
-                                    <td class="px-4 py-4 text-sm font-medium text-gray-900">{{ $paciente->nombre_completo }}</td>
+                                    <td class="px-4 py-4 text-sm font-medium text-gray-900">
+                                        <a
+                                            href="{{ route('pacientes.show', $paciente) }}"
+                                            class="text-brand-primary hover:underline"
+                                        >
+                                            {{ $paciente->nombre_completo }}
+                                        </a>
+                                    </td>
                                     <td class="px-4 py-4 text-sm text-gray-700">{{ $paciente->user?->email ?? 'Sin usuario' }}</td>
                                     <td class="px-4 py-4 text-sm text-gray-700">{{ $paciente->dpi }}</td>
                                     <td class="px-4 py-4 text-sm text-gray-700">{{ $paciente->telefono }}</td>
                                     <td class="px-4 py-4 text-sm text-gray-700">{{ $paciente->correo }}</td>
                                     <td class="px-4 py-4 text-sm">
                                         <div class="flex flex-col gap-2 sm:flex-row">
+                                            <a
+                                                href="{{ route('pacientes.show', $paciente) }}"
+                                                class="inline-flex items-center justify-center rounded-md border border-brand-border px-3 py-2 font-medium text-brand-primary transition hover:bg-brand-soft"
+                                            >
+                                                Perfil
+                                            </a>
+
                                             <a
                                                 href="{{ route('pacientes.consultas.index', $paciente) }}"
                                                 class="inline-flex items-center justify-center rounded-md border border-sky-300 px-3 py-2 font-medium text-sky-700 transition hover:bg-sky-50"
@@ -120,9 +140,14 @@
                                                 @method('DELETE')
 
                                                 <button
-                                                    type="submit"
+                                                    type="button"
                                                     class="inline-flex items-center justify-center rounded-md border border-red-300 px-3 py-2 font-medium text-red-700 transition hover:bg-red-50"
-                                                    onclick="return confirm('Deseas eliminar este paciente?')"
+                                                    onclick="window.confirmAndSubmit(this.closest('form'), {
+                                                        title: '¿Eliminar este paciente?',
+                                                        message: 'Se borrará el expediente del paciente, junto con todas sus consultas, observaciones, archivos y pagos asociados. Esta acción no se puede deshacer.',
+                                                        confirmText: 'Eliminar paciente',
+                                                        variant: 'danger',
+                                                    })"
                                                 >
                                                     Eliminar
                                                 </button>
@@ -141,6 +166,12 @@
                     </table>
                 </div>
             </div>
+
+            @if ($pacientes->hasPages())
+                <div class="mt-2">
+                    {{ $pacientes->links() }}
+                </div>
+            @endif
         </div>
     </div>
 </x-app-layout>
