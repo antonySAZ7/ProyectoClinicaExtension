@@ -215,9 +215,15 @@
                                                     <form method="POST" action="{{ route('citas.confirmar', $cita) }}">
                                                         @csrf
                                                         <button
-                                                            type="submit"
+                                                            type="button"
                                                             class="inline-flex items-center justify-center rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs font-semibold uppercase tracking-widest text-emerald-700 transition hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
-                                                            onclick="return confirm('Deseas confirmar esta cita?');"
+                                                            onclick="window.confirmAndSubmit(this.closest('form'), {
+                                                                title: '¿Confirmar esta cita?',
+                                                                message: 'Le avisaremos al consultorio que asistirás.',
+                                                                confirmText: 'Confirmar',
+                                                                cancelText: 'Volver',
+                                                                variant: 'info',
+                                                            })"
                                                         >
                                                             Confirmar cita
                                                         </button>
@@ -227,7 +233,16 @@
                                                 <form method="POST" action="{{ route('portal.citas.cancelar', $cita) }}">
                                                     @csrf
                                                     @method('PATCH')
-                                                    <x-danger-button onclick="return confirm('Deseas cancelar esta cita?');">
+                                                    <x-danger-button
+                                                        type="button"
+                                                        onclick="window.confirmAndSubmit(this.closest('form'), {
+                                                            title: '¿Cancelar tu cita?',
+                                                            message: 'La cita será cancelada y deberás agendar una nueva si la querés reprogramar.',
+                                                            confirmText: 'Cancelar cita',
+                                                            cancelText: 'Volver',
+                                                            variant: 'warning',
+                                                        })"
+                                                    >
                                                         Cancelar mi cita
                                                     </x-danger-button>
                                                 </form>

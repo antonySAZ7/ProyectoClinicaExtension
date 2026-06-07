@@ -383,6 +383,7 @@
 
                     const data = await res.json();
                     this.piezas = data.piezas || [];
+                    this.notificarCambio();
                     this.cerrarDrawer();
                 } catch (e) {
                     this.error = e.message || 'Ocurrió un error al guardar.';
@@ -391,9 +392,21 @@
                 }
             },
 
+            notificarCambio() {
+                window.dispatchEvent(new CustomEvent('odontograma-changed', {
+                    detail: { piezas: this.piezas.map(p => ({ id: p.id, estado: p.estado })) },
+                }));
+            },
+
             async reset() {
                 if (! this.selected || this.guardando) return;
-                if (! confirm('¿Quitar el registro de esta pieza? Volverá al estado "sana".')) return;
+                const ok = await window.confirmDialog({
+                    title: '¿Quitar el registro de esta pieza?',
+                    message: 'La pieza volverá al estado "sana".',
+                    confirmText: 'Quitar registro',
+                    variant: 'warning',
+                });
+                if (! ok) return;
                 this.guardando = true;
                 this.error = null;
 
@@ -409,6 +422,7 @@
                     if (! res.ok) throw new Error('No se pudo quitar el registro.');
 
                     await this.cargar();
+                    this.notificarCambio();
                     this.cerrarDrawer();
                 } catch (e) {
                     this.error = e.message || 'Ocurrió un error al eliminar.';

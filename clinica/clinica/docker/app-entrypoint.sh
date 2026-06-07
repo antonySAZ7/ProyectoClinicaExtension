@@ -47,11 +47,14 @@ mkdir -p \
 
 chmod -R ug+rwX storage bootstrap/cache
 
-if [ ! -f vendor/autoload.php ]; then
+# Sincronizar vendor cuando no existe o cuando composer.lock es más reciente
+# (caso típico: alguien hizo composer require/update y pusheó, pero el vendor
+# del contenedor quedó cacheado de un install anterior).
+if [ ! -f vendor/autoload.php ] || [ composer.lock -nt vendor/autoload.php ]; then
     composer install --no-interaction --prefer-dist
 fi
 
-if [ ! -x node_modules/.bin/vite ]; then
+if [ ! -x node_modules/.bin/vite ] || [ package-lock.json -nt node_modules/.package-lock.json ]; then
     npm install
 fi
 

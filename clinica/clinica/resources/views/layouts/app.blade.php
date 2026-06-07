@@ -33,5 +33,8 @@
             @yield('content')
         </main>
     </div>
+
+    {{-- Modal global de confirmación (window.confirmDialog) --}}
+    <x-confirm-modal />
 </body>
 </html>
