@@ -17,10 +17,17 @@ class PacienteController extends Controller
     {
         $buscar = request('buscar');
 
-        $pacientes = Paciente::with('user')->when($buscar, function (Builder $query, string $buscar) {
-            return $query->where('nombre_completo', 'like', "%$buscar%")
-                ->orWhere('dpi', 'like', "%$buscar%");
-        })->get();
+        $pacientes = Paciente::with('user')
+            ->when($buscar, function (Builder $query, string $buscar) {
+                return $query->where(function (Builder $query) use ($buscar) {
+                    $query->where('nombre_completo', 'like', "%$buscar%")
+                        ->orWhere('dpi', 'like', "%$buscar%")
+                        ->orWhere('telefono', 'like', "%$buscar%");
+                });
+            })
+            ->orderBy('nombre_completo')
+            ->paginate(25)
+            ->withQueryString();
 
         return view('pacientes.index', compact('pacientes'));
     }
@@ -51,7 +58,26 @@ class PacienteController extends Controller
      */
     public function show(Paciente $paciente)
     {
-        //
+        $paciente->load([
+            'user',
+            'antecedenteClinico',
+            'consultas' => fn ($q) => $q->orderByDesc('fecha')->limit(5),
+            'consultas.presupuestoItems',
+            'pagos' => fn ($q) => $q->orderByDesc('fecha_pago')->orderByDesc('created_at'),
+        ]);
+
+        $consultasParaAbono = $paciente->consultas()
+            ->orderByDesc('fecha')
+            ->get(['id', 'fecha', 'motivo'])
+            ->map(fn ($c) => [
+                'id' => $c->id,
+                'label' => $c->fecha->format('d/m/Y').' — '.($c->motivo ?: 'Sin motivo'),
+            ]);
+
+        return view('pacientes.show', [
+            'paciente' => $paciente,
+            'consultasParaAbono' => $consultasParaAbono,
+        ]);
     }
 
     /**
@@ -85,6 +111,51 @@ class PacienteController extends Controller
 
         return redirect()->route('pacientes.index')
             ->with('success', 'Paciente eliminado correctamente.');
+    }
+
+    public function evolucionOdontograma(Paciente $paciente)
+    {
+        $consultas = $paciente->consultas()
+            ->with(['piezasDentales' => fn ($q) => $q->orderBy('cuadrante')->orderBy('posicion')])
+            ->orderByDesc('fecha')
+            ->orderByDesc('created_at')
+            ->get();
+
+        $evoluciones = [];
+
+        foreach ($consultas as $consulta) {
+            foreach ($consulta->piezasDentales as $pieza) {
+                $estado = $pieza->pivot?->estado ?? 'sana';
+
+                if (! isset($evoluciones[$pieza->id])) {
+                    $evoluciones[$pieza->id] = [
+                        'numero' => $pieza->numero,
+                        'nombre' => $pieza->nombre,
+                        'cuadrante' => $pieza->cuadrante,
+                        'estado_actual' => $estado,
+                        'cambios' => [],
+                    ];
+                }
+
+                $evoluciones[$pieza->id]['cambios'][] = [
+                    'consulta_id' => $consulta->id,
+                    'fecha' => $consulta->fecha,
+                    'fecha_iso' => $consulta->fecha?->toDateString(),
+                    'motivo' => $consulta->motivo,
+                    'estado' => $estado,
+                    'observaciones' => $pieza->pivot?->observaciones,
+                ];
+            }
+        }
+
+        // Ordenar por número de pieza ascendente para presentación estable.
+        uasort($evoluciones, fn ($a, $b) => $a['numero'] <=> $b['numero']);
+
+        return view('pacientes.odontograma-evolucion', [
+            'paciente' => $paciente,
+            'evoluciones' => array_values($evoluciones),
+            'totalConsultas' => $consultas->count(),
+        ]);
     }
 
     protected function usuariosPacienteDisponibles(?Paciente $paciente = null)

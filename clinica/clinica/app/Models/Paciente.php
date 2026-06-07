@@ -24,6 +24,13 @@ class Paciente extends Model
         'ocupacion',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'fecha_nacimiento' => 'date',
+        ];
+    }
+
     /**
      * Edad en anios calculada desde la fecha de nacimiento.
      */

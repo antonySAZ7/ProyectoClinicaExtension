@@ -10,6 +10,20 @@
 
             <div class="flex flex-wrap gap-3">
                 @unless ($isPortal)
+                    @php $saldoPaciente = (float) $consulta->paciente->saldo_pendiente; @endphp
+
+                    @if ($saldoPaciente > 0)
+                        <button
+                            x-data
+                            type="button"
+                            class="inline-flex items-center justify-center gap-2 rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                            @click.prevent="$dispatch('open-modal', 'registrar-abono')"
+                        >
+                            <x-lucide-circle-dollar-sign class="h-4 w-4" />
+                            Registrar abono
+                        </button>
+                    @endif
+
                     <form method="POST" action="{{ route('consultas.seguimiento.store', $consulta) }}">
                         @csrf
                         <x-button type="submit" variant="outline">
@@ -140,71 +154,6 @@
                             </div>
                         </dl>
                     </x-card>
-
-                    <x-card class="p-6">
-                        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                            <div>
-                                <h3 class="text-lg font-semibold text-brand-primary">Presupuesto</h3>
-                                <p class="mt-1 text-sm text-brand-muted">
-                                    @if ($consulta->presupuesto_aceptado_en)
-                                        Aceptado el {{ $consulta->presupuesto_aceptado_en->format('d/m/Y H:i') }}.
-                                    @else
-                                        Pendiente de aceptacion.
-                                    @endif
-                                </p>
-                            </div>
-
-                            @unless ($isPortal || $consulta->presupuesto_aceptado_en)
-                                <form method="POST" action="{{ route('consultas.presupuesto.aceptar', $consulta) }}">
-                                    @csrf
-                                    <x-button type="submit" variant="outline">
-                                        Marcar aceptado
-                                    </x-button>
-                                </form>
-                            @endunless
-                        </div>
-
-                        <div class="mt-4 overflow-x-auto">
-                            <table class="min-w-full divide-y divide-brand-border text-sm">
-                                <thead>
-                                    <tr class="text-left text-xs font-semibold uppercase tracking-wide text-brand-muted">
-                                        <th class="py-2 pr-3">Pieza</th>
-                                        <th class="px-3 py-2">Diagnostico</th>
-                                        <th class="px-3 py-2">Tratamiento</th>
-                                        <th class="px-3 py-2 text-right">Subtotal</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-brand-border">
-                                    @forelse ($consulta->presupuestoItems as $item)
-                                        <tr>
-                                            <td class="py-2 pr-3 text-brand-primary">
-                                                {{ $item->pieza?->numero ?? 'N/A' }}
-                                            </td>
-                                            <td class="px-3 py-2 text-brand-primary">{{ $item->diagnostico }}</td>
-                                            <td class="px-3 py-2 text-brand-primary">{{ $item->tratamiento }}</td>
-                                            <td class="px-3 py-2 text-right text-brand-primary">
-                                                Q{{ number_format((float) $item->subtotal, 2) }}
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="4" class="py-4 text-center text-brand-muted">
-                                                Esta consulta todavia no tiene items de presupuesto.
-                                            </td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <th colspan="3" class="pt-3 text-right text-brand-primary">Total</th>
-                                        <th class="pt-3 text-right text-brand-primary">
-                                            Q{{ number_format((float) $consulta->presupuesto_total, 2) }}
-                                        </th>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                    </x-card>
                 </div>
 
                 <div class="space-y-6">
@@ -224,9 +173,14 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button
-                                                    type="submit"
-                                                    onclick="return confirm('¿Eliminar esta observación?');"
+                                                    type="button"
                                                     class="text-xs font-medium text-rose-600 hover:text-rose-700"
+                                                    onclick="window.confirmAndSubmit(this.closest('form'), {
+                                                        title: '¿Eliminar esta observación?',
+                                                        message: 'La observación se borrará permanentemente del historial de la consulta.',
+                                                        confirmText: 'Eliminar',
+                                                        variant: 'danger',
+                                                    })"
                                                 >
                                                     Eliminar
                                                 </button>
@@ -298,8 +252,13 @@
                                             @csrf
                                             @method('DELETE')
                                             <button
-                                                type="submit"
-                                                onclick="return confirm('¿Eliminar este archivo?');"
+                                                type="button"
+                                                onclick="window.confirmAndSubmit(this.closest('form'), {
+                                                    title: '¿Eliminar este archivo?',
+                                                    message: 'El archivo se borrará permanentemente del expediente del paciente.',
+                                                    confirmText: 'Eliminar',
+                                                    variant: 'danger',
+                                                })"
                                                 class="inline-flex items-center justify-center rounded-md border border-rose-300 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
                                             >
                                                 Eliminar
@@ -365,6 +324,28 @@
 
                 <x-odontograma :consulta-id="$consulta->id" :view-only="$isPortal" />
             </x-card>
+
+            {{-- Presupuesto (ancho completo, al final) --}}
+            @include('consultas.partials.presupuesto', [
+                'consulta' => $consulta,
+                'isPortal' => $isPortal,
+                'piezasCatalogo' => $piezasCatalogo,
+                'tarifasCatalogo' => $tarifasCatalogo,
+            ])
         </div>
     </div>
+
+    @unless ($isPortal)
+        @if ((float) $consulta->paciente->saldo_pendiente > 0)
+            @include('pagos.partials.modal-abono', [
+                'paciente' => $consulta->paciente,
+                'saldoPendiente' => (float) $consulta->paciente->saldo_pendiente,
+                'consultas' => collect([[
+                    'id' => $consulta->id,
+                    'label' => $consulta->fecha->format('d/m/Y').' — '.($consulta->motivo ?: 'Sin motivo'),
+                ]]),
+                'consultaPreasignada' => $consulta->id,
+            ])
+        @endif
+    @endunless
 </x-app-layout>

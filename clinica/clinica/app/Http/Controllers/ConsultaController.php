@@ -11,6 +11,8 @@ use App\Models\Consulta;
 use App\Models\NotificacionLog;
 use App\Models\Observacion;
 use App\Models\Paciente;
+use App\Models\PiezaDental;
+use App\Models\TarifaTratamiento;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,7 +29,8 @@ class ConsultaController extends Controller
             ->with(['user', 'observaciones', 'archivos'])
             ->orderByDesc('fecha')
             ->orderByDesc('created_at')
-            ->get();
+            ->paginate(20)
+            ->withQueryString();
 
         return view('consultas.index', [
             'paciente' => $paciente,
@@ -53,7 +56,8 @@ class ConsultaController extends Controller
             ->with(['user', 'observaciones', 'archivos'])
             ->orderByDesc('fecha')
             ->orderByDesc('created_at')
-            ->get();
+            ->paginate(20)
+            ->withQueryString();
 
         return view('consultas.index', [
             'paciente' => $paciente,
@@ -143,19 +147,41 @@ class ConsultaController extends Controller
 
         $consulta->load([
             'paciente.user',
+            'paciente.consultas.presupuestoItems',
+            'paciente.pagos',
             'user',
             'observaciones',
             'archivos',
             'presupuestoItems.pieza',
             'pagos',
             'consultaOrigen',
+            'piezasDentales',
         ]);
 
         $this->authorizeConsultaView($user, $consulta);
 
+        $estadosOdontograma = $consulta->piezasDentales
+            ->mapWithKeys(fn ($p) => [$p->id => $p->pivot?->estado ?? 'sana']);
+
         return view('consultas.show', [
             'consulta' => $consulta,
             'isPortal' => $user->isPaciente(),
+            'piezasCatalogo' => PiezaDental::query()
+                ->orderBy('cuadrante')
+                ->orderBy('posicion')
+                ->get(['id', 'numero', 'nombre', 'cuadrante'])
+                ->map(fn ($p) => [
+                    'id' => $p->id,
+                    'numero' => $p->numero,
+                    'nombre' => $p->nombre,
+                    'cuadrante' => $p->cuadrante,
+                    'estado_consulta' => $estadosOdontograma[$p->id] ?? null,
+                ])
+                ->values(),
+            'tarifasCatalogo' => TarifaTratamiento::query()
+                ->where('activo', true)
+                ->orderBy('estado_pieza')
+                ->get(['estado_pieza', 'nombre_legible', 'precio_sugerido']),
         ]);
     }
 

@@ -93,7 +93,10 @@ Route::middleware(['auth', 'role:admin,doctor'])->group(function () {
     Route::post('/pacientes/{paciente}/pagos', [PagoController::class, 'store'])
         ->name('pacientes.pagos.store');
 
-    Route::resource('pacientes', PacienteController::class)->except(['show']);
+    Route::get('/pacientes/{paciente}/odontograma/evolucion', [PacienteController::class, 'evolucionOdontograma'])
+        ->name('pacientes.odontograma.evolucion');
+
+    Route::resource('pacientes', PacienteController::class);
     Route::get('/citas/calendario', [CitaController::class, 'calendario'])->name('citas.calendario');
     Route::resource('citas', CitaController::class)->except(['show']);
 });
