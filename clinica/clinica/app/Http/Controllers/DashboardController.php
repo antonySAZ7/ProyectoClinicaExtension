@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cita;
+use App\Models\Consulta;
 use App\Models\Paciente;
+use App\Models\Pago;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -63,6 +65,8 @@ class DashboardController extends Controller
             return $this->calcularMetricas($desde, $hasta, $extras);
         });
 
+        $operativo = $this->datosOperativos();
+
         return view('dashboard', [
             'metricas' => $metricas,
             'extras' => $extras,
@@ -70,7 +74,84 @@ class DashboardController extends Controller
             'preset' => $preset,
             'desde' => $desde->toDateString(),
             'hasta' => $hasta->toDateString(),
+            'operativo' => $operativo,
         ]);
+    }
+
+    /**
+     * Datos del día — citas de hoy, próxima cita, consultas pendientes de cerrar
+     * presupuesto y top de saldos por cobrar.
+     *
+     * No se cachea porque cambia constantemente durante el día (cita atendida,
+     * abono registrado, etc.) y la doctora abre el panel justamente para ver
+     * el estado actual.
+     *
+     * @return array<string, mixed>
+     */
+    private function datosOperativos(): array
+    {
+        $hoy = today();
+
+        $citasHoy = Cita::query()
+            ->with(['paciente', 'consulta'])
+            ->whereDate('fecha', $hoy)
+            ->orderBy('hora')
+            ->get();
+
+        $proximaCita = Cita::query()
+            ->with('paciente')
+            ->whereIn('estado', [Cita::ESTADO_PENDIENTE, Cita::ESTADO_CONFIRMADA])
+            ->upcoming()
+            ->orderBy('fecha')
+            ->orderBy('hora')
+            ->first();
+
+        $consultasSinPresupuestoCerrado = Consulta::query()
+            ->with('paciente')
+            ->whereNull('presupuesto_aceptado_en')
+            ->whereHas('presupuestoItems')
+            ->orderByDesc('fecha')
+            ->limit(5)
+            ->get();
+
+        $estadosPagosCompletados = [Pago::ESTADO_COMPLETADO, Pago::ESTADO_PAGADO];
+
+        $topSaldos = Paciente::query()
+            ->select('pacientes.*')
+            ->selectSub(
+                'SELECT COALESCE(SUM(cpi.subtotal), 0)
+                 FROM consulta_presupuesto_items cpi
+                 INNER JOIN consultas c ON c.id = cpi.consulta_id
+                 WHERE c.paciente_id = pacientes.id',
+                'presupuesto_total_sql'
+            )
+            ->selectSub(
+                Pago::query()
+                    ->selectRaw('COALESCE(SUM(monto), 0)')
+                    ->whereColumn('pagos.paciente_id', 'pacientes.id')
+                    ->whereIn('estado', $estadosPagosCompletados)
+                    ->getQuery(),
+                'total_pagado_sql'
+            )
+            ->havingRaw('(presupuesto_total_sql - total_pagado_sql) > 0')
+            ->orderByRaw('(presupuesto_total_sql - total_pagado_sql) DESC')
+            ->limit(5)
+            ->get()
+            ->map(fn (Paciente $p) => [
+                'id' => $p->id,
+                'nombre' => $p->nombre_completo,
+                'presupuesto' => (float) $p->presupuesto_total_sql,
+                'pagado' => (float) $p->total_pagado_sql,
+                'saldo' => round((float) $p->presupuesto_total_sql - (float) $p->total_pagado_sql, 2),
+            ]);
+
+        return [
+            'citas_hoy' => $citasHoy,
+            'proxima_cita' => $proximaCita,
+            'consultas_sin_cerrar' => $consultasSinPresupuestoCerrado,
+            'top_saldos' => $topSaldos,
+            'ahora' => now()->toIso8601String(),
+        ];
     }
 
     /**
