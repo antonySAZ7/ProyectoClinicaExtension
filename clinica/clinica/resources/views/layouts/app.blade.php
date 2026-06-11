@@ -36,5 +36,7 @@
 
     {{-- Modal global de confirmación (window.confirmDialog) --}}
     <x-confirm-modal />
+
+    @stack('scripts')
 </body>
 </html>

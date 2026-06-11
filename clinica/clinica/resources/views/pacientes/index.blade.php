@@ -6,12 +6,21 @@
                 <p class="mt-1 text-sm text-gray-500">Administra expedientes y vincula usuarios con rol paciente.</p>
             </div>
 
-            <a
-                href="{{ route('pacientes.create') }}"
-                class="inline-flex items-center justify-center rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800"
-            >
-                Nuevo paciente
-            </a>
+            <div class="flex items-center gap-2">
+                <a
+                    href="{{ route('exportar.pacientes') }}"
+                    class="inline-flex items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+                >
+                    <x-lucide-download class="h-4 w-4" />
+                    Exportar
+                </a>
+                <a
+                    href="{{ route('pacientes.create') }}"
+                    class="inline-flex items-center justify-center rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800"
+                >
+                    Nuevo paciente
+                </a>
+            </div>
         </div>
     </x-slot>
 

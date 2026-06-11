@@ -247,8 +247,96 @@
             {{-- PANEL ANALÍTICO (P3)         --}}
             {{-- ============================ --}}
             <div class="border-t border-gray-200 pt-8">
-                <h3 class="mb-1 text-sm font-semibold uppercase tracking-wide text-gray-500">Panel analítico</h3>
-                <p class="mb-6 text-xs text-gray-400">Métricas por período para análisis.</p>
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                        <h3 class="mb-1 text-sm font-semibold uppercase tracking-wide text-gray-500">Panel analítico</h3>
+                        <p class="text-xs text-gray-400">Indicadores y gráficos para la doctora.</p>
+                    </div>
+
+                    {{-- Exportaciones (Persona 3) — el círculo completo: volver a sacar el Excel --}}
+                    <div x-data="{ abierto: false }" class="relative">
+                        <button
+                            type="button"
+                            @click="abierto = !abierto"
+                            @click.outside="abierto = false"
+                            class="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50"
+                        >
+                            <x-lucide-download class="h-4 w-4" />
+                            Exportar datos
+                            <x-lucide-chevron-down class="h-4 w-4" />
+                        </button>
+
+                        <div
+                            x-show="abierto"
+                            x-cloak
+                            x-transition
+                            class="absolute right-0 z-10 mt-2 w-72 rounded-lg border border-gray-200 bg-white p-1 shadow-lg"
+                        >
+                            <a href="{{ route('exportar.pacientes') }}" class="flex items-start gap-3 rounded-md px-3 py-2 text-sm transition hover:bg-gray-50">
+                                <x-lucide-users class="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
+                                <span>
+                                    <span class="block font-medium text-gray-900">Pacientes</span>
+                                    <span class="block text-xs text-gray-500">Listado con saldos y datos generales.</span>
+                                </span>
+                            </a>
+                            <a href="{{ route('exportar.consultas', ['desde' => $desde, 'hasta' => $hasta]) }}" class="flex items-start gap-3 rounded-md px-3 py-2 text-sm transition hover:bg-gray-50">
+                                <x-lucide-clipboard-list class="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
+                                <span>
+                                    <span class="block font-medium text-gray-900">Consultas con presupuesto</span>
+                                    <span class="block text-xs text-gray-500">Del periodo seleccionado arriba.</span>
+                                </span>
+                            </a>
+                            <a href="{{ route('exportar.estado-cuenta') }}" class="flex items-start gap-3 rounded-md px-3 py-2 text-sm transition hover:bg-gray-50">
+                                <x-lucide-circle-dollar-sign class="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
+                                <span>
+                                    <span class="block font-medium text-gray-900">Estado de cuenta general</span>
+                                    <span class="block text-xs text-gray-500">Presupuesto, pagado y saldo por paciente.</span>
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- KPIs (foto del mes/semana en curso, no dependen del filtro) --}}
+                <div class="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
+                    <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                        <p class="text-sm font-medium text-gray-500">Pacientes</p>
+                        <p class="mt-2 text-3xl font-bold text-gray-900">{{ number_format($metricas['pacientes_total']) }}</p>
+                    </div>
+                    <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
+                        <p class="text-sm font-medium text-emerald-700">Ingresos del mes</p>
+                        <p class="mt-2 text-2xl font-bold text-emerald-800">Q{{ number_format($analitica['kpis']['ingresos_mes'], 2) }}</p>
+                    </div>
+                    <div class="rounded-xl border border-rose-200 bg-rose-50 p-5 shadow-sm">
+                        <p class="text-sm font-medium text-rose-700">Saldo total por cobrar</p>
+                        <p class="mt-2 text-2xl font-bold text-rose-800">Q{{ number_format($analitica['kpis']['saldo_total'], 2) }}</p>
+                    </div>
+                    <div class="rounded-xl border border-indigo-200 bg-indigo-50 p-5 shadow-sm">
+                        <p class="text-sm font-medium text-indigo-700">Citas esta semana</p>
+                        <p class="mt-2 text-3xl font-bold text-indigo-800">{{ number_format($analitica['kpis']['citas_semana']) }}</p>
+                    </div>
+                    <div class="rounded-xl border border-sky-200 bg-sky-50 p-5 shadow-sm">
+                        <p class="text-sm font-medium text-sky-700">Consultas atendidas (mes)</p>
+                        <p class="mt-2 text-3xl font-bold text-sky-800">{{ number_format($analitica['kpis']['consultas_atendidas_mes']) }}</p>
+                    </div>
+                </div>
+
+                <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                        <p class="text-sm font-medium text-gray-500">Tasa de conversión cita → consulta</p>
+                        <p class="mt-2 text-2xl font-bold text-gray-900">{{ $analitica['conversion']['tasa'] }}%</p>
+                        <p class="mt-1 text-xs text-gray-400">
+                            {{ $analitica['conversion']['atendidas'] }} atendidas de
+                            {{ $analitica['conversion']['atendidas'] + $analitica['conversion']['canceladas'] + $analitica['conversion']['no_show'] }}
+                            citas cerradas en el periodo.
+                        </p>
+                    </div>
+                    <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                        <p class="text-sm font-medium text-gray-500">Ingreso promedio por consulta atendida</p>
+                        <p class="mt-2 text-2xl font-bold text-gray-900">Q{{ number_format($analitica['kpis']['ingreso_promedio_consulta'], 2) }}</p>
+                        <p class="mt-1 text-xs text-gray-400">Total cobrado entre consultas vinculadas a una cita.</p>
+                    </div>
+                </div>
             </div>
 
             {{-- Barra de filtros --}}
@@ -411,6 +499,77 @@
                 </section>
             @endif
 
+            {{-- ============================ --}}
+            {{-- GRÁFICOS (Chart.js)          --}}
+            {{-- ============================ --}}
+            <section class="space-y-6">
+                <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-500">Gráficos</h3>
+
+                <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    {{-- Ingresos por mes --}}
+                    <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                        <h4 class="text-base font-semibold text-gray-900">Ingresos por mes</h4>
+                        <p class="mb-4 text-xs text-gray-500">Abonos cobrados en los últimos 12 meses.</p>
+                        <div class="relative h-64">
+                            <canvas id="grafico-ingresos"></canvas>
+                            <p data-grafico-vacio class="hidden absolute inset-0 items-center justify-center text-sm text-gray-400">Sin ingresos registrados.</p>
+                        </div>
+                    </div>
+
+                    {{-- Distribución de estados de citas --}}
+                    <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                        <h4 class="text-base font-semibold text-gray-900">Ocupación de agenda por estado</h4>
+                        <p class="mb-4 text-xs text-gray-500">Distribución de citas del periodo seleccionado.</p>
+                        <div class="relative h-64">
+                            <canvas id="grafico-estados"></canvas>
+                            <p data-grafico-vacio class="hidden absolute inset-0 items-center justify-center text-sm text-gray-400">Sin citas en el periodo.</p>
+                        </div>
+                    </div>
+
+                    {{-- Tratamientos más frecuentes --}}
+                    <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                        <h4 class="text-base font-semibold text-gray-900">Tratamientos más frecuentes</h4>
+                        <p class="mb-4 text-xs text-gray-500">Según las líneas de presupuesto registradas.</p>
+                        <div class="relative h-64">
+                            <canvas id="grafico-tratamientos"></canvas>
+                            <p data-grafico-vacio class="hidden absolute inset-0 items-center justify-center text-sm text-gray-400">Aún no hay tratamientos registrados.</p>
+                        </div>
+                    </div>
+
+                    {{-- Ocupación: citas por día del periodo --}}
+                    <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                        <h4 class="text-base font-semibold text-gray-900">Citas por día</h4>
+                        <p class="mb-4 text-xs text-gray-500">Volumen de agenda en el periodo seleccionado.</p>
+                        <div class="relative h-64">
+                            <canvas id="grafico-ocupacion"></canvas>
+                            <p data-grafico-vacio class="hidden absolute inset-0 items-center justify-center text-sm text-gray-400">Sin citas en el periodo.</p>
+                        </div>
+                    </div>
+
+                    {{-- Pacientes nuevos por mes --}}
+                    <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2">
+                        <h4 class="text-base font-semibold text-gray-900">Pacientes nuevos por mes</h4>
+                        <p class="mb-4 text-xs text-gray-500">Tendencia de captación en los últimos 12 meses.</p>
+                        <div class="relative h-64">
+                            <canvas id="grafico-pacientes"></canvas>
+                            <p data-grafico-vacio class="hidden absolute inset-0 items-center justify-center text-sm text-gray-400">Sin pacientes nuevos registrados.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {{-- Datos para los gráficos (consumidos por resources/js/dashboard.js) --}}
+            @php
+                $graficos = [
+                    'ingresos_por_mes' => $analitica['ingresos_por_mes'],
+                    'pacientes_por_mes' => $analitica['pacientes_por_mes'],
+                    'distribucion_estados' => $analitica['distribucion_estados'],
+                    'ocupacion' => $analitica['ocupacion'],
+                    'tratamientos' => $analitica['tratamientos'],
+                ];
+            @endphp
+            <script type="application/json" id="analitica-data">@json($graficos)</script>
+
             @if (! empty($metricas['generado_en']))
                 <p class="text-right text-xs text-gray-400">
                     Datos actualizados {{ \Illuminate\Support\Carbon::parse($metricas['generado_en'])->diffForHumans() }}
@@ -419,4 +578,8 @@
             @endif
         </div>
     </div>
+
+    @push('scripts')
+        @vite('resources/js/dashboard.js')
+    @endpush
 </x-app-layout>

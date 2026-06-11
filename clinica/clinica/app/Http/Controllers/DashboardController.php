@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cita;
 use App\Models\Consulta;
+use App\Models\ConsultaPresupuestoItem;
 use App\Models\Paciente;
 use App\Models\Pago;
 use Illuminate\Http\Request;
@@ -67,6 +68,12 @@ class DashboardController extends Controller
 
         $operativo = $this->datosOperativos();
 
+        $analitica = Cache::remember(
+            $claveCache.'.analitica',
+            self::CACHE_TTL,
+            fn () => $this->calcularAnalitica($desde, $hasta)
+        );
+
         return view('dashboard', [
             'metricas' => $metricas,
             'extras' => $extras,
@@ -75,7 +82,182 @@ class DashboardController extends Controller
             'desde' => $desde->toDateString(),
             'hasta' => $hasta->toDateString(),
             'operativo' => $operativo,
+            'analitica' => $analitica,
         ]);
+    }
+
+    /**
+     * Calcular las series y KPIs analíticos para los gráficos del panel.
+     *
+     * Las series mensuales (ingresos, pacientes nuevos) son una foto de los
+     * últimos 12 meses e ignoran el filtro de periodo; las series de
+     * distribución, conversión y ocupación sí respetan [desde, hasta].
+     *
+     * El agrupamiento mensual se hace en PHP (no con funciones de fecha del
+     * motor) para no acoplar el cálculo a MySQL — el volumen de una clínica es
+     * bajo y todo queda cacheado el TTL del panel.
+     *
+     * @return array<string, mixed>
+     */
+    private function calcularAnalitica(Carbon $desde, Carbon $hasta): array
+    {
+        $estadosCobrados = [Pago::ESTADO_COMPLETADO, Pago::ESTADO_PAGADO];
+
+        $inicioMes = today()->startOfMonth();
+        $finMes = today()->copy()->endOfMonth();
+        $inicioSemana = today()->startOfWeek();
+        $finSemana = today()->copy()->endOfWeek();
+        $inicio12Meses = today()->copy()->startOfMonth()->subMonthsNoOverflow(11);
+
+        // --- Series mensuales: ingresos cobrados (últimos 12 meses) ---
+        // La "fecha efectiva" de un abono es fecha_pago si existe, si no la de
+        // creación (cubre abonos viejos importados sin fecha_pago explícita).
+        $pagosCobrados = Pago::query()
+            ->whereIn('estado', $estadosCobrados)
+            ->where(function ($query) use ($inicio12Meses) {
+                $query->where('fecha_pago', '>=', $inicio12Meses->toDateString())
+                    ->orWhere(function ($sub) use ($inicio12Meses) {
+                        $sub->whereNull('fecha_pago')
+                            ->where('created_at', '>=', $inicio12Meses);
+                    });
+            })
+            ->get(['monto', 'fecha_pago', 'created_at']);
+
+        $ingresosPorMes = $this->bucketsMensuales(12);
+        foreach ($pagosCobrados as $pago) {
+            $fecha = $pago->fecha_pago ?? $pago->created_at;
+            $clave = Carbon::parse($fecha)->format('Y-m');
+            if (array_key_exists($clave, $ingresosPorMes)) {
+                $ingresosPorMes[$clave] += (float) $pago->monto;
+            }
+        }
+
+        // --- Series mensuales: pacientes nuevos (últimos 12 meses) ---
+        $pacientesPorMes = $this->bucketsMensuales(12);
+        Paciente::query()
+            ->where('created_at', '>=', $inicio12Meses)
+            ->get(['created_at'])
+            ->each(function (Paciente $paciente) use (&$pacientesPorMes) {
+                $clave = Carbon::parse($paciente->created_at)->format('Y-m');
+                if (array_key_exists($clave, $pacientesPorMes)) {
+                    $pacientesPorMes[$clave]++;
+                }
+            });
+
+        // --- Distribución de estados de citas en el periodo ---
+        $rangoCitas = [$desde->toDateString(), $hasta->toDateString()];
+        $citasPeriodo = Cita::whereBetween('fecha', $rangoCitas);
+
+        $porEstado = [
+            Cita::ESTADO_PENDIENTE => (clone $citasPeriodo)->where('estado', Cita::ESTADO_PENDIENTE)->count(),
+            Cita::ESTADO_CONFIRMADA => (clone $citasPeriodo)->where('estado', Cita::ESTADO_CONFIRMADA)->count(),
+            Cita::ESTADO_ATENDIDA => (clone $citasPeriodo)->where('estado', Cita::ESTADO_ATENDIDA)->count(),
+            Cita::ESTADO_CANCELADA => (clone $citasPeriodo)->where('estado', Cita::ESTADO_CANCELADA)->count(),
+            Cita::ESTADO_NO_SHOW => (clone $citasPeriodo)->where('estado', Cita::ESTADO_NO_SHOW)->count(),
+        ];
+
+        // --- Tasa de conversión cita -> consulta (proxy de calidad de agenda) ---
+        $atendidas = $porEstado[Cita::ESTADO_ATENDIDA];
+        $canceladas = $porEstado[Cita::ESTADO_CANCELADA];
+        $noShow = $porEstado[Cita::ESTADO_NO_SHOW];
+        $baseConversion = $atendidas + $canceladas + $noShow;
+        $tasaConversion = $baseConversion > 0
+            ? round($atendidas / $baseConversion * 100, 1)
+            : 0.0;
+
+        // --- Ocupación de agenda: citas por día del periodo ---
+        $ocupacion = (clone $citasPeriodo)
+            ->selectRaw('fecha, COUNT(*) as total')
+            ->groupBy('fecha')
+            ->orderBy('fecha')
+            ->get()
+            ->map(fn ($fila) => [
+                'fecha' => Carbon::parse($fila->fecha)->format('d/m'),
+                'total' => (int) $fila->total,
+            ]);
+
+        // --- Tratamientos más frecuentes (líneas de presupuesto) ---
+        $tratamientos = ConsultaPresupuestoItem::query()
+            ->selectRaw('tratamiento, COUNT(*) as total, COALESCE(SUM(subtotal), 0) as ingresos')
+            ->whereNotNull('tratamiento')
+            ->where('tratamiento', '!=', '')
+            ->groupBy('tratamiento')
+            ->orderByDesc('total')
+            ->limit(8)
+            ->get()
+            ->map(fn ($fila) => [
+                'tratamiento' => $fila->tratamiento,
+                'total' => (int) $fila->total,
+                'ingresos' => round((float) $fila->ingresos, 2),
+            ]);
+
+        // --- Saldos pendientes: total global por cobrar ---
+        $presupuestoGlobal = (float) ConsultaPresupuestoItem::sum('subtotal');
+        $pagadoGlobal = (float) Pago::whereIn('estado', $estadosCobrados)->sum('monto');
+        $saldoTotal = round(max(0, $presupuestoGlobal - $pagadoGlobal), 2);
+
+        // --- Ingreso promedio por consulta atendida (cruce pagos x consultas con cita) ---
+        $consultasAtendidas = Consulta::whereNotNull('cita_id')->count();
+        $ingresoPromedioConsulta = $consultasAtendidas > 0
+            ? round($pagadoGlobal / $consultasAtendidas, 2)
+            : 0.0;
+
+        return [
+            'kpis' => [
+                'ingresos_mes' => round($ingresosPorMes[$inicioMes->format('Y-m')] ?? 0, 2),
+                'saldo_total' => $saldoTotal,
+                'citas_semana' => Cita::whereBetween('fecha', [$inicioSemana->toDateString(), $finSemana->toDateString()])->count(),
+                'consultas_atendidas_mes' => Cita::where('estado', Cita::ESTADO_ATENDIDA)
+                    ->whereBetween('fecha', [$inicioMes->toDateString(), $finMes->toDateString()])
+                    ->count(),
+                'ingreso_promedio_consulta' => $ingresoPromedioConsulta,
+            ],
+            'ingresos_por_mes' => [
+                'labels' => array_map(fn ($clave) => Carbon::createFromFormat('Y-m', $clave)->format('m/Y'), array_keys($ingresosPorMes)),
+                'data' => array_map(fn ($v) => round($v, 2), array_values($ingresosPorMes)),
+            ],
+            'pacientes_por_mes' => [
+                'labels' => array_map(fn ($clave) => Carbon::createFromFormat('Y-m', $clave)->format('m/Y'), array_keys($pacientesPorMes)),
+                'data' => array_values($pacientesPorMes),
+            ],
+            'distribucion_estados' => [
+                'labels' => ['Pendiente', 'Confirmada', 'Atendida', 'Cancelada', 'No asistió'],
+                'data' => array_values($porEstado),
+            ],
+            'conversion' => [
+                'atendidas' => $atendidas,
+                'canceladas' => $canceladas,
+                'no_show' => $noShow,
+                'tasa' => $tasaConversion,
+            ],
+            'ocupacion' => [
+                'labels' => $ocupacion->pluck('fecha')->all(),
+                'data' => $ocupacion->pluck('total')->all(),
+            ],
+            'tratamientos' => [
+                'labels' => $tratamientos->pluck('tratamiento')->all(),
+                'data' => $tratamientos->pluck('total')->all(),
+            ],
+        ];
+    }
+
+    /**
+     * Construir un mapa ordenado ['Y-m' => 0] de los últimos $n meses,
+     * incluyendo el mes actual como último elemento.
+     *
+     * @return array<string, float|int>
+     */
+    private function bucketsMensuales(int $n): array
+    {
+        $buckets = [];
+        $cursor = today()->copy()->startOfMonth()->subMonthsNoOverflow($n - 1);
+
+        for ($i = 0; $i < $n; $i++) {
+            $buckets[$cursor->format('Y-m')] = 0;
+            $cursor->addMonthNoOverflow();
+        }
+
+        return $buckets;
     }
 
     /**
@@ -133,6 +315,10 @@ class DashboardController extends Controller
                     ->getQuery(),
                 'total_pagado_sql'
             )
+            // GROUP BY por PK: vuelve la cláusula HAVING válida en SQLite (motor
+            // de los tests) sin romper MySQL, que reconoce la dependencia
+            // funcional sobre la clave primaria.
+            ->groupBy('pacientes.id')
             ->havingRaw('(presupuesto_total_sql - total_pagado_sql) > 0')
             ->orderByRaw('(presupuesto_total_sql - total_pagado_sql) DESC')
             ->limit(5)

@@ -38,6 +38,10 @@
                     <x-link-button variant="primary" href="{{ route('consultas.pdf', $consulta) }}">
                         Exportar PDF
                     </x-link-button>
+
+                    <x-link-button href="{{ route('consultas.estado-cuenta.pdf', $consulta) }}">
+                        Estado de cuenta
+                    </x-link-button>
                 @endunless
 
                 <x-link-button href="{{ $isPortal ? route('portal.consultas.index') : route('pacientes.consultas.index', $consulta->paciente) }}">

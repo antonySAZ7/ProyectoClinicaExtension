@@ -29,6 +29,9 @@
                 <x-link-button href="{{ route('pacientes.antecedentes.edit', $paciente) }}">
                     Ficha clínica
                 </x-link-button>
+                <x-link-button href="{{ route('pacientes.estado-cuenta.pdf', $paciente) }}">
+                    Estado de cuenta
+                </x-link-button>
                 <x-link-button href="{{ route('pacientes.edit', $paciente) }}" variant="primary">
                     Editar
                 </x-link-button>

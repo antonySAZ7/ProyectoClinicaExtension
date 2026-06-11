@@ -6,6 +6,8 @@ use App\Http\Controllers\CitaController;
 use App\Http\Controllers\ConsultaController;
 use App\Http\Controllers\ConsultaPdfController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EstadoCuentaPdfController;
+use App\Http\Controllers\ExportController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\OdontogramaController;
 use App\Http\Controllers\PacienteController;
@@ -45,6 +47,13 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'role:admin,doctor'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    Route::get('/exportar/pacientes', [ExportController::class, 'pacientes'])
+        ->name('exportar.pacientes');
+    Route::get('/exportar/consultas', [ExportController::class, 'consultas'])
+        ->name('exportar.consultas');
+    Route::get('/exportar/estado-cuenta', [ExportController::class, 'estadoCuenta'])
+        ->name('exportar.estado-cuenta');
+
     Route::get('/pacientes/{paciente}/consultas', [ConsultaController::class, 'index'])
         ->name('pacientes.consultas.index');
     Route::get('/pacientes/{paciente}/consultas/create', [ConsultaController::class, 'create'])
@@ -75,6 +84,8 @@ Route::middleware(['auth', 'role:admin,doctor'])->group(function () {
         ->name('consultas.odontograma.destroy');
     Route::get('/consultas/{consulta}/pdf', ConsultaPdfController::class)
         ->name('consultas.pdf');
+    Route::get('/consultas/{consulta}/estado-cuenta/pdf', [EstadoCuentaPdfController::class, 'consulta'])
+        ->name('consultas.estado-cuenta.pdf');
     Route::get('/consultas/{consulta}/presupuesto/sugerencias', [PresupuestoItemController::class, 'suggest'])
         ->name('consultas.presupuesto.sugerencias');
     Route::post('/consultas/{consulta}/presupuesto/aceptar', [PresupuestoItemController::class, 'accept'])
@@ -95,6 +106,9 @@ Route::middleware(['auth', 'role:admin,doctor'])->group(function () {
 
     Route::get('/pacientes/{paciente}/odontograma/evolucion', [PacienteController::class, 'evolucionOdontograma'])
         ->name('pacientes.odontograma.evolucion');
+
+    Route::get('/pacientes/{paciente}/estado-cuenta/pdf', [EstadoCuentaPdfController::class, 'paciente'])
+        ->name('pacientes.estado-cuenta.pdf');
 
     Route::resource('pacientes', PacienteController::class);
     Route::get('/citas/calendario', [CitaController::class, 'calendario'])->name('citas.calendario');
