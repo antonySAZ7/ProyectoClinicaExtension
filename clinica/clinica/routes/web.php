@@ -53,6 +53,8 @@ Route::middleware(['auth', 'role:admin,doctor'])->group(function () {
         ->name('exportar.consultas');
     Route::get('/exportar/estado-cuenta', [ExportController::class, 'estadoCuenta'])
         ->name('exportar.estado-cuenta');
+    Route::get('/exportar/excel-historico', [ExportController::class, 'excelHistorico'])
+        ->name('exportar.excel-historico');
 
     Route::get('/pacientes/{paciente}/consultas', [ConsultaController::class, 'index'])
         ->name('pacientes.consultas.index');

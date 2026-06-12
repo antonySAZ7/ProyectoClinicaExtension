@@ -293,6 +293,16 @@
                                     <span class="block text-xs text-gray-500">Presupuesto, pagado y saldo por paciente.</span>
                                 </span>
                             </a>
+
+                            <div class="my-1 border-t border-gray-100"></div>
+
+                            <a href="{{ route('exportar.excel-historico') }}" class="flex items-start gap-3 rounded-md px-3 py-2 text-sm transition hover:bg-teal-50">
+                                <x-lucide-file-spreadsheet class="mt-0.5 h-4 w-4 shrink-0 text-teal-600" />
+                                <span>
+                                    <span class="block font-medium text-gray-900">Excel completo (formato DENS 32)</span>
+                                    <span class="block text-xs text-gray-500">Todas las fichas en la estructura del Excel original (hojas BD y Estatus).</span>
+                                </span>
+                            </a>
                         </div>
                     </div>
                 </div>

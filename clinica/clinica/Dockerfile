@@ -7,12 +7,17 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     default-mysql-client \
     git \
+    libfreetype6-dev \
     libicu-dev \
+    libjpeg62-turbo-dev \
+    libpng-dev \
     libzip-dev \
     openssl \
     unzip \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
     bcmath \
+    gd \
     intl \
     pdo_mysql \
     zip \

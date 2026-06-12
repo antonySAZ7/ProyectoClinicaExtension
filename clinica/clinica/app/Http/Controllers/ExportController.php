@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Consulta;
 use App\Models\Paciente;
+use App\Services\ExcelHistoricoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -133,6 +136,29 @@ class ExportController extends Controller
         };
 
         return $this->stream('estado_cuenta', $encabezados, $generador());
+    }
+
+    /**
+     * Excel histórico (.xlsx) con el formato del archivo DENS_32_OFICIAL.xlsm
+     * que la doctora usaba antes del sistema: hojas BD y Estatus.
+     */
+    public function excelHistorico(ExcelHistoricoService $servicio): StreamedResponse
+    {
+        abort_unless(
+            class_exists(Spreadsheet::class),
+            500,
+            'phpoffice/phpspreadsheet no esta instalado.'
+        );
+
+        $nombre = sprintf('DENS32_historico_%s.xlsx', now()->format('Ymd_His'));
+
+        return response()->streamDownload(function () use ($servicio) {
+            $libro = $servicio->generar();
+            (new Xlsx($libro))->save('php://output');
+            $libro->disconnectWorksheets();
+        }, $nombre, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
     }
 
     /**
