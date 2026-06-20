@@ -14,6 +14,8 @@ class PagoController extends Controller
 {
     public function store(Request $request, Paciente $paciente, PagoService $service): JsonResponse|RedirectResponse
     {
+        $this->authorize('create', [Pago::class, $paciente]);
+
         $validated = $request->validate([
             'cita_id' => ['nullable', 'exists:citas,id'],
             'consulta_id' => ['nullable', 'exists:consultas,id'],

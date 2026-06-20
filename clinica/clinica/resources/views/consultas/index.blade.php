@@ -3,7 +3,7 @@
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h2 class="font-semibold text-2xl text-brand-primary leading-tight">
-                    {{ $isPortal ? 'Mi historial clinico' : 'Historial clinico del paciente' }}
+                    {{ $isPortal ? 'Mi historial clínico' : 'Historial clínico del paciente' }}
                 </h2>
                 <p class="mt-1 text-base text-brand-muted">
                     {{ $paciente->nombre_completo }}{{ $paciente->user?->email ? ' - '.$paciente->user->email : '' }}
@@ -50,7 +50,7 @@
                     </x-card>
 
 <x-card class="p-5">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Telefono</p>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Teléfono</p>
                         <p class="mt-2 text-base text-brand-primary">{{ $paciente->telefono }}</p>
                     </x-card>
 
@@ -67,7 +67,7 @@
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-muted">Fecha</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-muted">Motivo</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-muted">Diagnostico</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-muted">Diagnóstico</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-muted">Registrado por</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-muted">Adjuntos</th>
                                 <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-brand-muted">Acciones</th>
@@ -89,7 +89,7 @@
                                         {{ $consulta->user?->name ?? 'Personal clinico' }}
                                     </td>
                                     <td class="px-6 py-4 text-sm text-brand-primary">
-                                        {{ $consulta->archivos->count() }}
+                                        {{ $consulta->archivos_count }}
                                     </td>
                                     <td class="whitespace-nowrap px-4 py-4 text-right text-sm">
                                         <x-link-button href="{{ route($isPortal ? 'portal.consultas.show' : 'consultas.show', $consulta) }}">

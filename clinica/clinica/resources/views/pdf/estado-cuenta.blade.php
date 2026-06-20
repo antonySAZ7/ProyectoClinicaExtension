@@ -29,7 +29,7 @@
 </head>
 <body>
     <h1>Estado de cuenta</h1>
-    <p class="muted">DENS32 Clinica Dental · Generado el {{ $generadoEn->format('d/m/Y H:i') }}</p>
+    <p class="muted">DENS32 Clínica Dental - Generado el {{ $generadoEn->format('d/m/Y H:i') }}</p>
 
     {{-- Datos del paciente --}}
     <div class="grid">
@@ -38,8 +38,8 @@
             <div class="cell"><strong>DPI:</strong> {{ $paciente->dpi ?: '-' }}</div>
         </div>
         <div class="row">
-            <div class="cell"><strong>Telefono:</strong> {{ $paciente->telefono ?: '-' }}</div>
-            <div class="cell"><strong>Edad:</strong> {{ $paciente->edad !== null ? $paciente->edad.' anios' : '-' }}</div>
+            <div class="cell"><strong>Teléfono:</strong> {{ $paciente->telefono ?: '-' }}</div>
+            <div class="cell"><strong>Edad:</strong> {{ $paciente->edad !== null ? $paciente->edad.' años' : '-' }}</div>
         </div>
     </div>
 
@@ -61,13 +61,13 @@
     {{-- Presupuesto --}}
     <h2>{{ $consulta ? 'Presupuesto de la consulta' : 'Presupuesto general' }}</h2>
     @if ($items->isEmpty())
-        <p class="muted">No hay lineas de presupuesto registradas.</p>
+        <p class="muted">No hay líneas de presupuesto registradas.</p>
     @else
         <table>
             <thead>
                 <tr>
                     <th>Pieza</th>
-                    <th>Diagnostico / Tratamiento</th>
+                    <th>Diagnóstico / Tratamiento</th>
                     <th class="num">Cant.</th>
                     <th class="num">P. unitario</th>
                     <th class="num">Subtotal</th>
@@ -103,7 +103,7 @@
             <thead>
                 <tr>
                     <th>Fecha</th>
-                    <th>Metodo de pago</th>
+                    <th>Método de pago</th>
                     <th>Notas</th>
                     <th class="num">Monto</th>
                 </tr>
@@ -151,7 +151,7 @@
             <thead>
                 <tr>
                     <th style="width: 22%;">Fecha</th>
-                    <th>Observacion</th>
+                    <th>Observación</th>
                 </tr>
             </thead>
             <tbody>

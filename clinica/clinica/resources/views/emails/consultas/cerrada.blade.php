@@ -9,7 +9,7 @@
 <ul>
     <li><strong>Fecha:</strong> {{ $consulta->fecha?->format('d/m/Y') }}</li>
     <li><strong>Motivo:</strong> {{ $consulta->motivo }}</li>
-    <li><strong>Diagnostico:</strong> {{ $consulta->diagnostico }}</li>
+    <li><strong>Diagnóstico:</strong> {{ $consulta->diagnostico }}</li>
 </ul>
 
 @if ($consulta->observaciones->isNotEmpty())

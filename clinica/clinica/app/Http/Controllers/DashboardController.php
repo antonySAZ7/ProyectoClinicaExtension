@@ -49,6 +49,13 @@ class DashboardController extends Controller
      */
     public function index(Request $request)
     {
+        return view('dashboard', [
+            'operativo' => $this->datosOperativos(),
+        ]);
+    }
+
+    public function analitica(Request $request)
+    {
         [$desde, $hasta, $preset] = $this->resolverRango($request);
         $extras = $this->resolverExtras($request);
 
@@ -66,22 +73,19 @@ class DashboardController extends Controller
             return $this->calcularMetricas($desde, $hasta, $extras);
         });
 
-        $operativo = $this->datosOperativos();
-
         $analitica = Cache::remember(
             $claveCache.'.analitica',
             self::CACHE_TTL,
             fn () => $this->calcularAnalitica($desde, $hasta)
         );
 
-        return view('dashboard', [
+        return view('analitica.index', [
             'metricas' => $metricas,
             'extras' => $extras,
             'extrasDisponibles' => self::EXTRAS_DISPONIBLES,
             'preset' => $preset,
             'desde' => $desde->toDateString(),
             'hasta' => $hasta->toDateString(),
-            'operativo' => $operativo,
             'analitica' => $analitica,
         ]);
     }

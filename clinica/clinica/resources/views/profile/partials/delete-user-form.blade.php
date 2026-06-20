@@ -24,7 +24,7 @@
             </h2>
 
             <p class="mt-1 text-sm text-gray-600">
-                Esta accion eliminara permanentemente tu cuenta y sus datos. Ingresa tu contrasena para confirmar la eliminacion.
+                Esta acción eliminará permanentemente tu cuenta y sus datos. Ingresa tu contraseña para confirmar la eliminación.
             </p>
 
             <div class="mt-6">

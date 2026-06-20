@@ -22,7 +22,7 @@ class OdontogramaController extends Controller
 
     public function index(Request $request, Consulta $consulta): JsonResponse
     {
-        $this->authorizeView($request, $consulta);
+        $this->authorize('view', $consulta);
 
         $consulta->load('piezasDentales');
         $piezasConsulta = $consulta->piezasDentales->keyBy('id');
@@ -53,6 +53,8 @@ class OdontogramaController extends Controller
 
     public function store(Request $request, Consulta $consulta): JsonResponse
     {
+        $this->authorize('manage', $consulta);
+
         $validated = $request->validate([
             'piezas' => ['required', 'array'],
             'piezas.*.pieza_id' => ['required', 'exists:piezas_dentales,id'],
@@ -74,6 +76,8 @@ class OdontogramaController extends Controller
 
     public function update(Request $request, Consulta $consulta, PiezaDental $pieza): JsonResponse
     {
+        $this->authorize('manage', $consulta);
+
         $validated = $request->validate([
             'estado' => ['required', Rule::in(self::ESTADOS)],
             'observaciones' => ['nullable', 'string', 'max:1000'],
@@ -91,26 +95,10 @@ class OdontogramaController extends Controller
 
     public function destroy(Consulta $consulta, PiezaDental $pieza): JsonResponse
     {
+        $this->authorize('manage', $consulta);
+
         $consulta->piezasDentales()->detach($pieza->id);
 
         return response()->json(['ok' => true]);
-    }
-
-    protected function authorizeView(Request $request, Consulta $consulta): void
-    {
-        $user = $request->user();
-
-        if ($user->canAccessBackoffice()) {
-            return;
-        }
-
-        if ($user->isPaciente()) {
-            $user->loadMissing('paciente');
-            if ($user->paciente && $consulta->paciente_id === $user->paciente->id) {
-                return;
-            }
-        }
-
-        abort(403);
     }
 }

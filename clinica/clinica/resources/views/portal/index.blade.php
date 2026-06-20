@@ -19,7 +19,7 @@
                 <div class="rounded-xl border border-amber-200 bg-amber-50 p-6 shadow-sm">
                     <h3 class="text-lg font-semibold text-amber-900">Expediente pendiente de vincular</h3>
                     <p class="mt-2 text-sm text-amber-800">
-                        Tu cuenta ya tiene acceso como paciente, pero todavia no esta vinculada a un expediente en la clinica.
+                        Tu cuenta ya tiene acceso como paciente, pero todavía no está vinculada a un expediente en la clínica.
                         Un administrador puede asignarte desde el modulo de pacientes.
                     </p>
                 </div>
@@ -39,7 +39,7 @@
                                 <dd class="mt-1 text-sm text-gray-900">{{ $paciente->dpi }}</dd>
                             </div>
                             <div>
-                                <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">Telefono</dt>
+                                <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">Teléfono</dt>
                                 <dd class="mt-1 text-sm text-gray-900">{{ $paciente->telefono }}</dd>
                             </div>
                             <div>

@@ -21,6 +21,15 @@ services:
       SESSION_DRIVER: ${SESSION_DRIVER:-file}
       CACHE_STORE: ${CACHE_STORE:-file}
       QUEUE_CONNECTION: ${QUEUE_CONNECTION:-sync}
+      MAIL_MAILER: ${MAIL_MAILER:-log}
+      MAIL_SCHEME: ${MAIL_SCHEME:-null}
+      MAIL_HOST: ${MAIL_HOST:-127.0.0.1}
+      MAIL_PORT: ${MAIL_PORT:-2525}
+      MAIL_USERNAME: ${MAIL_USERNAME:-null}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-null}
+      MAIL_ENCRYPTION: ${MAIL_ENCRYPTION:-null}
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-hello@example.com}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-${APP_NAME:-ClinicaExtension}}
       FORCE_VITE_BUILD: ${FORCE_VITE_BUILD:-false}
       RUN_SCHEDULER: ${RUN_SCHEDULER:-true}
     ports:

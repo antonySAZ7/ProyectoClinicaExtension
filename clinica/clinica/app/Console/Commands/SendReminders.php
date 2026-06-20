@@ -10,9 +10,9 @@ use Illuminate\Support\Facades\Mail;
 
 class SendReminders extends Command
 {
-    protected $signature = 'reminders:send {--hours=24 : Horas hacia adelante para buscar citas proximas}';
+    protected $signature = 'reminders:send {--hours=24 : Horas hacia adelante para buscar citas próximas}';
 
-    protected $description = 'Enviar recordatorios automaticos de citas proximas.';
+    protected $description = 'Enviar recordatorios automáticos de citas próximas.';
 
     public function handle(): int
     {

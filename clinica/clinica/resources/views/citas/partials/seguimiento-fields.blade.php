@@ -102,7 +102,7 @@
                         class="rounded border-gray-300 text-sky-700 focus:ring-sky-600"
                         @checked(in_array(1, array_map('intval', $diasAntes), true))
                     >
-                    Un dia antes
+                    Un día antes
                 </label>
                 <label class="inline-flex items-center gap-2 text-sm text-gray-700">
                     <input
@@ -112,7 +112,7 @@
                         class="rounded border-gray-300 text-sky-700 focus:ring-sky-600"
                         @checked(in_array(0, array_map('intval', $diasAntes), true))
                     >
-                    El mismo dia
+                    El mismo día
                 </label>
             </div>
         </div>

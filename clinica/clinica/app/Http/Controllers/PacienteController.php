@@ -15,6 +15,8 @@ class PacienteController extends Controller
      */
     public function index()
     {
+        $this->authorize('viewAny', Paciente::class);
+
         $buscar = request('buscar');
 
         $pacientes = Paciente::with('user')
@@ -37,6 +39,8 @@ class PacienteController extends Controller
      */
     public function create()
     {
+        $this->authorize('create', Paciente::class);
+
         return view('pacientes.create', [
             'usuariosPaciente' => $this->usuariosPacienteDisponibles(),
         ]);
@@ -47,6 +51,8 @@ class PacienteController extends Controller
      */
     public function store(StorePacienteRequest $request)
     {
+        $this->authorize('create', Paciente::class);
+
         Paciente::create($request->validated());
 
         return redirect()->route('pacientes.index')
@@ -58,6 +64,8 @@ class PacienteController extends Controller
      */
     public function show(Paciente $paciente)
     {
+        $this->authorize('view', $paciente);
+
         $paciente->load([
             'user',
             'antecedenteClinico',
@@ -85,6 +93,8 @@ class PacienteController extends Controller
      */
     public function edit(Paciente $paciente)
     {
+        $this->authorize('update', $paciente);
+
         return view('pacientes.edit', [
             'paciente' => $paciente,
             'usuariosPaciente' => $this->usuariosPacienteDisponibles($paciente),
@@ -96,6 +106,8 @@ class PacienteController extends Controller
      */
     public function update(UpdatePacienteRequest $request, Paciente $paciente)
     {
+        $this->authorize('update', $paciente);
+
         $paciente->update($request->validated());
 
         return redirect()->route('pacientes.index')
@@ -107,6 +119,8 @@ class PacienteController extends Controller
      */
     public function destroy(Paciente $paciente)
     {
+        $this->authorize('delete', $paciente);
+
         $paciente->delete();
 
         return redirect()->route('pacientes.index')
@@ -115,6 +129,8 @@ class PacienteController extends Controller
 
     public function evolucionOdontograma(Paciente $paciente)
     {
+        $this->authorize('view', $paciente);
+
         $consultas = $paciente->consultas()
             ->with(['piezasDentales' => fn ($q) => $q->orderBy('cuadrante')->orderBy('posicion')])
             ->orderByDesc('fecha')

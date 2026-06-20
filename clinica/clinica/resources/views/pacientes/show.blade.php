@@ -106,19 +106,19 @@
                     </div>
 
                     <div class="mt-5 grid gap-4 sm:grid-cols-3">
-                        <div class="rounded-lg border border-brand-border bg-brand-soft p-4">
+                        <div class="rounded-lg border border-brand-border bg-brand-soft p-4 text-right">
                             <p class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Presupuesto total</p>
                             <p class="mt-2 text-xl font-semibold text-brand-primary">
                                 Q{{ number_format($presupuestoTotal, 2) }}
                             </p>
                         </div>
-                        <div class="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+                        <div class="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-right">
                             <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700">Pagado</p>
                             <p class="mt-2 text-xl font-semibold text-emerald-700">
                                 Q{{ number_format($totalPagado, 2) }}
                             </p>
                         </div>
-                        <div class="rounded-lg border border-amber-200 bg-amber-50 p-4">
+                        <div class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-right">
                             <p class="text-xs font-semibold uppercase tracking-wide text-amber-700">Pendiente</p>
                             <p class="mt-2 text-xl font-semibold text-amber-700">
                                 Q{{ number_format($saldoPendiente, 2) }}
@@ -182,7 +182,7 @@
                                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-muted">Método</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-muted">Consulta</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-muted">Notas</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-muted">Monto</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-brand-muted">Monto</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-brand-border">
@@ -207,7 +207,7 @@
                                     <td class="px-4 py-3 text-brand-primary [overflow-wrap:anywhere]">
                                         {{ $pago->notas ?: '—' }}
                                     </td>
-                                    <td class="px-4 py-3 font-semibold text-brand-primary">
+                                    <td class="px-4 py-3 text-right font-semibold text-brand-primary">
                                         Q{{ number_format((float) $pago->monto, 2) }}
                                     </td>
                                 </tr>
@@ -223,7 +223,7 @@
                             <tfoot>
                                 <tr class="bg-brand-soft">
                                     <th colspan="4" class="px-4 py-3 text-right text-sm font-semibold text-brand-primary">Total pagado</th>
-                                    <th class="px-4 py-3 text-sm font-semibold text-brand-primary">Q{{ number_format($totalPagado, 2) }}</th>
+                                    <th class="px-4 py-3 text-right text-sm font-semibold text-brand-primary">Q{{ number_format($totalPagado, 2) }}</th>
                                 </tr>
                             </tfoot>
                         @endif

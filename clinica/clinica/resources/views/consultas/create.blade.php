@@ -72,7 +72,7 @@
                             name="diagnostico"
                             rows="5"
                             maxlength="4000"
-                            placeholder="Describe el diagnostico principal de la consulta"
+                            placeholder="Describe el diagnóstico principal de la consulta"
                             required>{{ old('diagnostico') }}</x-textarea>
                     </div>
 

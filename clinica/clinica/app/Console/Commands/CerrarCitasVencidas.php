@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Cita;
+use App\Services\CitaService;
 use Illuminate\Console\Command;
 
 class CerrarCitasVencidas extends Command
@@ -11,13 +11,9 @@ class CerrarCitasVencidas extends Command
 
     protected $description = 'Marca como no_show las citas vencidas sin consulta vinculada.';
 
-    public function handle(): int
+    public function handle(CitaService $service): int
     {
-        $cerradas = Cita::query()
-            ->whereDate('fecha', '<', today()->toDateString())
-            ->whereIn('estado', [Cita::ESTADO_PENDIENTE, Cita::ESTADO_CONFIRMADA])
-            ->whereDoesntHave('consulta')
-            ->update(['estado' => Cita::ESTADO_NO_SHOW]);
+        $cerradas = $service->closeExpiredNoShows();
 
         $this->info("Citas vencidas cerradas como no_show: {$cerradas}.");
 

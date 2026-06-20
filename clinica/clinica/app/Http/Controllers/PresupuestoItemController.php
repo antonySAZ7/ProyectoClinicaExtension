@@ -13,6 +13,7 @@ class PresupuestoItemController extends Controller
 {
     public function store(Request $request, Consulta $consulta, PresupuestoService $service): JsonResponse|RedirectResponse
     {
+        $this->authorize('create', [ConsultaPresupuestoItem::class, $consulta]);
         $validated = $request->validate($this->rules());
         $item = $service->createItem($consulta, $validated);
 
@@ -29,6 +30,7 @@ class PresupuestoItemController extends Controller
         PresupuestoService $service
     ): JsonResponse|RedirectResponse {
         $this->ensureItemBelongsToConsulta($consulta, $item);
+        $this->authorize('update', $item);
         $validated = $request->validate($this->rules());
         $item = $service->updateItem($item, $validated);
 
@@ -45,6 +47,7 @@ class PresupuestoItemController extends Controller
         PresupuestoService $service
     ): JsonResponse|RedirectResponse {
         $this->ensureItemBelongsToConsulta($consulta, $item);
+        $this->authorize('delete', $item);
         $service->deleteItem($item);
 
         return $this->respond($request, [
@@ -55,6 +58,8 @@ class PresupuestoItemController extends Controller
 
     public function suggest(Consulta $consulta, PresupuestoService $service): JsonResponse
     {
+        $this->authorize('viewSuggestions', [ConsultaPresupuestoItem::class, $consulta]);
+
         return response()->json([
             'items' => $service->suggestItemsFromOdontograma($consulta),
         ]);
@@ -62,6 +67,7 @@ class PresupuestoItemController extends Controller
 
     public function accept(Request $request, Consulta $consulta, PresupuestoService $service): JsonResponse|RedirectResponse
     {
+        $this->authorize('accept', [ConsultaPresupuestoItem::class, $consulta]);
         $consulta = $service->acceptBudget($consulta);
 
         return $this->respond($request, [

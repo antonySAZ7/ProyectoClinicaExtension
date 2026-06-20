@@ -14,7 +14,7 @@ class AntecedenteClinico extends Model implements Auditable
     protected $table = 'antecedentes_clinicos';
 
     /**
-     * Antecedentes medicos (Si/No). campo => etiqueta.
+     * Antecedentes médicos (Sí/No). campo => etiqueta.
      */
     public const CAMPOS_MEDICOS = [
         'ant_cardiovascular' => 'Enfermedad cardiovascular',
@@ -25,22 +25,22 @@ class AntecedenteClinico extends Model implements Auditable
         'ant_hepatitis' => 'Hepatitis',
         'ant_embarazo' => 'Embarazo',
         'ant_convulsiones' => 'Convulsiones',
-        'ant_venereas' => 'Enfermedades venereas',
+        'ant_venereas' => 'Enfermedades venéreas',
         'ant_fiebre_reumatica' => 'Fiebre reumatica',
         'ant_tuberculosis' => 'Tuberculosis',
         'ant_hemorragias' => 'Hemorragias',
-        'ant_discrasias' => 'Discrasias sanguineas',
+        'ant_discrasias' => 'Discrasias sanguíneas',
         'ant_otras_medicas' => 'Otras enfermedades',
     ];
 
     /**
-     * Antecedentes odontologicos (Si/No). campo => etiqueta.
+     * Antecedentes odontológicos (Sí/No). campo => etiqueta.
      */
     public const CAMPOS_ODONTOLOGICOS = [
         'odo_hemorragia' => 'Hemorragia',
         'odo_infecciones' => 'Infecciones',
-        'odo_ulceras' => 'Ulceras',
-        'odo_reaccion_anestesia' => 'Reaccion a la anestesia',
+        'odo_ulceras' => 'Úlceras',
+        'odo_reaccion_anestesia' => 'Reacción a la anestesia',
         'odo_dolor_dentario' => 'Dolor dentario',
         'odo_sensibilidad' => 'Sensibilidad',
         'odo_otras' => 'Otras enfermedades',
@@ -50,23 +50,23 @@ class AntecedenteClinico extends Model implements Auditable
      * Campos booleanos de anamnesis. campo => etiqueta.
      */
     public const CAMPOS_ANAMNESIS_BOOL = [
-        'presento_complicacion' => '¿Presento alguna complicacion en su ultima visita?',
-        'en_tratamiento_medico' => '¿Esta siendo tratado por un medico actualmente?',
-        'toma_medicamento' => '¿Toma algun tipo de medicamento?',
-        'alergico_medicamento' => '¿Es alergico a algun medicamento?',
+        'presento_complicacion' => '¿Presentó alguna complicación en su última visita?',
+        'en_tratamiento_medico' => '¿Está siendo tratado por un médico actualmente?',
+        'toma_medicamento' => '¿Toma algún tipo de medicamento?',
+        'alergico_medicamento' => '¿Es alérgico a algún medicamento?',
     ];
 
     /**
      * Campos de texto/fecha de anamnesis. campo => etiqueta.
      */
     public const CAMPOS_ANAMNESIS_TEXTO = [
-        'ultima_visita_dental' => 'Fecha aproximada de su ultima visita dental',
-        'ultima_visita_motivo' => 'Motivo por el cual visito el consultorio dental',
-        'tratamiento_enfermedad' => '¿Para que enfermedad?',
-        'cual_medicamento' => '¿Cual medicamento?',
-        'cuales_medicamentos' => '¿Cual o cuales medicamentos?',
+        'ultima_visita_dental' => 'Fecha aproximada de su última visita dental',
+        'ultima_visita_motivo' => 'Motivo por el cual visitó el consultorio dental',
+        'tratamiento_enfermedad' => '¿Para qué enfermedad?',
+        'cual_medicamento' => '¿Cuál medicamento?',
+        'cuales_medicamentos' => '¿Cuál o cuáles medicamentos?',
         'otro_antecedente' => 'Otro antecedente',
-        'descripcion_enfermedades' => 'Descripcion de su enfermedad o enfermedades',
+        'descripcion_enfermedades' => 'Descripción de su enfermedad o enfermedades',
     ];
 
     protected $fillable = [
@@ -138,7 +138,7 @@ class AntecedenteClinico extends Model implements Auditable
     }
 
     /**
-     * Todos los campos booleanos (medicos + odontologicos + anamnesis).
+     * Todos los campos booleanos (médicos + odontológicos + anamnesis).
      *
      * @return array<int, string>
      */

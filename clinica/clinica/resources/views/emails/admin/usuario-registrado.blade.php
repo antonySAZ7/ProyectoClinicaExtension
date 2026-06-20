@@ -15,7 +15,7 @@
         <li><strong>Rol:</strong> {{ ucfirst((string) $registeredUser->role) }}</li>
         @if ($registeredUser->paciente)
             <li><strong>DPI:</strong> {{ $registeredUser->paciente->dpi }}</li>
-            <li><strong>Telefono:</strong> {{ $registeredUser->paciente->telefono }}</li>
+            <li><strong>Teléfono:</strong> {{ $registeredUser->paciente->telefono }}</li>
         @endif
     </ul>
 

@@ -46,6 +46,7 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'role:admin,doctor'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/analisis', [DashboardController::class, 'analitica'])->name('analitica.index');
 
     Route::get('/exportar/pacientes', [ExportController::class, 'pacientes'])
         ->name('exportar.pacientes');

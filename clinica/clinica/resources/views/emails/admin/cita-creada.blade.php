@@ -12,7 +12,7 @@
     <ul>
         <li><strong>Paciente:</strong> {{ $cita->paciente?->nombre_completo ?? 'No disponible' }}</li>
         <li><strong>Correo:</strong> {{ $cita->paciente?->correo ?? 'No disponible' }}</li>
-        <li><strong>Telefono:</strong> {{ $cita->paciente?->telefono ?? 'No disponible' }}</li>
+        <li><strong>Teléfono:</strong> {{ $cita->paciente?->telefono ?? 'No disponible' }}</li>
         <li><strong>Fecha:</strong> {{ $cita->fecha?->format('d/m/Y') }}</li>
         <li><strong>Hora:</strong> {{ \Illuminate\Support\Str::of((string) $cita->hora)->substr(0, 5) }}@if ($cita->hora_fin) - {{ \Illuminate\Support\Str::of((string) $cita->hora_fin)->substr(0, 5) }}@endif</li>
         <li><strong>Servicio:</strong> {{ $cita->servicio?->nombre ?? $cita->motivo }}</li>

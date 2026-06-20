@@ -6,8 +6,7 @@ use App\Models\Cita;
 use App\Models\Paciente;
 use App\Models\RecordatorioSeguimiento;
 use App\Models\Servicio;
-use App\Services\AdminNotificationService;
-use App\Services\AppointmentAvailabilityService;
+use App\Services\CitaService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -99,11 +98,8 @@ class CitaController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(
-        Request $request,
-        AppointmentAvailabilityService $availability,
-        AdminNotificationService $adminNotifications
-    ) {
+    public function store(Request $request, CitaService $service)
+    {
         $validated = $request->validate([
             'paciente_id' => ['required', 'exists:pacientes,id'],
             'servicio_id' => ['nullable', Rule::exists('servicios', 'id')->where('activo', true)],
@@ -125,22 +121,7 @@ class CitaController extends Controller
             'hora_fin.after' => 'La hora de fin debe ser posterior a la hora de inicio.',
         ]);
 
-        $followUpData = $this->extractFollowUpData($validated);
-        $validated['estado'] = $validated['estado'] ?? Cita::ESTADO_PENDIENTE;
-
-        if ($followUpError = $this->validateFollowUpSelection($followUpData)) {
-            return $followUpError;
-        }
-
-        if (! $availability->isAvailable($validated['fecha'], $validated['hora'], $validated['hora_fin'])) {
-            return back()
-                ->withErrors(['hora' => 'El horario seleccionado no esta disponible.'])
-                ->withInput();
-        }
-
-        $cita = Cita::create($validated);
-        $this->syncFollowUpReminder($cita, $followUpData);
-        $adminNotifications->notifyAppointmentCreated($cita);
+        $service->createBackoffice($validated);
 
         return redirect()->route('citas.index')
             ->with('success', 'Cita registrada correctamente.');
@@ -168,7 +149,7 @@ class CitaController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Cita $cita, AppointmentAvailabilityService $availability)
+    public function update(Request $request, Cita $cita, CitaService $service)
     {
         $validated = $request->validate([
             'paciente_id' => ['required', 'exists:pacientes,id'],
@@ -197,152 +178,31 @@ class CitaController extends Controller
             'hora_fin.after' => 'La hora de fin debe ser posterior a la hora de inicio.',
         ]);
 
-        $followUpData = $this->extractFollowUpData($validated);
-
-        if ($followUpError = $this->validateFollowUpSelection($followUpData)) {
-            return $followUpError;
-        }
-
-        if (
-            ! in_array($validated['estado'], [Cita::ESTADO_CANCELADA, Cita::ESTADO_NO_SHOW], true)
-            && ! $availability->isAvailable($validated['fecha'], $validated['hora'], $validated['hora_fin'], $cita->id)
-        ) {
-            return back()
-                ->withErrors(['hora' => 'El horario seleccionado no esta disponible.'])
-                ->withInput();
-        }
-
-        $cita->update($validated);
-        $this->syncFollowUpReminder($cita, $followUpData);
+        $service->updateBackoffice($cita, $validated);
 
         return redirect()->route('citas.index')
             ->with('success', 'Cita actualizada correctamente.');
     }
 
-    /**
+     /**
      * Confirm an upcoming appointment by its owner patient.
      */
-    public function confirmar(Request $request, Cita $cita)
+    public function confirmar(Request $request, Cita $cita, CitaService $service)
     {
-        $user = $request->user();
-        $user->loadMissing('paciente');
-
-        if (! $user->paciente || $cita->paciente_id !== $user->paciente->id) {
-            abort(403);
-        }
-
-        if (! $cita->isFuture()) {
-            return redirect()->route('portal')
-                ->with('error', 'No puedes confirmar una cita pasada.');
-        }
-
-        if ($cita->estado === Cita::ESTADO_CANCELADA) {
-            return redirect()->route('portal')
-                ->with('error', 'No puedes confirmar una cita cancelada.');
-        }
-
-        if ($cita->estado === Cita::ESTADO_CONFIRMADA) {
-            return redirect()->route('portal')
-                ->with('success', 'Tu cita ya estaba confirmada.');
-        }
-
-        $cita->update([
-            'estado' => Cita::ESTADO_CONFIRMADA,
-        ]);
+        [$type, $message] = $service->confirmForPatient($request->user(), $cita);
 
         return redirect()->route('portal')
-            ->with('success', 'Tu cita fue confirmada correctamente.');
+            ->with($type, $message);
     }
 
     /**
      * Cancel the specified appointment instead of deleting it.
      */
-    public function destroy(Cita $cita)
+    public function destroy(Cita $cita, CitaService $service)
     {
-        $cita->update([
-            'estado' => Cita::ESTADO_CANCELADA,
-        ]);
+        $service->cancelBackoffice($cita);
 
         return redirect()->route('citas.index')
             ->with('success', 'Cita cancelada correctamente.');
-    }
-
-    protected function extractFollowUpData(array &$validated): array
-    {
-        $data = [
-            'activo' => (bool) ($validated['activar_recordatorio_seguimiento'] ?? false),
-            'modo' => $validated['recordatorio_modo'] ?? RecordatorioSeguimiento::MODO_INTERVALO,
-            'titulo' => $validated['recordatorio_titulo'] ?? null,
-            'intervalo_meses' => $validated['recordatorio_intervalo_meses'] ?? null,
-            'fecha_objetivo' => $validated['recordatorio_fecha_objetivo'] ?? null,
-            'dias_antes' => $validated['recordatorio_dias_antes'] ?? [7, 1, 0],
-            'mensaje' => $validated['recordatorio_mensaje'] ?? null,
-        ];
-
-        unset(
-            $validated['activar_recordatorio_seguimiento'],
-            $validated['recordatorio_modo'],
-            $validated['recordatorio_titulo'],
-            $validated['recordatorio_intervalo_meses'],
-            $validated['recordatorio_fecha_objetivo'],
-            $validated['recordatorio_dias_antes'],
-            $validated['recordatorio_mensaje']
-        );
-
-        return $data;
-    }
-
-    protected function syncFollowUpReminder(Cita $cita, array $data): void
-    {
-        if (! $data['activo']) {
-            $cita->recordatoriosSeguimiento()->delete();
-
-            return;
-        }
-
-        $modo = $data['modo'];
-        $intervaloMeses = $modo === RecordatorioSeguimiento::MODO_INTERVALO
-            ? (int) ($data['intervalo_meses'] ?: 6)
-            : null;
-
-        $fechaObjetivo = $modo === RecordatorioSeguimiento::MODO_INTERVALO
-            ? $cita->fecha?->copy()->addMonthsNoOverflow($intervaloMeses)
-            : $data['fecha_objetivo'];
-
-        if (! $fechaObjetivo) {
-            return;
-        }
-
-        $cita->recordatoriosSeguimiento()->delete();
-        $cita->recordatoriosSeguimiento()->create([
-            'paciente_id' => $cita->paciente_id,
-            'activo' => true,
-            'modo' => $modo,
-            'titulo' => $data['titulo'],
-            'intervalo_meses' => $intervaloMeses,
-            'fecha_objetivo' => $fechaObjetivo,
-            'dias_antes' => collect($data['dias_antes'] ?: [7, 1, 0])
-                ->map(fn ($day) => (int) $day)
-                ->unique()
-                ->values()
-                ->all(),
-            'mensaje' => $data['mensaje'],
-            'fechas_enviadas' => [],
-        ]);
-    }
-
-    protected function validateFollowUpSelection(array $data)
-    {
-        if (! $data['activo']) {
-            return null;
-        }
-
-        if ($data['modo'] === RecordatorioSeguimiento::MODO_PERSONALIZADO && empty($data['fecha_objetivo'])) {
-            return back()
-                ->withErrors(['recordatorio_fecha_objetivo' => 'Selecciona la fecha objetivo del recordatorio.'])
-                ->withInput();
-        }
-
-        return null;
     }
 }

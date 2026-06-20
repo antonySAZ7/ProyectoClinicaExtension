@@ -4,189 +4,91 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreConsultaRequest;
 use App\Http\Requests\UpdateConsultaRequest;
-use App\Mail\ConsultaCerradaMail;
 use App\Models\Archivo;
-use App\Models\Cita;
 use App\Models\Consulta;
-use App\Models\NotificacionLog;
 use App\Models\Observacion;
 use App\Models\Paciente;
-use App\Models\PiezaDental;
-use App\Models\TarifaTratamiento;
-use App\Models\User;
+use App\Services\ConsultaService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ConsultaController extends Controller
 {
-    public function index(Paciente $paciente): View
+    public function index(Paciente $paciente, ConsultaService $service): View
     {
-        $consultas = $paciente->consultas()
-            ->with(['user', 'observaciones', 'archivos'])
-            ->orderByDesc('fecha')
-            ->orderByDesc('created_at')
-            ->paginate(20)
-            ->withQueryString();
+        $this->authorize('viewAny', [Consulta::class, $paciente]);
 
         return view('consultas.index', [
             'paciente' => $paciente,
-            'consultas' => $consultas,
+            'consultas' => $service->paginatedHistory($paciente),
             'isPortal' => false,
         ]);
     }
 
-    public function portalIndex(Request $request): View|RedirectResponse
+    public function portalIndex(Request $request, ConsultaService $service): View|RedirectResponse
     {
-        /** @var User $user */
         $user = $request->user();
 
         $user->load('paciente');
 
         if (! $user->paciente) {
             return redirect()->route('portal')
-                ->with('error', 'Tu usuario todavia no tiene un expediente de paciente asociado.');
+                ->with('error', 'Tu usuario todavía no tiene un expediente de paciente asociado.');
         }
 
         $paciente = $user->paciente;
-        $consultas = $paciente->consultas()
-            ->with(['user', 'observaciones', 'archivos'])
-            ->orderByDesc('fecha')
-            ->orderByDesc('created_at')
-            ->paginate(20)
-            ->withQueryString();
 
         return view('consultas.index', [
             'paciente' => $paciente,
-            'consultas' => $consultas,
+            'consultas' => $service->paginatedHistory($paciente),
             'isPortal' => true,
         ]);
     }
 
-    public function create(Request $request, Paciente $paciente): View
+    public function create(Request $request, Paciente $paciente, ConsultaService $service): View
     {
-        $cita = null;
-        if ($request->filled('cita_id')) {
-            $cita = Cita::where('id', $request->integer('cita_id'))
-                ->where('paciente_id', $paciente->id)
-                ->first();
-        }
+        $this->authorize('create', [Consulta::class, $paciente]);
 
         return view('consultas.create', [
             'paciente' => $paciente,
-            'cita' => $cita,
+            'cita' => $service->findLinkedCita($paciente, $request->integer('cita_id') ?: null),
             'observaciones' => old('observaciones', ''),
         ]);
     }
 
-    public function store(StoreConsultaRequest $request, Paciente $paciente): RedirectResponse
+    public function store(StoreConsultaRequest $request, Paciente $paciente, ConsultaService $service): RedirectResponse
     {
-        /** @var User $user */
-        $user = $request->user();
-        $validated = $request->validated();
+        $this->authorize('create', [Consulta::class, $paciente]);
 
-        $citaId = null;
-        if (! empty($validated['cita_id'])) {
-            $cita = Cita::where('id', $validated['cita_id'])
-                ->where('paciente_id', $paciente->id)
-                ->first();
-            $citaId = $cita?->id;
-        }
-
-        $consulta = DB::transaction(function () use ($validated, $request, $paciente, $user, $citaId) {
-            $consulta = $paciente->consultas()->create([
-                'user_id' => $user->id,
-                'cita_id' => $citaId,
-                'fecha' => $validated['fecha'],
-                'motivo' => $validated['motivo'],
-                'diagnostico' => $validated['diagnostico'],
-                'peso' => $validated['peso'] ?? null,
-                'altura' => $validated['altura'] ?? null,
-                'presion_arterial' => $validated['presion_arterial'] ?? null,
-                'frecuencia_cardiaca' => $validated['frecuencia_cardiaca'] ?? null,
-                'frecuencia_respiratoria' => $validated['frecuencia_respiratoria'] ?? null,
-                'signos_otros' => $validated['signos_otros'] ?? null,
-            ]);
-
-            if ($citaId) {
-                Cita::where('id', $citaId)->update(['estado' => Cita::ESTADO_ATENDIDA]);
-            }
-
-            if (! empty($validated['observaciones'])) {
-                $consulta->observaciones()->create([
-                    'descripcion' => $validated['observaciones'],
-                ]);
-            }
-
-            foreach ($request->file('archivos', []) as $archivoSubido) {
-                $ruta = $archivoSubido->store("consultas/{$paciente->id}", 'public');
-
-                $consulta->archivos()->create([
-                    'ruta' => $ruta,
-                    'tipo' => $archivoSubido->getClientMimeType() ?: $archivoSubido->extension(),
-                    'nombre_original' => $archivoSubido->getClientOriginalName(),
-                ]);
-            }
-
-            return $consulta;
-        });
-
-        $this->sendConsultaCerradaNotification($consulta);
+        $consulta = $service->createConsulta(
+            $paciente,
+            $request->user(),
+            $request->validated(),
+            $request->file('archivos', [])
+        );
 
         return redirect()->route('consultas.show', $consulta)
             ->with('success', 'Consulta registrada correctamente.');
     }
 
-    public function show(Request $request, Consulta $consulta): View
+    public function show(Request $request, Consulta $consulta, ConsultaService $service): View
     {
-        /** @var User $user */
         $user = $request->user();
-
-        $consulta->load([
-            'paciente.user',
-            'paciente.consultas.presupuestoItems',
-            'paciente.pagos',
-            'user',
-            'observaciones',
-            'archivos',
-            'presupuestoItems.pieza',
-            'pagos',
-            'consultaOrigen',
-            'piezasDentales',
-        ]);
-
-        $this->authorizeConsultaView($user, $consulta);
-
-        $estadosOdontograma = $consulta->piezasDentales
-            ->mapWithKeys(fn ($p) => [$p->id => $p->pivot?->estado ?? 'sana']);
+        $service->loadForShow($consulta);
+        $this->authorize('view', $consulta);
 
         return view('consultas.show', [
             'consulta' => $consulta,
             'isPortal' => $user->isPaciente(),
-            'piezasCatalogo' => PiezaDental::query()
-                ->orderBy('cuadrante')
-                ->orderBy('posicion')
-                ->get(['id', 'numero', 'nombre', 'cuadrante'])
-                ->map(fn ($p) => [
-                    'id' => $p->id,
-                    'numero' => $p->numero,
-                    'nombre' => $p->nombre,
-                    'cuadrante' => $p->cuadrante,
-                    'estado_consulta' => $estadosOdontograma[$p->id] ?? null,
-                ])
-                ->values(),
-            'tarifasCatalogo' => TarifaTratamiento::query()
-                ->where('activo', true)
-                ->orderBy('estado_pieza')
-                ->get(['estado_pieza', 'nombre_legible', 'precio_sugerido']),
+            'piezasCatalogo' => $service->piezasCatalogoFor($consulta),
+            'tarifasCatalogo' => $service->tarifasCatalogo(),
         ]);
     }
 
     public function edit(Consulta $consulta): View
     {
+        $this->authorize('update', $consulta);
         $consulta->load('paciente');
 
         return view('consultas.edit', [
@@ -197,165 +99,69 @@ class ConsultaController extends Controller
 
     public function update(UpdateConsultaRequest $request, Consulta $consulta): RedirectResponse
     {
+        $this->authorize('update', $consulta);
         $consulta->update($request->validated());
 
         return redirect()->route('consultas.show', $consulta)
             ->with('success', 'Consulta actualizada correctamente.');
     }
 
-    public function storeFollowUp(Request $request, Consulta $consulta): RedirectResponse
+    public function storeFollowUp(Request $request, Consulta $consulta, ConsultaService $service): RedirectResponse
     {
-        if (! $request->user()?->canManageClinicalHistory()) {
-            abort(403);
-        }
-
-        $consulta->load(['paciente', 'piezasDentales']);
-
-        $seguimiento = DB::transaction(function () use ($request, $consulta) {
-            $seguimiento = $consulta->paciente->consultas()->create([
-                'user_id' => $request->user()->id,
-                'consulta_origen_id' => $consulta->id,
-                'fecha' => today()->toDateString(),
-                'motivo' => 'Seguimiento de '.$consulta->fecha?->format('d/m/Y'),
-                'diagnostico' => 'Seguimiento pendiente de documentar.',
-            ]);
-
-            $piezas = $consulta->piezasDentales
-                ->mapWithKeys(fn ($pieza) => [
-                    $pieza->id => [
-                        'estado' => $pieza->pivot?->estado ?? 'sana',
-                        'observaciones' => $pieza->pivot?->observaciones,
-                    ],
-                ])
-                ->all();
-
-            if (! empty($piezas)) {
-                $seguimiento->piezasDentales()->sync($piezas);
-            }
-
-            return $seguimiento;
-        });
+        $this->authorize('manage', $consulta);
+        $seguimiento = $service->createFollowUp($consulta, $request->user());
 
         return redirect()->route('consultas.show', $seguimiento)
             ->with('success', 'Consulta de seguimiento creada correctamente.');
     }
 
-    public function storeObservacion(Request $request, Consulta $consulta): RedirectResponse
+    public function storeObservacion(Request $request, Consulta $consulta, ConsultaService $service): RedirectResponse
     {
-        if (! $request->user()?->canManageClinicalHistory()) {
-            abort(403);
-        }
+        $this->authorize('manage', $consulta);
 
         $validated = $request->validate([
             'descripcion' => ['required', 'string', 'max:4000'],
         ]);
 
-        $consulta->observaciones()->create($validated);
+        $service->addObservation($consulta, $validated);
 
         return redirect()->route('consultas.show', $consulta)
             ->with('success', 'Observación agregada.');
     }
 
-    public function destroyObservacion(Request $request, Observacion $observacion): RedirectResponse
+    public function destroyObservacion(Observacion $observacion, ConsultaService $service): RedirectResponse
     {
-        if (! $request->user()?->canManageClinicalHistory()) {
-            abort(403);
-        }
+        $observacion->loadMissing('consulta');
+        $this->authorize('manage', $observacion->consulta);
 
-        $consultaId = $observacion->consulta_id;
-        $observacion->delete();
+        $consultaId = $service->deleteObservation($observacion);
 
         return redirect()->route('consultas.show', $consultaId)
             ->with('success', 'Observación eliminada.');
     }
 
-    public function storeArchivo(Request $request, Consulta $consulta): RedirectResponse
+    public function storeArchivo(Request $request, Consulta $consulta, ConsultaService $service): RedirectResponse
     {
-        if (! $request->user()?->canManageClinicalHistory()) {
-            abort(403);
-        }
+        $this->authorize('manage', $consulta);
 
         $request->validate([
             'archivos' => ['required', 'array'],
             'archivos.*' => ['file', 'mimes:pdf,jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
-        foreach ($request->file('archivos', []) as $archivoSubido) {
-            $ruta = $archivoSubido->store("consultas/{$consulta->paciente_id}", 'public');
-
-            $consulta->archivos()->create([
-                'ruta' => $ruta,
-                'tipo' => $archivoSubido->getClientMimeType() ?: $archivoSubido->extension(),
-                'nombre_original' => $archivoSubido->getClientOriginalName(),
-            ]);
-        }
+        $service->addFiles($consulta, $request->file('archivos', []));
 
         return redirect()->route('consultas.show', $consulta)
             ->with('success', 'Archivo(s) subido(s) correctamente.');
     }
 
-    public function destroyArchivo(Request $request, Archivo $archivo): RedirectResponse
+    public function destroyArchivo(Archivo $archivo, ConsultaService $service): RedirectResponse
     {
-        if (! $request->user()?->canManageClinicalHistory()) {
-            abort(403);
-        }
-
-        $consultaId = $archivo->consulta_id;
-
-        if ($archivo->ruta && Storage::disk('public')->exists($archivo->ruta)) {
-            Storage::disk('public')->delete($archivo->ruta);
-        }
-
-        $archivo->delete();
+        $archivo->loadMissing('consulta');
+        $this->authorize('manage', $archivo->consulta);
+        $consultaId = $service->deleteFile($archivo);
 
         return redirect()->route('consultas.show', $consultaId)
             ->with('success', 'Archivo eliminado.');
-    }
-
-    protected function authorizeConsultaView(User $user, Consulta $consulta): void
-    {
-        if ($user->isPaciente()) {
-            $user->loadMissing('paciente');
-
-            if (! $user->paciente || $consulta->paciente_id !== $user->paciente->id) {
-                abort(403);
-            }
-
-            return;
-        }
-
-        if (! $user->canManageClinicalHistory()) {
-            abort(403);
-        }
-    }
-
-    protected function sendConsultaCerradaNotification(Consulta $consulta): void
-    {
-        $consulta->loadMissing([
-            'paciente.consultas.presupuestoItems',
-            'paciente.pagos',
-            'observaciones',
-        ]);
-
-        if (! $consulta->paciente?->correo) {
-            return;
-        }
-
-        Mail::to($consulta->paciente->correo)->send(new ConsultaCerradaMail($consulta));
-
-        NotificacionLog::create([
-            'cita_id' => $consulta->cita_id,
-            'canal' => 'email',
-            'tipo' => 'consulta_cerrada',
-            'destinatario' => $consulta->paciente->correo,
-            'estado' => 'enviado',
-            'payload' => [
-                'consulta_id' => $consulta->id,
-                'fecha' => $consulta->fecha?->toDateString(),
-                'motivo' => $consulta->motivo,
-                'saldo_actual' => $consulta->paciente->saldo_pendiente,
-            ],
-            'enviado_en' => now(),
-        ]);
     }
 }

@@ -89,9 +89,9 @@
                             <th class="py-2 pr-2 w-40">Pieza</th>
                             <th class="px-2 py-2">Diagnóstico</th>
                             <th class="px-2 py-2">Tratamiento</th>
-                            <th class="px-2 py-2 w-24">Precio (Q)</th>
+                            <th class="px-2 py-2 w-24 text-right">Precio (Q)</th>
                             <th class="px-2 py-2 w-16">Cant.</th>
-                            <th class="px-2 py-2 w-24">Subtotal</th>
+                            <th class="px-2 py-2 w-24 text-right">Subtotal</th>
                             <th class="px-2 py-2 w-32 text-right">Acciones</th>
                         </tr>
                     </thead>
@@ -142,7 +142,7 @@
                                         type="number"
                                         step="0.01"
                                         min="0"
-                                        class="w-full rounded-md border-brand-border text-sm shadow-sm focus:border-brand-primary focus:ring-brand-primary"
+                                        class="w-full rounded-md border-brand-border text-right text-sm shadow-sm focus:border-brand-primary focus:ring-brand-primary"
                                         x-model.number="item.precio_unitario"
                                     >
                                 </td>
@@ -155,7 +155,7 @@
                                         x-model.number="item.cantidad"
                                     >
                                 </td>
-                                <td class="px-2 py-2 text-brand-primary font-medium" x-text="formatQ((item.precio_unitario || 0) * (item.cantidad || 0))"></td>
+                                <td class="px-2 py-2 text-right font-medium text-brand-primary" x-text="formatQ((item.precio_unitario || 0) * (item.cantidad || 0))"></td>
                                 <td class="px-2 py-2 text-right">
                                     <div class="flex justify-end gap-1">
                                         <button
@@ -180,7 +180,7 @@
                         <template x-if="items.length === 0">
                             <tr>
                                 <td colspan="7" class="py-4 text-center text-brand-muted">
-                                    Esta consulta todavía no tiene ítems de presupuesto. Agregá una línea o usá "Generar desde odontograma".
+                                    Esta consulta todavía no tiene ítems de presupuesto. Agregue una línea o use "Generar desde odontograma".
                                 </td>
                             </tr>
                         </template>
@@ -188,7 +188,7 @@
                     <tfoot>
                         <tr>
                             <th colspan="5" class="pt-3 text-right text-brand-primary">Total</th>
-                            <th class="pt-3 text-brand-primary text-base" x-text="formatQ(totalEnVivo)"></th>
+                            <th class="pt-3 text-right text-base text-brand-primary" x-text="formatQ(totalEnVivo)"></th>
                             <th></th>
                         </tr>
                     </tfoot>
@@ -201,7 +201,7 @@
 
                 <div class="mt-3 grid gap-2 sm:grid-cols-[140px_minmax(0,1fr)_minmax(0,1fr)_110px_80px_auto]">
                     <select
-                        class="rounded-md border-brand-border text-sm shadow-sm focus:border-brand-primary focus:ring-brand-primary"
+                        class="rounded-md border-brand-border text-right text-sm shadow-sm focus:border-brand-primary focus:ring-brand-primary"
                         x-model.number="nuevo.pieza_id"
                         @change="autoCompletarDesdePieza()"
                     >
@@ -259,7 +259,7 @@
                 </div>
 
                 <p class="mt-2 text-xs text-brand-muted">
-                    Si seleccionás una pieza con estado distinto a "sana", el diagnóstico, tratamiento y precio se autocompletan desde el catálogo de tarifas (podés editarlos antes de agregar).
+                    Si selecciona una pieza con estado distinto a "sana", el diagnóstico, tratamiento y precio se autocompletan desde el catálogo de tarifas (puede editarlos antes de agregar).
                 </p>
             </div>
         </div>
@@ -285,9 +285,9 @@
                         <th class="py-2 pr-3">Pieza</th>
                         <th class="px-3 py-2">Diagnóstico</th>
                         <th class="px-3 py-2">Tratamiento</th>
-                        <th class="px-3 py-2">Precio</th>
+                        <th class="px-3 py-2 text-right">Precio</th>
                         <th class="px-3 py-2">Cant.</th>
-                        <th class="px-3 py-2">Subtotal</th>
+                        <th class="px-3 py-2 text-right">Subtotal</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-brand-border">
@@ -296,9 +296,9 @@
                             <td class="py-2 pr-3 text-brand-primary">{{ $item->pieza?->numero ?? 'N/A' }}</td>
                             <td class="px-3 py-2 text-brand-primary">{{ $item->diagnostico }}</td>
                             <td class="px-3 py-2 text-brand-primary">{{ $item->tratamiento }}</td>
-                            <td class="px-3 py-2 text-brand-primary">Q{{ number_format((float) $item->precio_unitario, 2) }}</td>
+                            <td class="px-3 py-2 text-right text-brand-primary">Q{{ number_format((float) $item->precio_unitario, 2) }}</td>
                             <td class="px-3 py-2 text-brand-primary">{{ $item->cantidad }}</td>
-                            <td class="px-3 py-2 text-brand-primary">Q{{ number_format((float) $item->subtotal, 2) }}</td>
+                            <td class="px-3 py-2 text-right text-brand-primary">Q{{ number_format((float) $item->subtotal, 2) }}</td>
                         </tr>
                     @empty
                         <tr>
@@ -311,7 +311,7 @@
                 <tfoot>
                     <tr>
                         <th colspan="5" class="pt-3 text-right text-brand-primary">Total</th>
-                        <th class="pt-3 text-brand-primary">
+                        <th class="pt-3 text-right text-brand-primary">
                             Q{{ number_format((float) $consulta->presupuesto_total, 2) }}
                         </th>
                     </tr>

@@ -33,7 +33,7 @@
                     </div>
 
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Telefono</p>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Teléfono</p>
                         <p class="mt-1 text-sm text-gray-900">
                             {{ $paciente?->telefono ?? 'Pendiente de registrar' }}
                         </p>
@@ -50,7 +50,7 @@
 
             @if (! $paciente)
                 <div class="rounded-xl border border-amber-200 bg-amber-50 px-6 py-5 text-sm text-amber-800 shadow-sm">
-                    Tu cuenta ya tiene acceso como paciente, pero todavia no esta vinculada a un expediente clinico.
+                    Tu cuenta ya tiene acceso como paciente, pero todavía no está vinculada a un expediente clínico.
                     Cuando un administrador relacione tu usuario con tu registro, aqui podras ver tus citas.
                 </div>
             @endif
@@ -208,7 +208,7 @@
                                     </td>
                                     <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
                                         @if (in_array($cita->estado, ['cancelada', 'atendida', 'no_show']))
-                                            <span class="text-xs font-medium text-gray-400">Sin accion</span>
+                                            <span class="text-xs font-medium text-gray-400">Sin acción</span>
                                         @else
                                             <div class="flex flex-col items-end gap-2 sm:flex-row sm:justify-end">
                                                 @if ($cita->estado === 'pendiente')

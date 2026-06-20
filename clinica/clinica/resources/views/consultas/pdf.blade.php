@@ -36,7 +36,7 @@
     <h2>Motivo</h2>
     <p>{{ $consulta->motivo }}</p>
 
-    <h2>Diagnostico</h2>
+    <h2>Diagnóstico</h2>
     <p>{{ $consulta->diagnostico }}</p>
 
     @php

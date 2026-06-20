@@ -94,7 +94,7 @@
                                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Nombre</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Usuario</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">DPI</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Telefono</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Teléfono</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Correo</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Acciones</th>
                             </tr>
@@ -134,7 +134,7 @@
                                                 href="{{ route('pacientes.antecedentes.edit', $paciente) }}"
                                                 class="inline-flex items-center justify-center rounded-md border border-emerald-300 px-3 py-2 font-medium text-emerald-700 transition hover:bg-emerald-50"
                                             >
-                                                Ficha clinica
+                                                Ficha clínica
                                             </a>
 
                                             <a

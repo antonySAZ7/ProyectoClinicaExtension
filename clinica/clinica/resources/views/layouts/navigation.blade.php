@@ -21,6 +21,9 @@
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                             Panel
                         </x-nav-link>
+                        <x-nav-link :href="route('analitica.index')" :active="request()->routeIs('analitica*')">
+                            Análisis
+                        </x-nav-link>
                         <x-nav-link :href="route('pacientes.index')" :active="request()->routeIs('pacientes.*')">
                             Pacientes
                         </x-nav-link>
@@ -65,7 +68,7 @@
                             @csrf
                             <x-dropdown-link :href="route('logout')"
                                 onclick="event.preventDefault(); this.closest('form').submit();">
-                                Cerrar sesion
+                                Cerrar sesión
                             </x-dropdown-link>
                         </form>
                     </x-slot>
@@ -84,14 +87,15 @@
     <!-- Mobile menu -->
     <div x-show="open" class="sm:hidden px-4 pb-4 space-y-2">
         @if ($canAccessBackoffice)
-            <x-responsive-nav-link :href="route('dashboard')">Panel</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('pacientes.index')">Pacientes</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('citas.index')">Citas</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('citas.calendario')">Calendario</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('precios.index')">Precios</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">Panel</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('analitica.index')" :active="request()->routeIs('analitica*')">Análisis</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('pacientes.index')" :active="request()->routeIs('pacientes.*')">Pacientes</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('citas.index')" :active="request()->routeIs('citas.*') && ! request()->routeIs('citas.calendario')">Citas</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('citas.calendario')" :active="request()->routeIs('citas.calendario')">Calendario</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('precios.index')" :active="request()->routeIs('precios.*')">Precios</x-responsive-nav-link>
         @else
-            <x-responsive-nav-link :href="route('portal')">Portal</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('portal.consultas.index')">Historial</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('portal')" :active="request()->routeIs('portal')">Portal</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('portal.consultas.index')" :active="request()->routeIs('portal.consultas.*')">Historial</x-responsive-nav-link>
         @endif
     </div>
 </nav>

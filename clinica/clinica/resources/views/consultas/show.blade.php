@@ -80,7 +80,7 @@
                             </div>
 
                             <div class="min-w-0 sm:col-span-2">
-                                <dt class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Diagnostico</dt>
+                                <dt class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Diagnóstico</dt>
                                 <dd class="mt-1 whitespace-pre-line text-base text-brand-primary [overflow-wrap:anywhere]">{{ $consulta->diagnostico }}</dd>
                             </div>
                         </dl>
@@ -148,7 +148,7 @@
                             </div>
 
                             <div class="min-w-0">
-                                <dt class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Telefono</dt>
+                                <dt class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Teléfono</dt>
                                 <dd class="mt-1 text-base text-brand-primary [overflow-wrap:anywhere]">{{ $consulta->paciente->telefono }}</dd>
                             </div>
 
