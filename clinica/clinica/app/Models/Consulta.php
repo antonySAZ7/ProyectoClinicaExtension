@@ -107,4 +107,9 @@ class Consulta extends Model implements Auditable
             ->withPivot(['estado', 'observaciones'])
             ->withTimestamps();
     }
+
+    public function fasesTratamiento(): HasMany
+    {
+        return $this->hasMany(FaseTratamiento::class);
+    }
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PiezaDental extends Model
 {
@@ -30,5 +31,10 @@ class PiezaDental extends Model
         return $this->belongsToMany(Consulta::class, 'consulta_pieza_dental', 'pieza_id', 'consulta_id')
             ->withPivot(['estado', 'observaciones'])
             ->withTimestamps();
+    }
+
+    public function tratamientos(): HasMany
+    {
+        return $this->hasMany(Tratamiento::class, 'pieza_id');
     }
 }

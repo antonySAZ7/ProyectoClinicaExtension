@@ -120,4 +120,9 @@ class Paciente extends Model
     {
         return $this->hasMany(RecordatorioSeguimiento::class);
     }
+
+    public function tratamientos(): HasMany
+    {
+        return $this->hasMany(Tratamiento::class);
+    }
 }

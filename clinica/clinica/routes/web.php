@@ -17,6 +17,7 @@ use App\Http\Controllers\PrecioController;
 use App\Http\Controllers\PresupuestoItemController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicCitaController;
+use App\Http\Controllers\TratamientoController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [LandingController::class, 'index'])->name('landing');
@@ -106,6 +107,20 @@ Route::middleware(['auth', 'role:admin,doctor'])->group(function () {
         ->name('pacientes.antecedentes.update');
     Route::post('/pacientes/{paciente}/pagos', [PagoController::class, 'store'])
         ->name('pacientes.pagos.store');
+    Route::post('/pacientes/{paciente}/tratamientos', [TratamientoController::class, 'store'])
+        ->name('pacientes.tratamientos.store');
+    Route::put('/tratamientos/{tratamiento}', [TratamientoController::class, 'update'])
+        ->name('tratamientos.update');
+    Route::patch('/tratamientos/{tratamiento}/finalizar', [TratamientoController::class, 'finalizar'])
+        ->name('tratamientos.finalizar');
+    Route::delete('/tratamientos/{tratamiento}', [TratamientoController::class, 'destroy'])
+        ->name('tratamientos.destroy');
+    Route::post('/tratamientos/{tratamiento}/fases', [TratamientoController::class, 'storeFase'])
+        ->name('tratamientos.fases.store');
+    Route::put('/fases-tratamiento/{fase}', [TratamientoController::class, 'updateFase'])
+        ->name('fases-tratamiento.update');
+    Route::delete('/fases-tratamiento/{fase}', [TratamientoController::class, 'destroyFase'])
+        ->name('fases-tratamiento.destroy');
 
     Route::get('/pacientes/{paciente}/odontograma/evolucion', [PacienteController::class, 'evolucionOdontograma'])
         ->name('pacientes.odontograma.evolucion');

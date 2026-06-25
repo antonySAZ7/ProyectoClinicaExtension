@@ -65,6 +65,16 @@ class User extends Authenticatable
         return $this->hasMany(Consulta::class);
     }
 
+    public function tratamientos(): HasMany
+    {
+        return $this->hasMany(Tratamiento::class);
+    }
+
+    public function fasesTratamiento(): HasMany
+    {
+        return $this->hasMany(FaseTratamiento::class);
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === self::ROLE_ADMIN;

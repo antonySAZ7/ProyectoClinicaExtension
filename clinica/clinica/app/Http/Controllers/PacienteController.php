@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePacienteRequest;
 use App\Http\Requests\UpdatePacienteRequest;
 use App\Models\Paciente;
+use App\Models\PiezaDental;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -72,6 +73,7 @@ class PacienteController extends Controller
             'consultas' => fn ($q) => $q->orderByDesc('fecha')->limit(5),
             'consultas.presupuestoItems',
             'pagos' => fn ($q) => $q->orderByDesc('fecha_pago')->orderByDesc('created_at'),
+            'tratamientos' => fn ($q) => $q->with(['pieza', 'user', 'fases.consulta', 'fases.user'])->activosPrimero(),
         ]);
 
         $consultasParaAbono = $paciente->consultas()
@@ -82,9 +84,25 @@ class PacienteController extends Controller
                 'label' => $c->fecha->format('d/m/Y').' — '.($c->motivo ?: 'Sin motivo'),
             ]);
 
+        $consultasParaTratamiento = $paciente->consultas()
+            ->orderByDesc('fecha')
+            ->orderByDesc('created_at')
+            ->get(['id', 'fecha', 'motivo'])
+            ->map(fn ($c) => [
+                'id' => $c->id,
+                'label' => $c->fecha->format('d/m/Y').' - '.($c->motivo ?: 'Sin motivo'),
+            ]);
+
+        $piezasDentales = PiezaDental::query()
+            ->orderBy('cuadrante')
+            ->orderBy('posicion')
+            ->get(['id', 'numero', 'nombre']);
+
         return view('pacientes.show', [
             'paciente' => $paciente,
             'consultasParaAbono' => $consultasParaAbono,
+            'consultasParaTratamiento' => $consultasParaTratamiento,
+            'piezasDentales' => $piezasDentales,
         ]);
     }
 

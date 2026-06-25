@@ -153,6 +153,13 @@
                 </x-card>
             </div>
 
+            {{-- Tratamientos multi-fase --}}
+            @include('pacientes.partials.tratamientos', [
+                'paciente' => $paciente,
+                'piezasDentales' => $piezasDentales,
+                'consultasParaTratamiento' => $consultasParaTratamiento,
+            ])
+
             {{-- Historial de pagos --}}
             <x-card class="overflow-hidden">
                 <div class="flex items-center justify-between border-b border-brand-border px-6 py-4">
