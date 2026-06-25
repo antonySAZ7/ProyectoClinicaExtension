@@ -5,11 +5,11 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex flex-col gap-1">
-            <h2 class="font-semibold text-2xl text-brand-primary leading-tight">Ficha clinica</h2>
+            <h2 class="font-semibold text-2xl text-brand-primary leading-tight">Ficha clínica</h2>
             <p class="text-base text-brand-muted">
                 {{ $paciente->nombre_completo }}
                 @if ($paciente->edad !== null)
-                    &middot; {{ $paciente->edad }} anios
+                    &middot; {{ $paciente->edad }} años
                 @endif
             </p>
         </div>
@@ -44,7 +44,6 @@
                 @csrf
                 @method('PUT')
 
-                {{-- Anamnesis --}}
                 <x-card class="p-6">
                     <h3 class="text-lg font-semibold text-brand-primary">Anamnesis</h3>
                     <p class="mt-1 text-sm text-brand-muted">Antecedentes de visitas y tratamiento actual.</p>
@@ -78,7 +77,6 @@
                     </div>
 
                     <div class="mt-5 space-y-4">
-                        {{-- presento_complicacion (sin campo condicional) --}}
                         <label class="inline-flex items-center gap-3 text-sm text-brand-primary">
                             <input type="checkbox" name="presento_complicacion" value="1"
                                 @checked(old('presento_complicacion', $antecedente->presento_complicacion))
@@ -86,7 +84,6 @@
                             {{ AntecedenteClinico::CAMPOS_ANAMNESIS_BOOL['presento_complicacion'] }}
                         </label>
 
-                        {{-- en_tratamiento_medico -> tratamiento_enfermedad --}}
                         <div>
                             <label class="inline-flex items-center gap-3 text-sm text-brand-primary">
                                 <input type="checkbox" name="en_tratamiento_medico" value="1"
@@ -102,7 +99,6 @@
                             </div>
                         </div>
 
-                        {{-- toma_medicamento -> cual_medicamento --}}
                         <div>
                             <label class="inline-flex items-center gap-3 text-sm text-brand-primary">
                                 <input type="checkbox" name="toma_medicamento" value="1"
@@ -118,7 +114,6 @@
                             </div>
                         </div>
 
-                        {{-- alergico_medicamento -> cuales_medicamentos --}}
                         <div>
                             <label class="inline-flex items-center gap-3 text-sm text-brand-primary">
                                 <input type="checkbox" name="alergico_medicamento" value="1"
@@ -155,9 +150,8 @@
                     </div>
                 </x-card>
 
-                {{-- Antecedentes medicos --}}
                 <x-card class="p-6">
-                    <h3 class="text-lg font-semibold text-brand-primary">Antecedentes medicos</h3>
+                    <h3 class="text-lg font-semibold text-brand-primary">Antecedentes médicos</h3>
                     <p class="mt-1 text-sm text-brand-muted">Marca las condiciones que el paciente presenta.</p>
 
                     <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -172,10 +166,9 @@
                     </div>
                 </x-card>
 
-                {{-- Antecedentes odontologicos --}}
                 <x-card class="p-6">
-                    <h3 class="text-lg font-semibold text-brand-primary">Antecedentes odontologicos</h3>
-                    <p class="mt-1 text-sm text-brand-muted">Marca los antecedentes odontologicos del paciente.</p>
+                    <h3 class="text-lg font-semibold text-brand-primary">Antecedentes odontológicos</h3>
+                    <p class="mt-1 text-sm text-brand-muted">Marca los antecedentes odontológicos del paciente.</p>
 
                     <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         @foreach (AntecedenteClinico::CAMPOS_ODONTOLOGICOS as $campo => $etiqueta)
@@ -191,7 +184,7 @@
 
                 <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
                     <x-link-button href="{{ route('pacientes.index') }}">Volver</x-link-button>
-                    <x-button type="submit" class="btn btn-primary">Guardar ficha clinica</x-button>
+                    <x-button type="submit" class="btn btn-primary">Guardar ficha clínica</x-button>
                 </div>
             </form>
         </div>

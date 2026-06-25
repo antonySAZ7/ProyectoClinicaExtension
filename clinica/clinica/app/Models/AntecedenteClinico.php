@@ -26,7 +26,7 @@ class AntecedenteClinico extends Model implements Auditable
         'ant_embarazo' => 'Embarazo',
         'ant_convulsiones' => 'Convulsiones',
         'ant_venereas' => 'Enfermedades venéreas',
-        'ant_fiebre_reumatica' => 'Fiebre reumatica',
+        'ant_fiebre_reumatica' => 'Fiebre reumática',
         'ant_tuberculosis' => 'Tuberculosis',
         'ant_hemorragias' => 'Hemorragias',
         'ant_discrasias' => 'Discrasias sanguíneas',
@@ -50,10 +50,10 @@ class AntecedenteClinico extends Model implements Auditable
      * Campos booleanos de anamnesis. campo => etiqueta.
      */
     public const CAMPOS_ANAMNESIS_BOOL = [
-        'presento_complicacion' => '¿Presentó alguna complicación en su última visita?',
-        'en_tratamiento_medico' => '¿Está siendo tratado por un médico actualmente?',
-        'toma_medicamento' => '¿Toma algún tipo de medicamento?',
-        'alergico_medicamento' => '¿Es alérgico a algún medicamento?',
+        'presento_complicacion' => 'El paciente presentó alguna complicación en su última visita',
+        'en_tratamiento_medico' => 'El paciente está siendo tratado por un médico actualmente',
+        'toma_medicamento' => 'El paciente toma algún tipo de medicamento',
+        'alergico_medicamento' => 'El paciente es alérgico a algún medicamento',
     ];
 
     /**
