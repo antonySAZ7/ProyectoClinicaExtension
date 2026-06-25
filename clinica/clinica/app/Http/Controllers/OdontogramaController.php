@@ -20,26 +20,45 @@ class OdontogramaController extends Controller
         'endodoncia',
     ];
 
+    private const TIPOS = [
+        PiezaDental::TIPO_PERMANENTE,
+        PiezaDental::TIPO_TEMPORAL,
+        'all',
+    ];
+
     public function index(Request $request, Consulta $consulta): JsonResponse
     {
         $this->authorize('view', $consulta);
 
         $consulta->load('piezasDentales');
         $piezasConsulta = $consulta->piezasDentales->keyBy('id');
+        $tipo = $request->string('tipo')->toString();
+        $tipo = in_array($tipo, self::TIPOS, true) ? $tipo : PiezaDental::TIPO_PERMANENTE;
 
-        $piezas = PiezaDental::query()
+        $piezasQuery = PiezaDental::query()
             ->orderBy('cuadrante')
             ->orderBy('posicion')
+            ->orderBy('numero');
+
+        if ($tipo !== 'all') {
+            $piezasQuery->forTipo($tipo);
+        }
+
+        $piezas = $piezasQuery
             ->get()
             ->map(function (PiezaDental $pieza) use ($piezasConsulta) {
                 $registrada = $piezasConsulta->get($pieza->id);
 
                 return [
                     'id' => $pieza->id,
-                    'numero' => $pieza->numero,
+                    'numero' => $pieza->numeroVisible(),
+                    'numero_fdi' => $pieza->numero,
+                    'numero_referencia' => $pieza->numeroReferencia(),
                     'nombre' => $pieza->nombre,
                     'cuadrante' => $pieza->cuadrante,
                     'posicion' => $pieza->posicion,
+                    'tipo' => $pieza->tipo,
+                    'tipo_legible' => $pieza->tipoLegible(),
                     'estado' => $registrada?->pivot?->estado ?? 'sana',
                     'observaciones' => $registrada?->pivot?->observaciones,
                 ];
@@ -47,6 +66,7 @@ class OdontogramaController extends Controller
 
         return response()->json([
             'consulta_id' => $consulta->id,
+            'tipo' => $tipo,
             'piezas' => $piezas,
         ]);
     }

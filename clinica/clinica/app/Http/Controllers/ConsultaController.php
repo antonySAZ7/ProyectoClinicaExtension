@@ -83,6 +83,7 @@ class ConsultaController extends Controller
             'isPortal' => $user->isPaciente(),
             'piezasCatalogo' => $service->piezasCatalogoFor($consulta),
             'tarifasCatalogo' => $service->tarifasCatalogo(),
+            'odontogramaTipoInicial' => $service->tipoOdontogramaInicial($consulta),
         ]);
     }
 

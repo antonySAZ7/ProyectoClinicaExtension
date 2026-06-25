@@ -108,15 +108,29 @@ class ConsultaService
         return PiezaDental::query()
             ->orderBy('cuadrante')
             ->orderBy('posicion')
-            ->get(['id', 'numero', 'nombre', 'cuadrante'])
+            ->get(['id', 'numero', 'nombre', 'cuadrante', 'posicion', 'tipo'])
             ->map(fn ($p) => [
                 'id' => $p->id,
-                'numero' => $p->numero,
+                'numero' => $p->numeroVisible(),
+                'numero_fdi' => $p->numero,
+                'numero_referencia' => $p->numeroReferencia(),
                 'nombre' => $p->nombre,
                 'cuadrante' => $p->cuadrante,
+                'posicion' => $p->posicion,
+                'tipo' => $p->tipo,
+                'tipo_legible' => $p->tipoLegible(),
                 'estado_consulta' => $estadosOdontograma[$p->id] ?? null,
             ])
             ->values();
+    }
+
+    public function tipoOdontogramaInicial(Consulta $consulta): string
+    {
+        $edad = $consulta->paciente?->edad;
+
+        return $edad !== null && $edad < 13
+            ? PiezaDental::TIPO_TEMPORAL
+            : PiezaDental::TIPO_PERMANENTE;
     }
 
     public function tarifasCatalogo()

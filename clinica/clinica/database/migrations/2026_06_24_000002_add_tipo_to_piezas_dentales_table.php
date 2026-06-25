@@ -1,40 +1,18 @@
 <?php
 
-namespace Database\Seeders;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
-use App\Models\PiezaDental;
-use Illuminate\Database\Seeder;
-
-class PiezaDentalSeeder extends Seeder
+return new class extends Migration
 {
-    public function run(): void
+    public function up(): void
     {
-        $permanentes = [
-            1 => 'Incisivo central',
-            2 => 'Incisivo lateral',
-            3 => 'Canino',
-            4 => 'Primer premolar',
-            5 => 'Segundo premolar',
-            6 => 'Primer molar',
-            7 => 'Segundo molar',
-            8 => 'Tercer molar',
-        ];
-
-        foreach ([1, 2, 3, 4] as $cuadrante) {
-            foreach (range(1, 8) as $posicion) {
-                $numero = ($cuadrante * 10) + $posicion;
-
-                PiezaDental::updateOrCreate(
-                    ['numero' => $numero],
-                    [
-                        'nombre' => $permanentes[$posicion],
-                        'cuadrante' => $cuadrante,
-                        'posicion' => $posicion,
-                        'tipo' => PiezaDental::TIPO_PERMANENTE,
-                    ]
-                );
-            }
-        }
+        Schema::table('piezas_dentales', function (Blueprint $table) {
+            $table->string('tipo')->default('permanente')->after('posicion');
+            $table->index(['tipo', 'cuadrante', 'posicion']);
+        });
 
         $temporales = [
             [55, 'Segundo molar temporal', 1, 5],
@@ -60,15 +38,29 @@ class PiezaDentalSeeder extends Seeder
         ];
 
         foreach ($temporales as [$numero, $nombre, $cuadrante, $posicion]) {
-            PiezaDental::updateOrCreate(
+            DB::table('piezas_dentales')->updateOrInsert(
                 ['numero' => $numero],
                 [
                     'nombre' => $nombre,
                     'cuadrante' => $cuadrante,
                     'posicion' => $posicion,
-                    'tipo' => PiezaDental::TIPO_TEMPORAL,
+                    'tipo' => 'temporal',
+                    'updated_at' => now(),
+                    'created_at' => now(),
                 ]
             );
         }
     }
-}
+
+    public function down(): void
+    {
+        DB::table('piezas_dentales')
+            ->where('tipo', 'temporal')
+            ->delete();
+
+        Schema::table('piezas_dentales', function (Blueprint $table) {
+            $table->dropIndex(['tipo', 'cuadrante', 'posicion']);
+            $table->dropColumn('tipo');
+        });
+    }
+};

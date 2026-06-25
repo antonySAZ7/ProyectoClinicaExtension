@@ -326,7 +326,11 @@
                     </div>
                 </div>
 
-                <x-odontograma :consulta-id="$consulta->id" :view-only="$isPortal" />
+                <x-odontograma
+                    :consulta-id="$consulta->id"
+                    :view-only="$isPortal"
+                    :initial-type="$odontogramaTipoInicial"
+                />
             </x-card>
 
             {{-- Presupuesto (ancho completo, al final) --}}
@@ -335,6 +339,7 @@
                 'isPortal' => $isPortal,
                 'piezasCatalogo' => $piezasCatalogo,
                 'tarifasCatalogo' => $tarifasCatalogo,
+                'odontogramaTipoInicial' => $odontogramaTipoInicial,
             ])
         </div>
     </div>

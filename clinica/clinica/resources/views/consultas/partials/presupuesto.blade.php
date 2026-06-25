@@ -4,7 +4,7 @@
     $itemsInicial = $consulta->presupuestoItems->map(fn ($item) => [
         'id' => $item->id,
         'pieza_id' => $item->pieza_id,
-        'pieza_numero' => $item->pieza?->numero,
+        'pieza_numero' => $item->pieza?->numeroVisible(),
         'diagnostico' => $item->diagnostico,
         'tratamiento' => $item->tratamiento,
         'precio_unitario' => (float) $item->precio_unitario,
@@ -20,6 +20,7 @@
                 items: @js($itemsInicial),
                 piezas: @js($piezasCatalogo),
                 tarifas: @js($tarifasCatalogo),
+                tipoInicial: @js($odontogramaTipoInicial),
                 aceptadoEn: null,
                 endpoints: {
                     store: '{{ route('consultas.presupuesto.store', $consulta) }}',
@@ -30,6 +31,7 @@
                 },
             })"
             @odontograma-changed.window="actualizarEstadosPiezas($event.detail.piezas)"
+            @odontograma-type-changed.window="actualizarTipoOdontograma($event.detail.type)"
         >
             <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
@@ -41,6 +43,10 @@
                         <template x-if="aceptadoEn">
                             <span>Aceptado el <span x-text="aceptadoEn"></span>. Los ítems quedan congelados.</span>
                         </template>
+                    </p>
+                    <p class="mt-2 text-xs font-medium text-brand-muted">
+                        Cuadro activo:
+                        <span class="text-brand-primary" x-text="tipoOdontogramaActivo === 'temporal' ? 'Niño' : 'Adulto'"></span>
                     </p>
                 </div>
 
@@ -81,7 +87,6 @@
                 </template>
             </datalist>
 
-            {{-- Tabla de items existentes --}}
             <div class="mt-4 overflow-x-auto">
                 <table class="min-w-full divide-y divide-brand-border text-sm">
                     <thead>
@@ -113,8 +118,8 @@
                                             x-model.number="item.pieza_id"
                                         >
                                             <option :value="null">Sin pieza</option>
-                                            <template x-for="p in piezas" :key="p.id">
-                                                <option :value="p.id" x-text="p.numero + ' · ' + p.nombre"></option>
+                                            <template x-for="p in opcionesPieza(item.pieza_id)" :key="p.id">
+                                                <option :value="p.id" x-text="etiquetaPieza(p)"></option>
                                             </template>
                                         </select>
                                     </div>
@@ -195,7 +200,6 @@
                 </table>
             </div>
 
-            {{-- Form de nueva línea --}}
             <div class="mt-5 border-t border-brand-border pt-5">
                 <p class="text-xs font-semibold uppercase tracking-wide text-brand-muted">Agregar línea</p>
 
@@ -206,10 +210,10 @@
                         @change="autoCompletarDesdePieza()"
                     >
                         <option :value="null">Sin pieza</option>
-                        <template x-for="p in piezas" :key="p.id">
+                        <template x-for="p in piezasDisponibles" :key="p.id">
                             <option
                                 :value="p.id"
-                                x-text="p.numero + ' · ' + p.nombre + (p.estado_consulta && p.estado_consulta !== 'sana' ? ' (' + p.estado_consulta + ')' : '')"
+                                x-text="etiquetaPieza(p) + (p.estado_consulta && p.estado_consulta !== 'sana' ? ' (' + p.estado_consulta + ')' : '')"
                             ></option>
                         </template>
                     </select>
@@ -259,12 +263,11 @@
                 </div>
 
                 <p class="mt-2 text-xs text-brand-muted">
-                    Si selecciona una pieza con estado distinto a "sana", el diagnóstico, tratamiento y precio se autocompletan desde el catálogo de tarifas (puede editarlos antes de agregar).
+                    Solo se ofrecen piezas del cuadro activo. Si selecciona una pieza con estado distinto a "sana", el diagnóstico, tratamiento y precio se autocompletan desde el catálogo de tarifas (puede editarlos antes de agregar).
                 </p>
             </div>
         </div>
     @else
-        {{-- Read-only fallback (portal o presupuesto ya aceptado) --}}
         <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <div>
                 <h3 class="text-lg font-semibold text-brand-primary">Presupuesto</h3>
@@ -293,7 +296,7 @@
                 <tbody class="divide-y divide-brand-border">
                     @forelse ($consulta->presupuestoItems as $item)
                         <tr>
-                            <td class="py-2 pr-3 text-brand-primary">{{ $item->pieza?->numero ?? 'N/A' }}</td>
+                            <td class="py-2 pr-3 text-brand-primary">{{ $item->pieza?->numeroVisible() ?? 'N/A' }}</td>
                             <td class="px-3 py-2 text-brand-primary">{{ $item->diagnostico }}</td>
                             <td class="px-3 py-2 text-brand-primary">{{ $item->tratamiento }}</td>
                             <td class="px-3 py-2 text-right text-brand-primary">Q{{ number_format((float) $item->precio_unitario, 2) }}</td>
@@ -325,9 +328,10 @@
     <script>
         function presupuestoEditor(initial) {
             return {
-                items: initial.items.map(i => ({ ...i, _guardando: false })),
+                items: initial.items.map((item) => ({ ...item, _guardando: false })),
                 piezas: initial.piezas,
-                tarifas: initial.tarifas.map(t => ({ ...t, precio_sugerido: Number(t.precio_sugerido) })),
+                tarifas: initial.tarifas.map((tarifa) => ({ ...tarifa, precio_sugerido: Number(tarifa.precio_sugerido) })),
+                tipoOdontogramaActivo: initial.tipoInicial,
                 aceptadoEn: initial.aceptadoEn,
                 endpoints: initial.endpoints,
                 nuevo: { pieza_id: null, diagnostico: '', tratamiento: '', precio_unitario: 0, cantidad: 1 },
@@ -337,7 +341,7 @@
                 mensaje: { texto: '', tipo: 'success' },
 
                 get totalEnVivo() {
-                    return this.items.reduce((acc, i) => acc + (Number(i.precio_unitario) || 0) * (Number(i.cantidad) || 0), 0);
+                    return this.items.reduce((acc, item) => acc + (Number(item.precio_unitario) || 0) * (Number(item.cantidad) || 0), 0);
                 },
 
                 get nuevoValido() {
@@ -345,6 +349,10 @@
                         && this.nuevo.tratamiento.trim().length > 0
                         && Number(this.nuevo.precio_unitario) >= 0
                         && Number(this.nuevo.cantidad) >= 1;
+                },
+
+                get piezasDisponibles() {
+                    return this.piezas.filter((pieza) => pieza.tipo === this.tipoOdontogramaActivo);
                 },
 
                 itemValido(item) {
@@ -360,36 +368,51 @@
 
                 piezaNumero(piezaId) {
                     if (! piezaId) return null;
-                    const p = this.piezas.find(p => p.id === Number(piezaId));
-                    return p ? p.numero : null;
+                    const pieza = this.piezas.find((item) => item.id === Number(piezaId));
+                    return pieza ? pieza.numero : null;
                 },
 
                 piezaNombre(piezaId) {
                     if (! piezaId) return null;
-                    const p = this.piezas.find(p => p.id === Number(piezaId));
-                    return p ? p.nombre : null;
+                    const pieza = this.piezas.find((item) => item.id === Number(piezaId));
+                    return pieza ? pieza.nombre : null;
+                },
+
+                etiquetaPieza(pieza) {
+                    if (! pieza) return '';
+                    return `${pieza.numero} · ${pieza.nombre}`;
+                },
+
+                opcionesPieza(piezaId = null) {
+                    return this.piezas.filter((pieza) => pieza.tipo === this.tipoOdontogramaActivo || pieza.id === Number(piezaId));
                 },
 
                 actualizarEstadosPiezas(piezasFrescas) {
-                    // Sincroniza los estados desde el odontograma sin perder el resto
-                    // de campos (numero, nombre, cuadrante) ya cargados al renderizar.
                     if (! Array.isArray(piezasFrescas)) return;
-                    const mapa = Object.fromEntries(piezasFrescas.map(p => [p.id, p.estado]));
-                    this.piezas = this.piezas.map(p => ({
-                        ...p,
-                        estado_consulta: mapa[p.id] !== undefined ? mapa[p.id] : p.estado_consulta,
+                    const mapa = Object.fromEntries(piezasFrescas.map((pieza) => [pieza.id, pieza.estado]));
+                    this.piezas = this.piezas.map((pieza) => ({
+                        ...pieza,
+                        estado_consulta: mapa[pieza.id] !== undefined ? mapa[pieza.id] : pieza.estado_consulta,
                     }));
-                    // Si el usuario tiene una pieza ya seleccionada en el form de nueva línea
-                    // y su estado cambió, reintenta el auto-completar (solo si los campos
-                    // están vacíos — respeta lo que el usuario ya escribió).
                     this.autoCompletarDesdePieza();
+                },
+
+                actualizarTipoOdontograma(tipo) {
+                    if (! ['permanente', 'temporal'].includes(tipo)) return;
+                    this.tipoOdontogramaActivo = tipo;
+                    const piezaNueva = this.nuevo.pieza_id
+                        ? this.piezas.find((pieza) => pieza.id === Number(this.nuevo.pieza_id))
+                        : null;
+                    if (piezaNueva && piezaNueva.tipo !== tipo) {
+                        this.nuevo.pieza_id = null;
+                    }
                 },
 
                 autoCompletarDesdePieza() {
                     if (! this.nuevo.pieza_id) return;
-                    const pieza = this.piezas.find(p => p.id === Number(this.nuevo.pieza_id));
+                    const pieza = this.piezas.find((item) => item.id === Number(this.nuevo.pieza_id));
                     if (! pieza || ! pieza.estado_consulta || pieza.estado_consulta === 'sana') return;
-                    const tarifa = this.tarifas.find(t => t.estado_pieza === pieza.estado_consulta);
+                    const tarifa = this.tarifas.find((item) => item.estado_pieza === pieza.estado_consulta);
                     if (! tarifa) return;
                     if (! this.nuevo.diagnostico) this.nuevo.diagnostico = tarifa.nombre_legible;
                     if (! this.nuevo.tratamiento) this.nuevo.tratamiento = tarifa.nombre_legible;
@@ -397,12 +420,9 @@
                 },
 
                 autoCompletarDesdeTratamiento(target) {
-                    // Cuando el usuario elige un tratamiento del datalist (o lo escribe
-                    // exactamente igual al nombre de una tarifa), trae el precio sugerido
-                    // del catálogo solo si el campo precio sigue vacío o en cero.
                     const nombre = (target.tratamiento || '').trim();
                     if (! nombre) return;
-                    const tarifa = this.tarifas.find(t => t.nombre_legible === nombre);
+                    const tarifa = this.tarifas.find((item) => item.nombre_legible === nombre);
                     if (! tarifa) return;
                     const precioActual = Number(target.precio_unitario) || 0;
                     if (precioActual === 0) {
@@ -429,7 +449,7 @@
                     const res = await fetch(url, {
                         ...options,
                         headers: {
-                            'Accept': 'application/json',
+                            Accept: 'application/json',
                             'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': this.csrf(),
                             ...(options.headers || {}),
@@ -441,7 +461,8 @@
                             const data = await res.json();
                             if (data.message) msg = data.message;
                             if (data.errors) msg = Object.values(data.errors).flat().join(' · ');
-                        } catch (e) {}
+                        } catch (e) {
+                        }
                         throw new Error(msg);
                     }
                     return res.json();
@@ -499,7 +520,7 @@
                     const item = this.items[idx];
                     const ok = await window.confirmDialog({
                         title: '¿Eliminar línea del presupuesto?',
-                        message: `Estás a punto de eliminar "${item.diagnostico || 'sin diagnóstico'}". Esta acción no se puede deshacer.`,
+                        message: `Está a punto de eliminar "${item.diagnostico || 'sin diagnóstico'}". Esta acción no se puede deshacer.`,
                         confirmText: 'Eliminar',
                         variant: 'danger',
                     });
@@ -517,28 +538,30 @@
                     this.generandoOdontograma = true;
                     try {
                         const data = await this.fetchJson(this.endpoints.sugerencias);
-                        const sugerencias = data.items || [];
+                        const sugerencias = (data.items || []).filter((sugerencia) => {
+                            const pieza = this.piezas.find((item) => item.id === Number(sugerencia.pieza_id));
+                            return pieza && pieza.tipo === this.tipoOdontogramaActivo;
+                        });
                         if (sugerencias.length === 0) {
-                            this.showMensaje('No hay piezas con estado distinto a "sana" en el odontograma.', 'error');
+                            this.showMensaje('No hay piezas del cuadro activo con estado distinto a "sana" en el odontograma.', 'error');
                             return;
                         }
                         let agregados = 0;
-                        for (const sug of sugerencias) {
+                        for (const sugerencia of sugerencias) {
                             try {
                                 const res = await this.fetchJson(this.endpoints.store, {
                                     method: 'POST',
                                     body: JSON.stringify({
-                                        pieza_id: sug.pieza_id,
-                                        diagnostico: sug.diagnostico,
-                                        tratamiento: sug.tratamiento,
-                                        precio_unitario: Number(sug.precio_unitario) || 0,
+                                        pieza_id: sugerencia.pieza_id,
+                                        diagnostico: sugerencia.diagnostico,
+                                        tratamiento: sugerencia.tratamiento,
+                                        precio_unitario: Number(sugerencia.precio_unitario) || 0,
                                         cantidad: 1,
                                     }),
                                 });
                                 this.items.push(this.normalizarItem(res.item));
                                 agregados++;
                             } catch (e) {
-                                // continúa con el resto si una sugerencia falla
                             }
                         }
                         this.showMensaje(`${agregados} ítem(s) agregados desde el odontograma.`);
@@ -561,8 +584,8 @@
                     try {
                         const data = await this.fetchJson(this.endpoints.aceptar, { method: 'POST' });
                         if (data.presupuesto_aceptado_en) {
-                            const d = new Date(data.presupuesto_aceptado_en);
-                            this.aceptadoEn = d.toLocaleString('es-GT', { dateStyle: 'short', timeStyle: 'short' });
+                            const fecha = new Date(data.presupuesto_aceptado_en);
+                            this.aceptadoEn = fecha.toLocaleString('es-GT', { dateStyle: 'short', timeStyle: 'short' });
                         }
                         this.showMensaje('Presupuesto aceptado.');
                         setTimeout(() => location.reload(), 800);
