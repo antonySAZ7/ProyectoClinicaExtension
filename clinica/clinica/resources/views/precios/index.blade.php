@@ -18,6 +18,7 @@
                 tarifas: @js($tarifas),
                 estadosOdontograma: @js($estadosOdontograma),
                 endpoints: {
+                    servicioStore: '{{ route('precios.servicios.store') }}',
                     servicioUpdate: '{{ url('precios/servicios') }}',
                     tarifaStore: '{{ route('precios.tarifas.store') }}',
                     tarifaUpdate: '{{ url('precios/tarifas') }}',
@@ -39,10 +40,86 @@
 
                 <x-card class="overflow-hidden">
                 <div class="border-b border-brand-border px-6 py-4">
-                    <h3 class="text-lg font-semibold text-brand-primary">Servicios</h3>
-                    <p class="mt-1 text-sm text-brand-muted">
-                        Edita el precio sugerido. La duración y el nombre se manejan desde el módulo de servicios.
-                    </p>
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                            <h3 class="text-lg font-semibold text-brand-primary">Servicios</h3>
+                            <p class="mt-1 text-sm text-brand-muted">
+                                Nombre, descripción, duración, precio sugerido y disponibilidad. Los cambios de duración solo afectan agendas nuevas.
+                            </p>
+                        </div>
+
+                        <button
+                            type="button"
+                            class="inline-flex items-center justify-center gap-2 rounded-md border border-brand-border bg-white px-4 py-2 text-sm font-semibold text-brand-primary transition hover:bg-brand-soft"
+                            @click="abrirNuevoServicio = ! abrirNuevoServicio"
+                        >
+                            <x-lucide-plus class="h-4 w-4" />
+                            <span x-text="abrirNuevoServicio ? 'Cancelar' : 'Agregar servicio'"></span>
+                        </button>
+                    </div>
+                </div>
+
+                {{-- Formulario nuevo servicio --}}
+                <div
+                    x-show="abrirNuevoServicio"
+                    x-cloak
+                    x-transition
+                    class="border-b border-brand-border bg-brand-soft px-6 py-5"
+                >
+                    <div class="grid gap-3 sm:grid-cols-[1fr_1fr_120px_140px_auto]">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-brand-muted">Nombre</label>
+                            <input
+                                type="text"
+                                class="mt-1 block w-full rounded-md border-brand-border text-sm shadow-sm focus:border-brand-primary focus:ring-brand-primary"
+                                placeholder="Ej. Limpieza dental"
+                                x-model="nuevoServicio.nombre"
+                            >
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-brand-muted">Descripción</label>
+                            <input
+                                type="text"
+                                class="mt-1 block w-full rounded-md border-brand-border text-sm shadow-sm focus:border-brand-primary focus:ring-brand-primary"
+                                placeholder="Opcional"
+                                x-model="nuevoServicio.descripcion"
+                            >
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-brand-muted">Duración (min)</label>
+                            <input
+                                type="number"
+                                min="5"
+                                max="600"
+                                step="5"
+                                class="mt-1 block w-full rounded-md border-brand-border text-right text-sm shadow-sm focus:border-brand-primary focus:ring-brand-primary"
+                                x-model="nuevoServicio.duracion_minutos"
+                            >
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-brand-muted">Precio (Q)</label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                class="mt-1 block w-full rounded-md border-brand-border text-right text-sm shadow-sm focus:border-brand-primary focus:ring-brand-primary"
+                                x-model="nuevoServicio.precio_sugerido"
+                            >
+                        </div>
+
+                        <div class="flex items-end">
+                            <button
+                                type="button"
+                                class="inline-flex items-center justify-center rounded-md bg-[var(--brand-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+                                :disabled="! nuevoServicioValido || guardandoNuevoServicio"
+                                @click="agregarServicio()"
+                                x-text="guardandoNuevoServicio ? 'Guardando…' : 'Agregar'"
+                            ></button>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="overflow-x-auto">
@@ -50,43 +127,62 @@
                         <thead class="bg-brand-soft">
                             <tr>
                                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-muted">Nombre</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-muted">Duración</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-muted">Estado</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-muted">Precio sugerido (Q)</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-muted">Descripción</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-brand-muted">Duración (min)</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-brand-muted">Precio (Q)</th>
+                                <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-brand-muted">Activo</th>
                                 <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-brand-muted">Acción</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-brand-border bg-brand-contrast">
                             <template x-for="(servicio, idx) in servicios" :key="servicio.id">
                                 <tr>
-                                    <td class="px-4 py-3 text-sm text-brand-primary">
-                                        <p class="font-medium" x-text="servicio.nombre"></p>
-                                        <p class="mt-1 text-xs text-brand-muted" x-text="servicio.descripcion || ''"></p>
-                                    </td>
-                                    <td class="px-4 py-3 text-sm text-brand-primary" x-text="servicio.duracion_minutos + ' min'"></td>
                                     <td class="px-4 py-3 text-sm">
-                                        <span
-                                            class="inline-flex rounded-full px-2 py-1 text-xs font-semibold"
-                                            :class="servicio.activo
-                                                ? 'bg-emerald-100 text-emerald-700'
-                                                : 'bg-gray-100 text-gray-600'"
-                                            x-text="servicio.activo ? 'Activo' : 'Inactivo'"
-                                        ></span>
+                                        <input
+                                            type="text"
+                                            class="block w-full rounded-md border-brand-border text-sm shadow-sm focus:border-brand-primary focus:ring-brand-primary"
+                                            x-model="servicio.nombre"
+                                        >
                                     </td>
-                                    <td class="px-4 py-3 text-left text-sm">
+                                    <td class="px-4 py-3 text-sm">
+                                        <input
+                                            type="text"
+                                            class="block w-full rounded-md border-brand-border text-sm shadow-sm focus:border-brand-primary focus:ring-brand-primary"
+                                            placeholder="Opcional"
+                                            x-model="servicio.descripcion"
+                                        >
+                                    </td>
+                                    <td class="px-4 py-3 text-right text-sm">
+                                        <input
+                                            type="number"
+                                            min="5"
+                                            max="600"
+                                            step="5"
+                                            class="w-24 rounded-md border-brand-border text-right text-sm shadow-sm focus:border-brand-primary focus:ring-brand-primary"
+                                            x-model="servicio.duracion_minutos"
+                                        >
+                                    </td>
+                                    <td class="px-4 py-3 text-right text-sm">
                                         <input
                                             type="number"
                                             step="0.01"
                                             min="0"
-                                            class="w-28 rounded-md border-brand-border text-left text-sm shadow-sm focus:border-brand-primary focus:ring-brand-primary"
-                                            x-model="servicio.precio_editado"
+                                            class="w-28 rounded-md border-brand-border text-right text-sm shadow-sm focus:border-brand-primary focus:ring-brand-primary"
+                                            x-model="servicio.precio_sugerido"
+                                        >
+                                    </td>
+                                    <td class="px-4 py-3 text-center text-sm">
+                                        <input
+                                            type="checkbox"
+                                            class="h-4 w-4 rounded border-brand-border text-brand-primary focus:ring-brand-primary"
+                                            x-model="servicio.activo"
                                         >
                                     </td>
                                     <td class="px-4 py-3 text-right text-sm">
                                         <button
                                             type="button"
                                             class="inline-flex items-center justify-center rounded-md bg-[var(--brand-primary)] px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
-                                            :disabled="servicio.guardando || Number(servicio.precio_editado) === Number(servicio.precio_sugerido)"
+                                            :disabled="servicio.guardando"
                                             @click="guardarServicio(idx)"
                                             x-text="servicio.guardando ? 'Guardando…' : 'Guardar'"
                                         ></button>
@@ -96,8 +192,8 @@
 
                             <template x-if="servicios.length === 0">
                                 <tr>
-                                    <td colspan="5" class="px-4 py-10 text-center text-sm text-brand-muted">
-                                        No hay servicios registrados.
+                                    <td colspan="6" class="px-4 py-10 text-center text-sm text-brand-muted">
+                                        No hay servicios registrados. Agrega uno con el botón de arriba.
                                     </td>
                                 </tr>
                             </template>
@@ -290,7 +386,8 @@
                 servicios: initial.servicios.map(s => ({
                     ...s,
                     precio_sugerido: Number(s.precio_sugerido),
-                    precio_editado: Number(s.precio_sugerido),
+                    duracion_minutos: Number(s.duracion_minutos),
+                    activo: !! s.activo,
                     guardando: false,
                 })),
                 tarifas: initial.tarifas.map(t => ({
@@ -304,6 +401,9 @@
                 abrirNuevaTarifa: false,
                 guardandoNueva: false,
                 nueva: { estado_pieza: '', nombre_legible: '', precio_sugerido: '' },
+                abrirNuevoServicio: false,
+                guardandoNuevoServicio: false,
+                nuevoServicio: { nombre: '', descripcion: '', duracion_minutos: 30, precio_sugerido: '', activo: true },
                 mensajes: {
                     servicios: { texto: '', tipo: 'success' },
                     tarifas: { texto: '', tipo: 'success' },
@@ -311,6 +411,13 @@
 
                 get estadosUsados() {
                     return this.tarifas.map(t => t.estado_pieza);
+                },
+
+                get nuevoServicioValido() {
+                    return this.nuevoServicio.nombre.trim().length > 0
+                        && Number(this.nuevoServicio.duracion_minutos) >= 5
+                        && this.nuevoServicio.precio_sugerido !== ''
+                        && Number(this.nuevoServicio.precio_sugerido) >= 0;
                 },
 
                 get nuevaValida() {
@@ -371,15 +478,56 @@
                     try {
                         const data = await this.fetchJson(`${this.endpoints.servicioUpdate}/${s.id}`, {
                             method: 'PATCH',
-                            body: JSON.stringify({ precio_sugerido: Number(s.precio_editado) }),
+                            body: JSON.stringify({
+                                nombre: (s.nombre || '').trim(),
+                                descripcion: (s.descripcion || '').trim() || null,
+                                duracion_minutos: Number(s.duracion_minutos),
+                                precio_sugerido: Number(s.precio_sugerido),
+                                activo: s.activo,
+                            }),
                         });
-                        s.precio_sugerido = Number(data.servicio.precio_sugerido);
-                        s.precio_editado = s.precio_sugerido;
-                        this.showMensaje('servicios', `Precio de "${s.nombre}" actualizado.`);
+                        Object.assign(s, {
+                            ...data.servicio,
+                            precio_sugerido: Number(data.servicio.precio_sugerido),
+                            duracion_minutos: Number(data.servicio.duracion_minutos),
+                            activo: !! data.servicio.activo,
+                        });
+                        this.showMensaje('servicios', `Servicio "${s.nombre}" actualizado.`);
                     } catch (e) {
                         this.showMensaje('servicios', e.message, 'error');
                     } finally {
                         s.guardando = false;
+                    }
+                },
+
+                async agregarServicio() {
+                    this.guardandoNuevoServicio = true;
+                    try {
+                        const data = await this.fetchJson(this.endpoints.servicioStore, {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                nombre: this.nuevoServicio.nombre.trim(),
+                                descripcion: (this.nuevoServicio.descripcion || '').trim() || null,
+                                duracion_minutos: Number(this.nuevoServicio.duracion_minutos),
+                                precio_sugerido: Number(this.nuevoServicio.precio_sugerido),
+                                activo: true,
+                            }),
+                        });
+                        this.servicios.push({
+                            ...data.servicio,
+                            precio_sugerido: Number(data.servicio.precio_sugerido),
+                            duracion_minutos: Number(data.servicio.duracion_minutos),
+                            activo: !! data.servicio.activo,
+                            guardando: false,
+                        });
+                        this.servicios.sort((a, b) => a.nombre.localeCompare(b.nombre));
+                        this.nuevoServicio = { nombre: '', descripcion: '', duracion_minutos: 30, precio_sugerido: '', activo: true };
+                        this.abrirNuevoServicio = false;
+                        this.showMensaje('servicios', 'Servicio agregado.');
+                    } catch (e) {
+                        this.showMensaje('servicios', e.message, 'error');
+                    } finally {
+                        this.guardandoNuevoServicio = false;
                     }
                 },
 

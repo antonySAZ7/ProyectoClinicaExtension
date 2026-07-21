@@ -34,17 +34,44 @@ class PrecioController extends Controller
         ]);
     }
 
+    public function storeServicio(Request $request): JsonResponse
+    {
+        $validated = $request->validate($this->reglasServicio());
+
+        $servicio = Servicio::create([
+            ...$validated,
+            'activo' => $validated['activo'] ?? true,
+        ]);
+
+        return response()->json(['servicio' => $servicio], 201);
+    }
+
     public function updateServicio(Request $request, Servicio $servicio): JsonResponse
     {
-        $validated = $request->validate([
-            'precio_sugerido' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
-        ]);
+        $validated = $request->validate($this->reglasServicio(paraCrear: false));
 
         $servicio->update($validated);
 
         return response()->json([
             'servicio' => $servicio->refresh(),
         ]);
+    }
+
+    /**
+     * Reglas de validación de un servicio. Al crear, `activo` es opcional
+     * (default true); al editar es obligatorio para reflejar el toggle.
+     *
+     * @return array<string, array<int, mixed>>
+     */
+    private function reglasServicio(bool $paraCrear = true): array
+    {
+        return [
+            'nombre' => ['required', 'string', 'max:255'],
+            'descripcion' => ['nullable', 'string', 'max:1000'],
+            'duracion_minutos' => ['required', 'integer', 'min:5', 'max:600'],
+            'precio_sugerido' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
+            'activo' => [$paraCrear ? 'nullable' : 'required', 'boolean'],
+        ];
     }
 
     public function storeTarifa(Request $request): JsonResponse

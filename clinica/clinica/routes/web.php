@@ -135,6 +135,8 @@ Route::middleware(['auth', 'role:admin,doctor'])->group(function () {
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/precios', [PrecioController::class, 'index'])->name('precios.index');
+    Route::post('/precios/servicios', [PrecioController::class, 'storeServicio'])
+        ->name('precios.servicios.store');
     Route::patch('/precios/servicios/{servicio}', [PrecioController::class, 'updateServicio'])
         ->name('precios.servicios.update');
     Route::post('/precios/tarifas', [PrecioController::class, 'storeTarifa'])
