@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+# La app Laravel vive en el subdirectorio clinica/clinica del repositorio.
+defaults:
+  run:
+    working-directory: clinica/clinica
+
+jobs:
+  build-test:
+    name: Tests, auditoría y build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          # gd lo exige phpoffice/phpspreadsheet; pdo_sqlite/sqlite3 para los tests.
+          extensions: mbstring, bcmath, intl, gd, zip, pdo_sqlite, sqlite3
+          coverage: none
+
+      - name: Instalar dependencias de Composer
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Preparar entorno
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Ejecutar pruebas (Pest, SQLite en memoria)
+        run: php artisan test
+
+      - name: Auditoría de seguridad (falla el build si hay advisories)
+        run: composer audit
+
+      - name: Configurar Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: clinica/clinica/package-lock.json
+
+      - name: Instalar dependencias de npm
+        run: npm ci
+
+      - name: Compilar assets (Vite)
+        run: npm run build
